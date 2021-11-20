@@ -7,7 +7,11 @@ import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 //https://github.com/Kotlin/kotlinx-datetime
 import kotlinx.datetime.*
 
+import com.sksamuel.hoplite.ConfigLoader
+import mu.KotlinLogging
 import java.io.File
+
+private val logger = KotlinLogging.logger {}
 
 class MyArgs(parser: ArgParser) {
     val verbose by parser.flagging("-v", "--verbose", help="enable verbose mode")
@@ -18,6 +22,14 @@ class MyArgs(parser: ArgParser) {
 }
 
 fun main(args: Array<String>) = mainBody {
+    logger.info { "Program started" }
+    try {
+        val config = ConfigLoader().loadConfigOrThrow<Competition>("/config.json")
+        logger.info { "Started $config competition" }
+    } catch (exc: Exception) {
+        logger.error { "Cannot decoder configs from configuration file:" }
+        logger.error { exc.message }
+    }
     val parsedArgs = ArgParser(args).parseInto(::MyArgs)
     println("Hello ${parsedArgs.name}!")
 
