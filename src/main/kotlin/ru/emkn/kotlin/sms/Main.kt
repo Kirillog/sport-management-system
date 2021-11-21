@@ -13,14 +13,6 @@ import java.io.File
 
 private val logger = KotlinLogging.logger {}
 
-class MyArgs(parser: ArgParser) {
-    val verbose by parser.flagging("-v", "--verbose", help="enable verbose mode")
-
-    val name by parser.storing("-n", "--name", help="user name").default<String>("kek")
-
-    val count by parser.storing("-c", "--count", help="test counter") { toIntOrNull() ?: println("null here") }
-}
-
 fun main(args: Array<String>) = mainBody {
     logger.info { "Program started" }
     try {
@@ -37,4 +29,18 @@ fun main(args: Array<String>) = mainBody {
     val csvData = csvReader().readAllWithHeader(csvFile)
 //    val csvData = csvReader().readAll(csvFile)
     println(csvData.toString())
+
+    val member = Member()
+
+    val writer = Writer(File("test.csv"), Filetype.CSV)
+    writer.add("mem")
+    writer.add(member)
+    writer.write()
+    writer.add("mem")
+    writer.write()
+
+    val writer2 = Writer(File("test.json"), Filetype.JSON)
+    writer2.add(member)
+    writer2.add("mem")
+    writer2.write()
 }
