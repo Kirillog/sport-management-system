@@ -5,10 +5,10 @@ import com.xenomachina.argparser.*
 //https://github.com/doyaaaaaken/kotlin-csv
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 //https://github.com/Kotlin/kotlinx-datetime
-import kotlinx.datetime.*
 
 import com.sksamuel.hoplite.ConfigLoader
 import mu.KotlinLogging
+import ru.emkn.kotlin.sms.objects.Competition
 import java.io.File
 
 private val logger = KotlinLogging.logger {}
