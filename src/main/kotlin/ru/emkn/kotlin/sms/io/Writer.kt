@@ -1,7 +1,8 @@
-package ru.emkn.kotlin.sms
+package ru.emkn.kotlin.sms.io
 
 import mu.KotlinLogging
 import java.io.File
+import ru.emkn.kotlin.sms.Filetype
 
 private val logger = KotlinLogging.logger {}
 
@@ -19,20 +20,12 @@ interface Writable {
     fun toCSV(): String
 }
 
-class Member : Writable {
-
-    override fun toJSON() = "member to JSON"
-
-    override fun toCSV() = "member to CSV"
-}
-
 fun String.toWritable() = object : Writable {
 
     override fun toJSON() = "${this@toWritable} string to json"
 
     override fun toCSV() = "${this@toWritable} string to csv"
 }
-
 
 class Writer(private val file: File, val filetype: Filetype) {
 
