@@ -1,53 +1,52 @@
 package ru.emkn.kotlin.sms.io
 
+import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
 import mu.KotlinLogging
+import ru.emkn.kotlin.sms.FileType
 import java.io.File
-import ru.emkn.kotlin.sms.Filetype
 
 private val logger = KotlinLogging.logger {}
 
-interface Writable {
-
-    fun toString(filetype: Filetype): String {
-        return when (filetype) {
-            Filetype.JSON -> toJSON()
-            Filetype.CSV -> toCSV()
-        }
-    }
-
-    fun toJSON(): String
-
-    fun toCSV(): String
+interface MultilineWritable {
+    fun toMultiline(): List<List<String>>
 }
 
-fun String.toWritable() = object : Writable {
+interface SingleLineWritable : MultilineWritable {
+    override fun toMultiline(): List<List<String>> = listOf(toLine())
 
-    override fun toJSON() = "${this@toWritable} string to json"
-
-    override fun toCSV() = "${this@toWritable} string to csv"
+    fun toLine(): List<String>
 }
 
-class Writer(private val file: File, val filetype: Filetype) {
+fun List<String>.toWritable() = object : SingleLineWritable {
+    override fun toLine() = this@toWritable
+}
 
-    val buffer = mutableListOf<Writable>()
+fun String.toWritable() = object : SingleLineWritable {
+    override fun toLine() = listOf(this@toWritable)
+}
 
-    fun add(el: Writable) = buffer.add(el)
+class Writer(private val file: File, val filetype: FileType) {
+
+    val buffer = mutableListOf<MultilineWritable>()
+
+    fun add(el: MultilineWritable) = buffer.add(el)
 
     fun add(el: String) = buffer.add(el.toWritable())
 
-    fun addAll(el: List<Writable>) = buffer.addAll(el)
+    fun add(el: List<String>) = buffer.add(el.toWritable())
+
+    fun addAll(el: List<MultilineWritable>) = buffer.addAll(el)
 
     fun clear() = buffer.clear()
 
-    private fun generate(): String = buffer.joinToString("\n") { it.toString(filetype) }
-
-    fun append() {
-        file.appendText(generate())
-        clear()
-    }
-
     fun write() {
-        file.writeText(generate())
+        val lines = buffer.map { it.toMultiline() }.flatten()
+        val rowSize = lines.maxOf { it.size }
+        val shrunkenLines = lines.map { it + List(rowSize - it.size) { "" } }
+        when (filetype) {
+            FileType.CSV, FileType.JSON -> csvWriter().writeAll(shrunkenLines, file)
+        }
+        logger.info { "Written ${buffer.size} objects to ${file.name}" }
         clear()
     }
 }

@@ -1,3 +1,13 @@
 package ru.emkn.kotlin.sms.objects
 
-data class Team(val name : String, val members: List<Participant>)
+
+import ru.emkn.kotlin.sms.io.*
+
+class Team(val name : String, val members: List<Participant>): MultilineWritable {
+
+    override fun toMultiline(): List<List<String>> {
+        val result = mutableListOf(listOf(name))
+        result.addAll(members.map { it.toLine() })
+        return result
+    }
+}

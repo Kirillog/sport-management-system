@@ -1,3 +1,12 @@
 package ru.emkn.kotlin.sms.objects
 
-data class Group(val name : String, val course: Course, val members: List<Participant>)
+import ru.emkn.kotlin.sms.io.MultilineWritable
+
+data class Group(val name : String, val course: Course, val members: List<Applicant>) : MultilineWritable {
+
+    override fun toMultiline(): List<List<String>> {
+        val result = mutableListOf(listOf(name))
+        result.addAll(members.map { it.toLine() })
+        return result
+    }
+}

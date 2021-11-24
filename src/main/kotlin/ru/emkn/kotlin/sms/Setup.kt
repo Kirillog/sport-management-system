@@ -3,7 +3,7 @@ package ru.emkn.kotlin.sms
 import com.xenomachina.argparser.ArgParser
 import com.xenomachina.argparser.default
 
-enum class Filetype {
+enum class FileType {
     JSON, CSV
 }
 
