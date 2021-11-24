@@ -4,23 +4,20 @@ package ru.emkn.kotlin.sms
 //https://github.com/doyaaaaaken/kotlin-csv
 //https://github.com/Kotlin/kotlinx-datetime
 
-import com.sksamuel.hoplite.ConfigLoader
-import com.xenomachina.argparser.ArgParser
 import com.xenomachina.argparser.mainBody
 import mu.KotlinLogging
-import ru.emkn.kotlin.sms.objects.Competition
+import ru.emkn.kotlin.sms.io.Writer
+import ru.emkn.kotlin.sms.io.formGroupsList
+import ru.emkn.kotlin.sms.io.formTeamsList
+import java.io.File
 
 private val logger = KotlinLogging.logger {}
 
-fun main(args: Array<String>) = mainBody {
+fun main() = mainBody {
     logger.info { "Program started" }
-    try {
-        val config = ConfigLoader().loadConfigOrThrow<Competition>("/config.json")
-        logger.info { "Started $config competition" }
-    } catch (exc: Exception) {
-        logger.error { "Cannot decoder configs from configuration file:" }
-        logger.error { exc.message }
-    }
-    val parsedArgs = ArgParser(args).parseInto(::MyArgs)
-    println("Hello ${parsedArgs.name}!")
+    val teams = formTeamsList()
+    val group = formGroupsList(teams)
+    val writer = Writer(File("test.csv"), FileType.CSV)
+    writer.addAll(group)
+    writer.write()
 }

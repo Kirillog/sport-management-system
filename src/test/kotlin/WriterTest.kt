@@ -1,10 +1,11 @@
+
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import org.junit.Test
-import kotlin.test.*
 import ru.emkn.kotlin.sms.FileType
 import ru.emkn.kotlin.sms.io.Writer
-import ru.emkn.kotlin.sms.objects.Applicant
+import ru.emkn.kotlin.sms.objects.Participant
 import java.io.File
+import kotlin.test.assertEquals
 
 
 class WriterTest {
@@ -14,8 +15,8 @@ class WriterTest {
 
     @Test
     fun testWriteApplicant() {
-        val appA = Applicant("Vasya", "Pupkin", 1998, "30M", "Byaka", "I")
-        val appB = Applicant("Petya", "Loopkin", 2189, "18M", "Buka")
+        val appA = Participant("Vasya", "Pupkin", 1998, "30M", "Byaka", "I")
+        val appB = Participant("Petya", "Loopkin", 2189, "18M", "Buka")
 
         writer.add(appA)
         writer.add(appB)
