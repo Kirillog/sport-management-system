@@ -1,5 +1,5 @@
 package ru.emkn.kotlin.sms.objects
 
-import kotlinx.datetime.LocalDateTime
+import java.nio.file.Path
 
-data class Competition(val name: String, val data: LocalDateTime, val courses : List<Course>)
+data class Competition(val event: Event, val path: Path, val teams: List<Team>, val groups: List<Group>)

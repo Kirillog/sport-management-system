@@ -1,3 +1,5 @@
 package ru.emkn.kotlin.sms.objects
 
-data class Course(val name: String, val checkPoints: List<CheckPoint>)
+import ru.emkn.kotlin.sms.io.Readable
+
+data class Course(val name: String, val checkPoints: List<CheckPoint>) : Readable
