@@ -1,13 +1,10 @@
 package ru.emkn.kotlin.sms.objects
 
-import kotlinx.datetime.DateTimePeriod
 import ru.emkn.kotlin.sms.io.formEvent
 import ru.emkn.kotlin.sms.io.formGroupsList
 import ru.emkn.kotlin.sms.io.formTeamsList
 import java.nio.file.Path
-import kotlin.time.Duration
 import java.time.LocalTime
-import java.time.temporal.TemporalAmount
 
 fun makeCompetition(path: Path): Competition {
     return try {
@@ -21,7 +18,6 @@ fun makeCompetition(path: Path): Competition {
 }
 
 data class Competition(val event: Event, val path: Path, val teams: List<Team>, val groups: List<Group>) {
-
 
     constructor(competition: Competition) : this(
         competition.event,
