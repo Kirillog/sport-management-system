@@ -8,13 +8,13 @@ import java.io.File
 private val logger = KotlinLogging.logger {}
 
 interface MultilineWritable {
-    fun toMultiline(): List<List<String>>
+    fun toMultiline(): List<List<String?>>
 }
 
 interface SingleLineWritable : MultilineWritable {
-    override fun toMultiline(): List<List<String>> = listOf(toLine())
+    override fun toMultiline(): List<List<String?>> = listOf(toLine())
 
-    fun toLine(): List<String>
+    fun toLine(): List<String?>
 }
 
 fun List<String>.toWritable() = object : SingleLineWritable {
@@ -31,7 +31,10 @@ class Writer(private val file: File, val filetype: FileType) {
 
     fun add(el: MultilineWritable) = buffer.add(el)
 
-    fun add(el: String) = buffer.add(el.toWritable())
+    fun add(el: String?) {
+        if (el != null) buffer.add(el.toWritable())
+        else logger.warn { "try to write null string" }
+    }
 
     fun add(el: List<String>) = buffer.add(el.toWritable())
 
@@ -40,7 +43,7 @@ class Writer(private val file: File, val filetype: FileType) {
     fun clear() = buffer.clear()
 
     fun write() {
-        val lines = buffer.map { it.toMultiline() }.flatten()
+        val lines = buffer.map { it.toMultiline() }.flatten().map { line -> line.filter { it != null } }
         val rowSize = lines.maxOf { it.size }
         val shrunkenLines = lines.map { it + List(rowSize - it.size) { "" } }
         when (filetype) {

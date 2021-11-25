@@ -18,26 +18,16 @@ class Participant(
     var startTime: LocalTime? = null
     var finishTime: LocalTime? = null
 
-    override fun toLine(): List<String> {
-        val result = mutableListOf<String>()
+    override fun toLine(): List<String?> {
+        val result = mutableListOf<String?>()
 
-        //TODO("Возможно добавить во writer функцию для nullable типов")
-
-        id?.let {
-            result.add(it.toString())
-        }
-
+        result.add(id?.toString())
         result.addAll(mutableListOf(name, surname, birthdayYear.toString(), group, team))
 
         if (grade != null) result.add(grade)
 
-        startTime?.let {
-            result.add(it.format(DateTimeFormatter.ISO_LOCAL_TIME))
-        }
-
-        finishTime?.let {
-            result.add(it.format(DateTimeFormatter.ISO_LOCAL_TIME))
-        }
+        result.add(startTime?.format(DateTimeFormatter.ISO_LOCAL_TIME))
+        result.add(finishTime?.format(DateTimeFormatter.ISO_LOCAL_TIME))
 
         return result
     }
