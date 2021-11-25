@@ -65,4 +65,3 @@ fun generateApplications(
 fun main() {
     generateApplications("test_generator", 3, 10, Random(1))
 }
-
