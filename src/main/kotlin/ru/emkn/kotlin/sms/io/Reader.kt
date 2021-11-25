@@ -58,10 +58,17 @@ fun formCoursesList(competitionPath: Path): List<Course> {
     } ?: throw IllegalArgumentException("Cannot read ${file.name}, program was terminated")
 }
 
-fun formEventsList(competitionPath: Path): List<Event> {
+fun formEvent(competitionPath: Path): Event {
     val reader = csvReader()
     val file = competitionPath.resolve("input/event.csv").toFile()
-    return reader.open(file) {
+
+    val allEvents = reader.open(file) {
         CSVReader(file, this).events()
     } ?: throw IllegalArgumentException("Cannot read ${file.name}, program was terminated")
+
+    when (allEvents.size) {
+        0 -> throw IllegalStateException("${file.name} is empty, program was terminated")
+        else -> logger.warn { "In file ${file.name} more than one event. Using first" }
+    }
+    return allEvents[0]
 }
