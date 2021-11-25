@@ -6,14 +6,14 @@ import java.io.File
 import kotlin.random.Random
 
 val grades = listOf("1р", "2р", "3р", "1ю", "2ю", "3ю")
-val ageGroups = listOf(10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 40, 45, 50, 60, 70, 80)
+val ages = listOf(10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 40, 45, 50, 60, 70, 80)
 
 fun generateParticipant(id: Int, teamName: String, random: Random): Participant {
     val name = "name$id"
     val surname = "surname$id"
     val birthdayYear = random.nextInt(1950, 2012)
     val group = (if (random.nextBoolean()) "М" else "Ж") +
-            "${ageGroups.first { it >= 2021 - birthdayYear }}"
+            "${ages.first { it >= 2021 - birthdayYear }}"
     val grade: String? =
         if (random.nextInt(10) == 0)
             grades[random.nextInt(grades.size)]
