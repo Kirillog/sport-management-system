@@ -6,6 +6,7 @@ import mu.KotlinLogging
 import ru.emkn.kotlin.sms.headers
 import ru.emkn.kotlin.sms.objects.*
 import java.io.File
+import kotlinx.datetime.*
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
 import kotlin.reflect.full.primaryConstructor
@@ -25,6 +26,14 @@ class CSVReader(file: File, private val reader: CsvFileReader) : Reader(file) {
                 }
             } as Any
             CheckPoint::class -> CheckPoint(convert(field, lineNumber, Int::class.starProjectedType) as Int)
+            LocalDate::class -> field?.let {
+                val (date, month, year) = field.split(".")
+                //TODO("Обработка если в field не 3 аргумента")
+                if (date.toIntOrNull() == null || month.toIntOrNull() == null || year.toIntOrNull() == null) {
+                    logger.warn { "Cannot parse $field as date" }
+                }
+                LocalDate(year.toInt(), month.toInt(), date.toInt())
+            } as Any
             else -> {
                 val message = "Cannot convert essential field for ${kType.simpleName}"
                 throw IllegalStateException(message)

@@ -4,6 +4,7 @@ import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import mu.KotlinLogging
 import ru.emkn.kotlin.sms.objects.*
 import java.io.File
+import java.nio.file.Path
 
 abstract class Reader(protected val file: File) {
 
@@ -20,11 +21,9 @@ interface Readable
 
 private val logger = KotlinLogging.logger {}
 
-private const val competitionPath = "competitions/competition-1/"
-
-fun formTeamsList(): List<Team> {
+fun formTeamsList(competitionPath: Path): List<Team> {
     val reader = csvReader()
-    val dir = File(competitionPath + "applications/")
+    val dir = competitionPath.resolve("applications/").toFile()
     return dir.walk().filter(File::isFile).map { file ->
         logger.debug { "Processing ${file.name}" }
         reader.open(file) {
@@ -33,13 +32,13 @@ fun formTeamsList(): List<Team> {
     }.toList().filterNotNull()
 }
 
-fun formGroupsList(teams: List<Team>): List<Group> {
+fun formGroupsList(teams: List<Team>, competitionPath: Path): List<Group> {
     val reader = csvReader()
-    val file = File(competitionPath + "input/classes.csv")
+    val file = competitionPath.resolve("input/classes.csv").toFile()
     val map = reader.open(file) {
         CSVReader(file, this).groupsToCourses()
     } ?: throw IllegalArgumentException("Cannot read ${file.name}, program was terminated")
-    val courses = formCoursesList().associateBy { course -> course.name }
+    val courses = formCoursesList(competitionPath).associateBy { course -> course.name }
     return teams.flatMap(Team::members)
         .groupBy(Participant::group)
         .map { group ->
@@ -51,18 +50,25 @@ fun formGroupsList(teams: List<Team>): List<Group> {
         }
 }
 
-fun formCoursesList(): List<Course> {
+fun formCoursesList(competitionPath: Path): List<Course> {
     val reader = csvReader()
-    val file = File(competitionPath + "input/courses.csv")
+    val file = competitionPath.resolve("input/courses.csv").toFile()
     return reader.open(file) {
         CSVReader(file, this).courses()
     } ?: throw IllegalArgumentException("Cannot read ${file.name}, program was terminated")
 }
 
-fun formEventsList(): List<Event> {
+fun formEvent(competitionPath: Path): Event {
     val reader = csvReader()
-    val file = File(competitionPath + "input/event.csv")
-    return reader.open(file) {
+    val file = competitionPath.resolve("input/event.csv").toFile()
+
+    val allEvents = reader.open(file) {
         CSVReader(file, this).events()
     } ?: throw IllegalArgumentException("Cannot read ${file.name}, program was terminated")
+
+    when (allEvents.size) {
+        0 -> throw IllegalStateException("${file.name} is empty, program was terminated")
+        else -> logger.warn { "In file ${file.name} more than one event. Using first" }
+    }
+    return allEvents[0]
 }

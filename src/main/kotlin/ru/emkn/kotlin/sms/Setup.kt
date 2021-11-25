@@ -7,6 +7,10 @@ enum class FileType {
     JSON, CSV
 }
 
+enum class Target {
+    TOSS, PERSONAL_RESULT, TEAM_RESULT
+}
+
 val headers = mapOf(
     "Группа" to "group",
     "Фамилия" to "surname",
@@ -14,14 +18,31 @@ val headers = mapOf(
     "Название" to "name",
     "Г.р." to "birthdayYear",
     "Разр." to "grade",
-    "Дистанция" to "course"
+    "Дистанция" to "course",
+    "Дата" to "date"
 )
 
-class MyArgs(parser: ArgParser) {
-    val verbose by parser.flagging("-v", "--verbose", help = "enable verbose mode")
+class ArgumentsFormat(parser: ArgParser) {
+    val competitionName by parser.positional("EVENT", """
+        name of competition directory
+    """.trimIndent())
 
-    val name by parser.storing("-n", "--name", help = "user name").default<String>("kek")
+    val target by parser.mapping( mapOf(
+        "--toss" to Target.TOSS,
+        "--personal" to Target.PERSONAL_RESULT,
+        "--team" to Target.TEAM_RESULT
+    ), """
+        sets the goal to be completed in the following format:
+        --toss
+            Forms the starting protocols according to the application lists. A simple draw is used with an interval of 1 minute and the start at 12:00:00.
+        --personal
+            According to the starting protocols and protocols of passing checkpoints, form protocols of results.
+        --team
+            According to the protocols of results, form a protocol of results for teams.
+    """.replace("\n", "\r"))
 
-    val count by parser.storing("-c", "--count", help = "test counter") { toIntOrNull() ?: println("null here") }
+    val competitionsRoot by parser.positional("DIR", """
+        sets path for directory, which storing all competitions
+    """.trimIndent()).default<String>("competitions")
 }
 
