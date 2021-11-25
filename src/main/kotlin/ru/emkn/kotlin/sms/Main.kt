@@ -18,8 +18,7 @@ private val logger = KotlinLogging.logger {}
 fun main(args: Array<String>) = mainBody {
     logger.info { "Program started" }
     val parsedArgs = ArgParser(args).parseInto(::ArgumentsFormat)
-//    val competitionPath = Path(parsedArgs.competitionsRoot) + Path(parsedArgs.competitionName)
-    val competitionPath = "${parsedArgs.competitionsRoot}/${parsedArgs.competitionName}/"
+    val competitionPath = Path(parsedArgs.competitionsRoot).resolve(parsedArgs.competitionName)
     val teams = formTeamsList(competitionPath)
     val group = formGroupsList(teams, competitionPath)
     val writer = Writer(File("test.csv"), FileType.CSV)

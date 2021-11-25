@@ -4,6 +4,7 @@ import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import mu.KotlinLogging
 import ru.emkn.kotlin.sms.objects.*
 import java.io.File
+import java.nio.file.Path
 
 abstract class Reader(protected val file: File) {
 
@@ -20,9 +21,9 @@ interface Readable
 
 private val logger = KotlinLogging.logger {}
 
-fun formTeamsList(competitionPath: String): List<Team> {
+fun formTeamsList(competitionPath: Path): List<Team> {
     val reader = csvReader()
-    val dir = File(competitionPath + "applications/")
+    val dir = competitionPath.resolve("applications/").toFile()
     return dir.walk().filter(File::isFile).map { file ->
         logger.debug { "Processing ${file.name}" }
         reader.open(file) {
@@ -31,9 +32,9 @@ fun formTeamsList(competitionPath: String): List<Team> {
     }.toList().filterNotNull()
 }
 
-fun formGroupsList(teams: List<Team>, competitionPath: String): List<Group> {
+fun formGroupsList(teams: List<Team>, competitionPath: Path): List<Group> {
     val reader = csvReader()
-    val file = File(competitionPath + "input/classes.csv")
+    val file = competitionPath.resolve("input/classes.csv").toFile()
     val map = reader.open(file) {
         CSVReader(file, this).groupsToCourses()
     } ?: throw IllegalArgumentException("Cannot read ${file.name}, program was terminated")
@@ -49,17 +50,17 @@ fun formGroupsList(teams: List<Team>, competitionPath: String): List<Group> {
         }
 }
 
-fun formCoursesList(competitionPath: String): List<Course> {
+fun formCoursesList(competitionPath: Path): List<Course> {
     val reader = csvReader()
-    val file = File(competitionPath + "input/courses.csv")
+    val file = competitionPath.resolve("input/courses.csv").toFile()
     return reader.open(file) {
         CSVReader(file, this).courses()
     } ?: throw IllegalArgumentException("Cannot read ${file.name}, program was terminated")
 }
 
-fun formEventsList(competitionPath: String): List<Event> {
+fun formEventsList(competitionPath: Path): List<Event> {
     val reader = csvReader()
-    val file = File(competitionPath + "input/event.csv")
+    val file = competitionPath.resolve("input/event.csv").toFile()
     return reader.open(file) {
         CSVReader(file, this).events()
     } ?: throw IllegalArgumentException("Cannot read ${file.name}, program was terminated")
