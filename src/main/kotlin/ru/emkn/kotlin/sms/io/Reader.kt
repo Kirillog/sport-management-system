@@ -20,9 +20,7 @@ interface Readable
 
 private val logger = KotlinLogging.logger {}
 
-private const val competitionPath = "competitions/competition-1/"
-
-fun formTeamsList(): List<Team> {
+fun formTeamsList(competitionPath: String): List<Team> {
     val reader = csvReader()
     val dir = File(competitionPath + "applications/")
     return dir.walk().filter(File::isFile).map { file ->
@@ -33,13 +31,13 @@ fun formTeamsList(): List<Team> {
     }.toList().filterNotNull()
 }
 
-fun formGroupsList(teams: List<Team>): List<Group> {
+fun formGroupsList(teams: List<Team>, competitionPath: String): List<Group> {
     val reader = csvReader()
     val file = File(competitionPath + "input/classes.csv")
     val map = reader.open(file) {
         CSVReader(file, this).groupsToCourses()
     } ?: throw IllegalArgumentException("Cannot read ${file.name}, program was terminated")
-    val courses = formCoursesList().associateBy { course -> course.name }
+    val courses = formCoursesList(competitionPath).associateBy { course -> course.name }
     return teams.flatMap(Team::members)
         .groupBy(Participant::group)
         .map { group ->
@@ -51,7 +49,7 @@ fun formGroupsList(teams: List<Team>): List<Group> {
         }
 }
 
-fun formCoursesList(): List<Course> {
+fun formCoursesList(competitionPath: String): List<Course> {
     val reader = csvReader()
     val file = File(competitionPath + "input/courses.csv")
     return reader.open(file) {
@@ -59,7 +57,7 @@ fun formCoursesList(): List<Course> {
     } ?: throw IllegalArgumentException("Cannot read ${file.name}, program was terminated")
 }
 
-fun formEventsList(): List<Event> {
+fun formEventsList(competitionPath: String): List<Event> {
     val reader = csvReader()
     val file = File(competitionPath + "input/event.csv")
     return reader.open(file) {

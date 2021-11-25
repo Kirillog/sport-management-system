@@ -17,11 +17,13 @@ val headers = mapOf(
     "Дистанция" to "course"
 )
 
-class MyArgs(parser: ArgParser) {
-    val verbose by parser.flagging("-v", "--verbose", help = "enable verbose mode")
+class ArgumentsFormat(parser: ArgParser) {
+    val competitionName by parser.positional("EVENT", """
+        Name of competition directory
+    """.trimIndent())
 
-    val name by parser.storing("-n", "--name", help = "user name").default<String>("kek")
-
-    val count by parser.storing("-c", "--count", help = "test counter") { toIntOrNull() ?: println("null here") }
+    val competitionsRoot by parser.positional("DIR", """
+        Sets path for directory, which storing all competitions
+    """.trimIndent()).default<String>("competitions")
 }
 
