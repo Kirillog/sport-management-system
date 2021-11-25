@@ -5,7 +5,7 @@ import ru.emkn.kotlin.sms.io.SingleLineWritable
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
-class Participant(
+data class Participant(
     val name: String,
     val surname: String,
     val birthdayYear: Int,
