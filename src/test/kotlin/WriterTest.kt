@@ -1,6 +1,6 @@
 
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import ru.emkn.kotlin.sms.FileType
 import ru.emkn.kotlin.sms.io.Writer
 import ru.emkn.kotlin.sms.objects.Participant
