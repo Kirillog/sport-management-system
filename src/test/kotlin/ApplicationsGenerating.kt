@@ -1,4 +1,5 @@
 import ru.emkn.kotlin.sms.FileType
+import ru.emkn.kotlin.sms.io.MultilineWritable
 import ru.emkn.kotlin.sms.io.Writer
 import ru.emkn.kotlin.sms.objects.Participant
 import ru.emkn.kotlin.sms.objects.Team
@@ -30,14 +31,24 @@ fun generateTeam(id: Int, teamSize: Int, random: Random): Team {
     return Team(name, members)
 }
 
+class WriteableTeam(private val team: Team) : MultilineWritable {
+    override fun toMultiline(): List<List<String>> {
+        return listOf(listOf(team.name)) +
+                team.members.map {
+                    val result = mutableListOf(it.name, it.surname, it.birthdayYear.toString())
+                    val grade = it.grade
+                    if (grade != null)
+                        result.add(grade)
+                    result
+                }
+    }
+}
+
 fun generateApplication(applicationPath: String, id: Int, applicationSize: Int, random: Random) {
     val file = File(applicationPath)
-    if (file.exists()) {
-        throw FileAlreadyExistsException(file, reason = "Can't generate application into existing file")
-    }
     val team = generateTeam(id, applicationSize, random)
     val writer = Writer(file, FileType.CSV)
-    writer.add(team)
+    writer.add(WriteableTeam(team))
     writer.write()
 }
 
@@ -48,10 +59,7 @@ fun generateApplications(
     random: Random
 ) {
     val dir = File(applicationsDirectory)
-    if (!dir.exists()) {
-        if (!dir.mkdir())
-            throw Exception("Can't create directory \"$applicationsCount\"")
-    }
+
     if (!dir.isDirectory) {
         throw Exception("Path \"$dir\" is not a directory")
     }

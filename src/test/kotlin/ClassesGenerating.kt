@@ -15,7 +15,7 @@ fun getAllGroups(): List<String> {
     return result
 }
 
-class WritableCoursesForGroups(private val coursesForGroups: List<Pair<String, Course>>) : MultilineWritable {
+class WritableCoursesForGroups(private val coursesForGroups: Map<String, Course>) : MultilineWritable {
     override fun toMultiline(): List<List<String>> {
         return listOf(listOf("Группа", "дистанция")) +
                 coursesForGroups.map { (group, course) ->
@@ -28,14 +28,14 @@ fun generateCoursesForGroups(
     groups: List<String>,
     maxCheckPointsCount: Int,
     random: Random
-): List<Pair<String, Course>> {
+): Map<String, Course> {
     val result = mutableListOf<Pair<String, Course>>()
     for (groupId in groups.indices) {
         val courseLength = random.nextInt(2, maxCheckPointsCount + 1)
         val course = generateCourse(groupId, maxCheckPointsCount, courseLength, random)
         result.add(Pair(groups[groupId], course))
     }
-    return result
+    return result.toMap()
 }
 
 fun main() {
@@ -49,7 +49,7 @@ fun main() {
     classesWriter.write()
     val coursesFile = File("test_generator/course.csv")
     val coursesWriter = Writer(coursesFile, FileType.CSV)
-    coursesWriter.add(WritableCourses(coursesForGroups.map { it.second }))
+    coursesWriter.add(WritableCourses(coursesForGroups.map { it.value }))
     coursesWriter.write()
 
 }
