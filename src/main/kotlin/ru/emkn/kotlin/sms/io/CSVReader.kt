@@ -96,7 +96,7 @@ class CSVReader(file: File, private val reader: CsvFileReader) : Reader(file) {
         }
     }
 
-    private fun nameOfTeam(): String? {
+    private fun name(): String? {
         val line = reader.readNext()
         return when (line) {
             null -> {
@@ -108,7 +108,7 @@ class CSVReader(file: File, private val reader: CsvFileReader) : Reader(file) {
     }
 
     override fun team(): Team? {
-        val name = nameOfTeam() ?: return null
+        val name = name() ?: return null
         val table = tableWithHeader() ?: return null
         val correctedTable = table.map { record ->
             record + ("team" to name)
@@ -153,5 +153,9 @@ class CSVReader(file: File, private val reader: CsvFileReader) : Reader(file) {
         if (events.isEmpty())
             logger.warn { "List of events is empty" }
         return events
+    }
+
+    override fun timestamps(): List<TimeStamp>? {
+        return TODO()
     }
 }

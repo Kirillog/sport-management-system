@@ -15,6 +15,8 @@ abstract class Reader(protected val file: File) {
     abstract fun courses(): List<Course>?
 
     abstract fun events(): List<Event>?
+
+    abstract fun timestamps(): List<TimeStamp>?
 }
 
 interface Readable
