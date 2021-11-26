@@ -6,7 +6,7 @@ data class Group(val name: String, val course: Course, val members: List<Partici
 
     override fun toMultiline(): List<List<String?>> {
         val result = mutableListOf(listOf<String?>(name))
-        result.addAll(members.map { it.toLine() })
+        result.addAll(members.map { it.toLineWithoutGroup() })
         return result
     }
 }

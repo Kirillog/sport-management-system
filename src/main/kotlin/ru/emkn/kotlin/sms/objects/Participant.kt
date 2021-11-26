@@ -31,4 +31,8 @@ class Participant(
 
         return result
     }
+
+    fun toLineWithoutTeam() = toLine().toMutableList().also { it.removeAt(5) }.toList()
+
+    fun toLineWithoutGroup() = toLine().toMutableList().also { it.removeAt(4) }.toList()
 }
