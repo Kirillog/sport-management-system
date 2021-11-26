@@ -53,11 +53,11 @@ fun buildGroups(teams: List<Team>, courses: Map<String, Course>): List<Group> {
     }
 }
 
-data class TimeStamp(val participant: Participant, val checkPoint: CheckPoint, val time: LocalTime)
+data class GenTimeStamp(val participant: Participant, val checkPoint: CheckPoint, val time: LocalTime)
 
 fun convertParticipantProtocolsIntoCheckPointProtocols(participantProtocols: List<ParticipantsProtocol>): List<CheckPointsProtocol> {
     return participantProtocols
-        .flatMap { it.protocol.map { i -> TimeStamp(it.participant, i.first, i.second) } }
+        .flatMap { it.protocol.map { i -> GenTimeStamp(it.participant, i.first, i.second) } }
         .groupBy { it.checkPoint }
         .mapValues { i -> i.value.map { Pair(it.participant, it.time) } }
         .map { CheckPointsProtocol(it.key, it.value) }
