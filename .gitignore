@@ -72,5 +72,3 @@ distTmp/
 outTmp/
 /test.output
 /kotlin-native/dist
-*.json
-*.csv
