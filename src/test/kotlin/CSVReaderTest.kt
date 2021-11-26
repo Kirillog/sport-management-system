@@ -9,6 +9,8 @@ import ru.emkn.kotlin.sms.io.CSVReader
 import ru.emkn.kotlin.sms.objects.*
 import java.io.File
 import java.io.IOException
+import java.sql.Time
+import java.time.LocalTime
 import kotlin.io.path.Path
 
 internal class CSVReaderTest {
@@ -38,8 +40,23 @@ internal class CSVReaderTest {
         }
     }
 
+    private fun readTimeStamps(file: File): List<TimeStamp>? {
+        return csvReader().open(file) {
+            CSVReader(file, this).timestamps()
+        }
+    }
+
+    private fun readParticipants(file: File): List<Participant>? {
+        return csvReader().open(file) {
+            CSVReader(file, this).participants()
+        }
+    }
+
     interface ReadTest {
+        @Test
         fun simple()
+
+        @Test
         fun incorrectTypeOfField()
     }
 
@@ -174,5 +191,59 @@ internal class CSVReaderTest {
             val file = resources.resolve("events/incorrectTypeOfField.csv").toFile()
             assertEquals(listOf<Event>(), readEvents(file))
         }
+    }
+
+    @Nested
+    inner class ReadTimeStamps : ReadTest {
+        @Test
+        override fun simple() {
+            val file = resources.resolve("checkPoints/simple.csv").toFile()
+            assertEquals(
+                listOf(
+                    TimeStamp(LocalTime.of(21, 22, 30), 12, 100),
+                    TimeStamp(LocalTime.of(19, 15, 30), 12, 102),
+                    TimeStamp(LocalTime.of(17, 15, 56), 12, 105)
+                ), readTimeStamps(file)
+            )
+        }
+
+        @Test
+        override fun incorrectTypeOfField() {
+            val file = resources.resolve("checkPoints/incorrectTypeOfField.csv").toFile()
+            assertEquals(
+                listOf(
+                    TimeStamp(LocalTime.of(17, 15, 56), 2, 105)
+                ),
+                readTimeStamps(file)
+            )
+        }
+
+    }
+
+    @Nested
+    inner class ReadParticipants : ReadTest {
+        @Test
+        override fun simple() {
+            val file = resources.resolve("protocols/simple.csv").toFile()
+            assertEquals(
+                listOf(
+                    Participant("Анна", "Сосницкая", 2013, "Ж10", "0-ПСКОВ", "1р", 101, LocalTime.of(12, 0, 0)),
+                    Participant("АРТЁМ", "КАЧНОВ", 2008, "МЖ14", "ВЕЛИКОЛУКСКИЙ РАЙОН", null, 128, LocalTime.of(12, 5, 0)),
+                    Participant("АЛЕКСАНДРА", "ЛОВЦОВА", 2014, "МЖ14", "ВЕЛИКИЕ ЛУКИ", null, 102, LocalTime.of(12, 10, 0))
+                ), readParticipants(file)
+            )
+        }
+
+        override fun incorrectTypeOfField() {
+            val file = resources.resolve("protocols/incorrectTypeOfField.csv").toFile()
+            assertEquals(
+                listOf(
+                    Participant("ЗАХАР", "МАЖАРОВ", 2012, "M10","ВЕЛИКОЛУКСКИЙ РАЙОН", null, 121, LocalTime.of(13, 45, 0)),
+                    Participant("РОМАН", "МЕРЦАЛОВ", 0, "М40", "ГДОВСКИЙ РАЙОН", "3р", 125, LocalTime.of(13, 55 ,0))
+                ),
+                readParticipants(file)
+            )
+        }
+
     }
 }

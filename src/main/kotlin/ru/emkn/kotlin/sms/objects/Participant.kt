@@ -17,6 +17,12 @@ data class Participant(
     var id: Int? = null
     var startTime: LocalTime? = null
     var finishTime: LocalTime? = null
+    var timeStamps: List<TimeStamp>? = null
+
+    constructor(name : String, surname: String, birthdayYear: Int, group: String, team: String, grade: String?, participantId : Int, startTime: LocalTime) : this(name, surname, birthdayYear, group, team, grade) {
+        this.id = participantId
+        this.startTime = startTime
+    }
 
     override fun toLine(): List<String?> {
         val result = mutableListOf<String?>()

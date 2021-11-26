@@ -17,6 +17,8 @@ abstract class Reader(protected val file: File) {
     abstract fun events(): List<Event>?
 
     abstract fun timestamps(): List<TimeStamp>?
+
+    abstract fun participants(): List<Participant>?
 }
 
 interface Readable
@@ -73,4 +75,35 @@ fun formEvent(competitionPath: Path): Event {
         else -> logger.warn { "In file ${file.name} more than one event. Using first" }
     }
     return allEvents[0]
+}
+
+fun formTimestamps(competitionPath: Path): List<TimeStamp> {
+    val reader = csvReader()
+    val dir = competitionPath.resolve("checkPoints/").toFile()
+    return dir.walk().filter(File::isFile).map { file ->
+        logger.debug { "Processing ${file.name}" }
+        reader.open(file) {
+            CSVReader(file, this).timestamps()
+        }
+    }.toList().filterNotNull().flatten()
+}
+
+fun formTossedGroups(competitionPath: Path): List<Group> {
+    val reader = csvReader()
+    val file = competitionPath.resolve("protocols/toss.csv").toFile()
+    val courses = formCoursesList(competitionPath).associateBy { course -> course.name }
+    val map = reader.open(file) {
+        CSVReader(file, this).groupsToCourses()
+    } ?: throw IllegalArgumentException("Cannot read ${file.name}, program was terminated")
+    val participants = reader.open(file) {
+        CSVReader(file, this).participants()
+    } ?: throw IllegalArgumentException("Cannot read ${file.name}, program was terminated")
+    return participants.groupBy(Participant::group)
+        .map { group ->
+            Group(
+                group.key, courses[map[group.key]]
+                    ?: throw IllegalArgumentException("${group.key} doesn't have appropriate course"),
+                group.value
+            )
+        }
 }
