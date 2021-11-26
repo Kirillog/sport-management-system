@@ -37,11 +37,7 @@ fun formTeamsList(competitionPath: Path): List<Team> {
 }
 
 fun formGroupsList(teams: List<Team>, competitionPath: Path): List<Group> {
-    val reader = csvReader()
-    val file = competitionPath.resolve("input/classes.csv").toFile()
-    val map = reader.open(file) {
-        CSVReader(file, this).groupsToCourses()
-    } ?: throw IllegalArgumentException("Cannot read ${file.name}, program was terminated")
+    val map = formMapGroupsToCourses(competitionPath)
     val courses = formCoursesList(competitionPath).associateBy { course -> course.name }
     return teams.flatMap(Team::members)
         .groupBy(Participant::group)
@@ -52,6 +48,15 @@ fun formGroupsList(teams: List<Team>, competitionPath: Path): List<Group> {
                 group.value
             )
         }
+}
+
+fun formMapGroupsToCourses(competitionPath: Path): Map<String, String> {
+    val reader = csvReader()
+    val file = competitionPath.resolve("input/classes.csv").toFile()
+    val map = reader.open(file) {
+        CSVReader(file, this).groupsToCourses()
+    } ?: throw IllegalArgumentException("Cannot read ${file.name}, program was terminated")
+    return map
 }
 
 fun formCoursesList(competitionPath: Path): List<Course> {
@@ -92,9 +97,7 @@ fun formTossedGroups(competitionPath: Path): List<Group> {
     val reader = csvReader()
     val file = competitionPath.resolve("protocols/toss.csv").toFile()
     val courses = formCoursesList(competitionPath).associateBy { course -> course.name }
-    val map = reader.open(file) {
-        CSVReader(file, this).groupsToCourses()
-    } ?: throw IllegalArgumentException("Cannot read ${file.name}, program was terminated")
+    val map = formMapGroupsToCourses(competitionPath)
     val participants = reader.open(file) {
         CSVReader(file, this).participants()
     } ?: throw IllegalArgumentException("Cannot read ${file.name}, program was terminated")
