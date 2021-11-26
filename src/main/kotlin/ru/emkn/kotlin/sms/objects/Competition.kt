@@ -31,9 +31,11 @@ data class Competition(val event: Event, val path: Path, val teams: List<Team>, 
     fun simpleToss(startTime: LocalTime, deltaMinutes: Long) {
         //TODO("подумать как получше реализовать id")
         var currentId = 100
+        var currentTime = startTime
         groups.forEach { group ->
             group.members.shuffled().forEach { participant ->
-                participant.startTime = startTime.also { it.plusMinutes(deltaMinutes) }
+                participant.startTime = currentTime
+                currentTime = currentTime.plusMinutes(deltaMinutes)
                 participant.id = currentId++
             }
         }

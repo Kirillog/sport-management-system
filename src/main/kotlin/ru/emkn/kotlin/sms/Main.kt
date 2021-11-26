@@ -8,12 +8,7 @@ import com.xenomachina.argparser.ArgParser
 import com.xenomachina.argparser.mainBody
 import mu.KotlinLogging
 import ru.emkn.kotlin.sms.io.Writer
-import ru.emkn.kotlin.sms.io.formEvent
-import ru.emkn.kotlin.sms.io.formGroupsList
-import ru.emkn.kotlin.sms.io.formTeamsList
 import ru.emkn.kotlin.sms.objects.Competition
-import ru.emkn.kotlin.sms.objects.Group
-import java.nio.file.Path
 import java.time.LocalTime
 import kotlin.io.path.Path
 
