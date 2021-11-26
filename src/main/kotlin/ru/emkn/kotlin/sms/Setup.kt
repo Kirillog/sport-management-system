@@ -19,7 +19,10 @@ val headers = mapOf(
     "Г.р." to "birthdayYear",
     "Разр." to "grade",
     "Дистанция" to "course",
-    "Дата" to "date"
+    "Дата" to "date",
+    "Команда" to "team",
+    "Номер" to "id",
+    "Время старта" to "startTime"
 )
 
 class ArgumentsFormat(parser: ArgParser) {

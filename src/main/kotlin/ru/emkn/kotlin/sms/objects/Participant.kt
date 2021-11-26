@@ -18,21 +18,36 @@ class Participant(
     var startTime: LocalTime? = null
     var finishTime: LocalTime? = null
 
-    override fun toLine(): List<String?> {
-        val result = mutableListOf<String?>()
+    override fun toLine(): List<String?> = listOf (
+        id?.toString(),
+        name,
+        surname,
+        birthdayYear.toString(),
+        group,
+        team,
+        grade,
+        startTime?.format(DateTimeFormatter.ISO_LOCAL_TIME),
+        finishTime?.format(DateTimeFormatter.ISO_LOCAL_TIME),
+    )
 
-        result.add(id?.toString())
-        result.addAll(mutableListOf(name, surname, birthdayYear.toString(), group, team))
+    fun toLineWithoutTeam() = listOf(
+        id?.toString(),
+        name,
+        surname,
+        birthdayYear.toString(),
+        group,
+        grade,
+        startTime?.format(DateTimeFormatter.ISO_LOCAL_TIME)
+    )
 
-        if (grade != null) result.add(grade)
+    fun toLineWithoutGroup() = listOf(
+        id?.toString(),
+        name,
+        surname,
+        birthdayYear.toString(),
+        team,
+        grade,
+        startTime?.format(DateTimeFormatter.ISO_LOCAL_TIME)
+    )
 
-        result.add(startTime?.format(DateTimeFormatter.ISO_LOCAL_TIME))
-        result.add(finishTime?.format(DateTimeFormatter.ISO_LOCAL_TIME))
-
-        return result
-    }
-
-    fun toLineWithoutTeam() = toLine().toMutableList().also { it.removeAt(5) }.toList()
-
-    fun toLineWithoutGroup() = toLine().toMutableList().also { it.removeAt(4) }.toList()
 }

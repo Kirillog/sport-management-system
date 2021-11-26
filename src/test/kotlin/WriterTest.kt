@@ -1,4 +1,3 @@
-
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import org.junit.Test
 import ru.emkn.kotlin.sms.FileType
@@ -8,6 +7,7 @@ import ru.emkn.kotlin.sms.objects.Group
 import ru.emkn.kotlin.sms.objects.Participant
 import ru.emkn.kotlin.sms.objects.Team
 import java.io.File
+import java.time.LocalTime
 import kotlin.test.assertEquals
 
 
@@ -24,14 +24,41 @@ class WriterTest {
     )
 
     private val participantDump = listOf(
-        listOf("Vasya", "Pupkin", "1998", "Human", "Team A", "I"),
-        listOf("Petya", "Loopkin", "2189", "Human", "Team B", ""),
-        listOf("Picathu", "Yellow", "201", "Pokemon", "Team A", "IV"),
-        listOf("Squirtle", "Blue", "211", "Pokemon", "Team B", "")
+        listOf("", "Vasya", "Pupkin", "1998", "Human", "Team A", "I", "", ""),
+        listOf("", "Petya", "Loopkin", "2189", "Human", "Team B", "", "", ""),
+        listOf("", "Picathu", "Yellow", "201", "Pokemon", "Team A", "IV", "", ""),
+        listOf("", "Squirtle", "Blue", "211", "Pokemon", "Team B", "", "", "")
     )
 
     @Test
-    fun testWriteApplicant() {
+    fun testWriteFilledParticipant() {
+        val appA = participant[0]
+        val appB = participant[1]
+        appA.id = 100;
+        appB.id = 500;
+        appA.startTime = LocalTime.of(10, 10, 10)
+        appA.finishTime = LocalTime.of(23, 59, 59)
+        appB.startTime = LocalTime.of(0, 0, 0)
+        appB.finishTime = LocalTime.of(11, 12, 13)
+        val filledParticipantDump = listOf(
+            listOf("100", "Vasya", "Pupkin", "1998", "Human", "Team A", "I", "10:10:10", "23:59:59"),
+            listOf("500", "Petya", "Loopkin", "2189", "Human", "Team B", "", "00:00:00", "11:12:13")
+        )
+
+        writer.add(appA)
+        writer.add(appB)
+        writer.write()
+
+        val correct = listOf(
+            filledParticipantDump[0],
+            filledParticipantDump[1]
+        )
+        val csvData = csvReader().readAll(file)
+        assertEquals(correct, csvData)
+    }
+
+    @Test
+    fun testWriteParticipant() {
         val appA = participant[0]
         val appB = participant[1]
 
@@ -68,20 +95,23 @@ class WriterTest {
 
     @Test
     fun testWriteTeam() {
-        val teamA = Team(name = "Team A",  listOf(participant[0], participant[2]))
+        val teamA = Team(name = "Team A", listOf(participant[0], participant[2]))
         val teamB = Team(name = "Team B", listOf(participant[1], participant[3]))
 
         writer.add(teamA)
         writer.addAll(listOf(teamB))
         writer.write()
 
+        val dumpWithoutTeam =
+            participantDump.map { line -> line.toMutableList().also { it.removeAt(5); it.removeAt(7) }.toList() }
+
         val correct = listOf(
-            listOf("Team A", "", "", "", "", ""),
-            participantDump[0],
-            participantDump[2],
-            listOf("Team B", "", "", "", "", ""),
-            participantDump[1],
-            participantDump[3]
+            listOf("Team A", "", "", "", "", "", ""),
+            dumpWithoutTeam[0],
+            dumpWithoutTeam[2],
+            listOf("Team B", "", "", "", "", "", ""),
+            dumpWithoutTeam[1],
+            dumpWithoutTeam[3]
         )
         val csvData = csvReader().readAll(file)
         assertEquals(correct, csvData)
@@ -89,10 +119,12 @@ class WriterTest {
 
     @Test
     fun testWriteGroup() {
-        val groupA = Group(name = "Human", course = Course("Course for 'Human'", listOf()),
+        val groupA = Group(
+            name = "Human", course = Course("Course for 'Human'", listOf()),
             listOf(participant[0], participant[1])
         )
-        val groupB = Group(name = "Pokemon", course = Course("Course for 'Pokemon'", listOf()),
+        val groupB = Group(
+            name = "Pokemon", course = Course("Course for 'Pokemon'", listOf()),
             listOf(participant[2], participant[3])
         )
 
@@ -100,16 +132,20 @@ class WriterTest {
         writer.addAll(listOf(groupB))
         writer.write()
 
+        val dumpWithoutTeam =
+            participantDump.map { line -> line.toMutableList().also { it.removeAt(4); it.removeAt(7) }.toList() }
+
         val correct = listOf(
-            listOf("Human", "", "", "", "", ""),
-            participantDump[0],
-            participantDump[1],
-            listOf("Pokemon", "", "", "", "", ""),
-            participantDump[2],
-            participantDump[3]
+            listOf("Human", "", "", "", "", "", ""),
+            dumpWithoutTeam[0],
+            dumpWithoutTeam[1],
+            listOf("Pokemon", "", "", "", "", "", ""),
+            dumpWithoutTeam[2],
+            dumpWithoutTeam[3]
         )
         val csvData = csvReader().readAll(file)
         assertEquals(correct, csvData)
     }
+
 }
 

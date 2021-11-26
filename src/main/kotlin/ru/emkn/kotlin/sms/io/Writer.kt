@@ -43,7 +43,7 @@ class Writer(private val file: File, val filetype: FileType) {
     fun clear() = buffer.clear()
 
     fun write() {
-        val lines = buffer.map { it.toMultiline() }.flatten().map { line -> line.filter { it != null } }
+        val lines = buffer.map { it.toMultiline() }.flatten()
         val rowSize = lines.maxOf { it.size }
         val shrunkenLines = lines.map { it + List(rowSize - it.size) { "" } }
         when (filetype) {

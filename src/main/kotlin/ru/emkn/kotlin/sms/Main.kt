@@ -19,7 +19,7 @@ fun tossTarget(competition: Competition) {
     competition.simpleToss(LocalTime.NOON, 5)
     val writer = Writer(competition.path.resolve("protocols/toss.csv").toFile(), FileType.CSV)
 
-    writer.add(listOf("id", "name", "surname", "birthdayYear", "team", "grade"))
+    writer.add(listOf("Номер", "Имя", "Фамилия", "Г.р.", "Команда", "Разряд", "Время старта"))
     writer.addAll(competition.groups)
     writer.write()
 }
