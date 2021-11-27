@@ -7,6 +7,7 @@ import ru.emkn.kotlin.sms.objects.Group
 import ru.emkn.kotlin.sms.objects.Participant
 import ru.emkn.kotlin.sms.objects.Team
 import java.io.File
+import java.time.Duration
 import java.time.LocalTime
 import kotlin.test.assertEquals
 
@@ -23,26 +24,36 @@ class WriterTest {
         Participant("Squirtle", "Blue", 211, "Pokemon", "Team B")
     )
 
+    private fun formatter(it: Participant): List<String?> = listOf(
+        it.id?.toString(),
+        it.name,
+        it.surname,
+        it.birthdayYear.toString(),
+        it.group,
+        it.team,
+        it.grade
+    )
+
     private val participantDump = listOf(
-        listOf("", "Vasya", "Pupkin", "1998", "Human", "Team A", "I", "", ""),
-        listOf("", "Petya", "Loopkin", "2189", "Human", "Team B", "", "", ""),
-        listOf("", "Picathu", "Yellow", "201", "Pokemon", "Team A", "IV", "", ""),
-        listOf("", "Squirtle", "Blue", "211", "Pokemon", "Team B", "", "", "")
+        listOf("", "Vasya", "Pupkin", "1998", "Human", "Team A", "I"),
+        listOf("", "Petya", "Loopkin", "2189", "Human", "Team B", ""),
+        listOf("", "Picathu", "Yellow", "201", "Pokemon", "Team A", "IV"),
+        listOf("", "Squirtle", "Blue", "211", "Pokemon", "Team B", "")
     )
 
     @Test
     fun testWriteFilledParticipant() {
         val appA = participant[0]
         val appB = participant[1]
-        appA.id = 100;
-        appB.id = 500;
+        appA.id = 100
+        appB.id = 500
         appA.startTime = LocalTime.of(10, 10, 10)
-        appA.finishTime = LocalTime.of(23, 59, 59)
+        appA.finishData = Participant.FinishData(LocalTime.of(23, 59, 59), 1, Duration.ofSeconds(0))
         appB.startTime = LocalTime.of(0, 0, 0)
-        appB.finishTime = LocalTime.of(11, 12, 13)
+        appB.finishData = Participant.FinishData(LocalTime.of(11, 12, 13), 2, Duration.ofSeconds(4))
         val filledParticipantDump = listOf(
-            listOf("100", "Vasya", "Pupkin", "1998", "Human", "Team A", "I", "10:10:10", "23:59:59"),
-            listOf("500", "Petya", "Loopkin", "2189", "Human", "Team B", "", "00:00:00", "11:12:13")
+            listOf("1","100", "Vasya", "Pupkin", "1998", "Human", "Team A", "I", "10:10:10", "23:59:59", "0s"),
+            listOf("2", "500", "Petya", "Loopkin", "2189", "Human", "Team B", "", "00:00:00", "11:12:13", "4s")
         )
 
         writer.add(appA)
@@ -58,13 +69,14 @@ class WriterTest {
     }
 
     @Test
-    fun testWriteParticipant() {
+    fun testWriteParticipantWithFormatter() {
         val appA = participant[0]
         val appB = participant[1]
 
-        writer.add(appA)
-        writer.add(appB)
-        writer.addAll(listOf(appB, appA))
+        writer.add(appA, ::formatter)
+        writer.add(appB, ::formatter)
+        writer.add(appB, ::formatter)
+        writer.add(appA, ::formatter)
         writer.write()
 
         val correct = listOf(
@@ -103,7 +115,7 @@ class WriterTest {
         writer.write()
 
         val dumpWithoutTeam =
-            participantDump.map { line -> line.toMutableList().also { it.removeAt(5); it.removeAt(7) }.toList() }
+            participantDump.map { line -> line.toMutableList().also { it.removeAt(5); it.add("") } }
 
         val correct = listOf(
             listOf("Team A", "", "", "", "", "", ""),
@@ -133,7 +145,7 @@ class WriterTest {
         writer.write()
 
         val dumpWithoutTeam =
-            participantDump.map { line -> line.toMutableList().also { it.removeAt(4); it.removeAt(7) }.toList() }
+            participantDump.map { line -> line.toMutableList().also { it.removeAt(4); it.add("") }}
 
         val correct = listOf(
             listOf("Human", "", "", "", "", "", ""),
@@ -146,6 +158,5 @@ class WriterTest {
         val csvData = csvReader().readAll(file)
         assertEquals(correct, csvData)
     }
-
 }
 

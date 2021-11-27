@@ -56,18 +56,43 @@ fun personalResultsTarget(competition: Competition) {
             }
             val date = competition.event.date.toJavaLocalDate()
             participant.finishData = Participant.FinishData(
-                    time, place,
-                    Duration.between(leaderFinish.time.atDate(date), time.atDate(date))
-                )
+                time, place,
+                Duration.between(leaderFinish.time.atDate(date), time.atDate(date))
+            )
         }
     }
 
     val writer = Writer(competition.path.resolve("protocols/results.csv").toFile(), FileType.CSV)
-    writer.add(listOf("Место", "Номер", "Имя", "Фамилия", "Г.р.", "Разр.", "Время старта", "Время финиша", "Отставание"))
+    writer.add(
+        listOf(
+            "Место",
+            "Номер",
+            "Имя",
+            "Фамилия",
+            "Г.р.",
+            "Разр.",
+            "Время старта",
+            "Время финиша",
+            "Отставание"
+        )
+    )
     competition.groups.forEach { group ->
         writer.add(group.name)
         group.members.forEach { participant ->
-            writer.add(participant.toLineFinished())
+            writer.add(participant
+            ) {
+                listOf(
+                    it.finishData?.place?.toString(),
+                    it.id?.toString(),
+                    it.name,
+                    it.surname,
+                    it.birthdayYear.toString(),
+                    it.grade,
+                    it.startTime?.format(DateTimeFormatter.ISO_LOCAL_TIME),
+                    it.finishData?.time?.format(DateTimeFormatter.ISO_LOCAL_TIME),
+                    it.finishData?.laggingFromLeader?.toString()
+                )
+            }
         }
     }
     writer.write()

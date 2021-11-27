@@ -11,42 +11,35 @@ interface MultilineWritable {
     fun toMultiline(): List<List<String?>>
 }
 
-interface SingleLineWritable : MultilineWritable {
-    override fun toMultiline(): List<List<String?>> = listOf(toLine())
-
+interface SingleLineWritable {
     fun toLine(): List<String?>
-}
-
-fun List<String>.toWritable() = object : SingleLineWritable {
-    override fun toLine() = this@toWritable
-}
-
-fun String.toWritable() = object : SingleLineWritable {
-    override fun toLine() = listOf(this@toWritable)
 }
 
 class Writer(private val file: File, val filetype: FileType) {
 
-    val buffer = mutableListOf<MultilineWritable>()
+    val buffer = mutableListOf<List<String?>>()
 
-    fun add(el: MultilineWritable) = buffer.add(el)
+    fun <T : SingleLineWritable> add(el: T, formatter: (T) -> List<String?> = { it.toLine() }) =
+        buffer.add(formatter(el))
+
+    fun <T : MultilineWritable> add(el: T, formatter: (T) -> List<List<String?>> = { it.toMultiline() }) =
+        buffer.addAll(formatter(el))
+
+    fun <T : MultilineWritable> addAll(el: List<T>, formatter: (T) -> List<List<String?>> = { it.toMultiline() }) =
+        buffer.addAll(el.map { formatter(it) }.flatten())
 
     fun add(el: String?) {
-        if (el != null) buffer.add(el.toWritable())
+        if (el != null) buffer.add(listOf(el))
         else logger.warn { "try to write null string" }
     }
 
-    fun add(el: List<String?>) = buffer.add(el.filterNotNull().toWritable())
-
-
-    fun addAll(el: List<MultilineWritable>) = buffer.addAll(el)
+    fun add(el: List<String>) = buffer.add(el)
 
     fun clear() = buffer.clear()
 
     fun write() {
-        val lines = buffer.map { it.toMultiline() }.flatten()
-        val rowSize = lines.maxOf { it.size }
-        val shrunkenLines = lines.map { it + List(rowSize - it.size) { "" } }
+        val rowSize = buffer.maxOf { it.size }
+        val shrunkenLines = buffer.map { it + List(rowSize - it.size) { "" } }
         when (filetype) {
             FileType.CSV, FileType.JSON -> csvWriter().writeAll(shrunkenLines, file)
         }
