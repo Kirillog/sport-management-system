@@ -9,7 +9,6 @@ import ru.emkn.kotlin.sms.io.CSVReader
 import ru.emkn.kotlin.sms.objects.*
 import java.io.File
 import java.io.IOException
-import java.sql.Time
 import java.time.LocalTime
 import kotlin.io.path.Path
 
