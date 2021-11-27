@@ -77,6 +77,7 @@ fun formEvent(competitionPath: Path): Event {
 
     when (allEvents.size) {
         0 -> throw IllegalStateException("${file.name} is empty, program was terminated")
+        1 -> Unit
         else -> logger.warn { "In file ${file.name} more than one event. Using first" }
     }
     return allEvents[0]

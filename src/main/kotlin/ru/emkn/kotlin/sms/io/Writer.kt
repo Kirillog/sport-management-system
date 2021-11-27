@@ -36,7 +36,8 @@ class Writer(private val file: File, val filetype: FileType) {
         else logger.warn { "try to write null string" }
     }
 
-    fun add(el: List<String>) = buffer.add(el.toWritable())
+    fun add(el: List<String?>) = buffer.add(el.filterNotNull().toWritable())
+
 
     fun addAll(el: List<MultilineWritable>) = buffer.addAll(el)
 
