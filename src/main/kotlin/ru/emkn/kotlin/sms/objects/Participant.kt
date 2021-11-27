@@ -24,6 +24,19 @@ data class Participant(
         this.startTime = startTime
     }
 
+    fun getId() : Int {
+        val id = this.id
+        requireNotNull(id) {"Id have to be set up"}
+        return id
+    }
+
+    @JvmName("getStartTime1")
+    fun getStartTime() : LocalTime {
+        val time = startTime
+        requireNotNull(time) {"Start time have to be set up"}
+        return time
+    }
+
     override fun toLine(): List<String?> = listOf (
         id?.toString(),
         name,
