@@ -1,28 +1,28 @@
-import kotlinx.datetime.LocalDate
+
 import ru.emkn.kotlin.sms.FileType
-import ru.emkn.kotlin.sms.io.MultilineWritable
-import ru.emkn.kotlin.sms.io.Writer
+import ru.emkn.kotlin.sms.io.*
 import ru.emkn.kotlin.sms.objects.*
 import java.io.File
+import java.nio.file.Path
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import kotlin.io.path.Path
 import kotlin.random.Random
 
 
-data class CheckPointsProtocol(val checkPoint: CheckPoint, val protocol: List<Pair<Participant, LocalTime>>) :
+data class CheckPointsProtocol(val checkPoint: CheckPoint, val protocol: List<TimeStamp>) :
     MultilineWritable {
     override fun toMultiline(): List<List<String>> {
-        return listOf(listOf(checkPoint.id.toString())) +
-                protocol.map { listOf(it.first.name, it.second.format(DateTimeFormatter.ISO_LOCAL_TIME)) }
+        return listOf(listOf(checkPoint.id.toString())) + listOf(listOf("Номер", "Время")) +
+                protocol.map { listOf(it.participantId.toString(), it.time.format(DateTimeFormatter.ISO_LOCAL_TIME)) }
     }
 }
 
-data class ParticipantsProtocol(val participant: Participant, val protocol: List<Pair<CheckPoint, LocalTime>>) :
+data class ParticipantsProtocol(val participant: Participant, val protocol: List<TimeStamp>) :
     MultilineWritable {
     override fun toMultiline(): List<List<String>> {
         return listOf(listOf(participant.id.toString())) +
-                protocol.map { listOf(it.first.id.toString(), it.second.format(DateTimeFormatter.ISO_LOCAL_TIME)) }
+                protocol.map { listOf(it.checkPointId.toString(), it.time.format(DateTimeFormatter.ISO_LOCAL_TIME)) }
     }
 }
 
@@ -32,7 +32,7 @@ fun generateParticipantsProtocol(
     maxFinishTime: LocalTime,
     random: Random
 ): ParticipantsProtocol {
-    val startTime = participant.startTime ?: throw IllegalStateException("start time have to be set up")
+    val startTime = participant.getStartTime()
     val startSeconds = startTime.toSecondOfDay()
     val maxFinishSeconds: Int = maxFinishTime.toSecondOfDay()
     val times = List(course.checkPoints.size) {
@@ -42,7 +42,7 @@ fun generateParticipantsProtocol(
 
     return ParticipantsProtocol(
         participant,
-        course.checkPoints.zip(times) { checkpoint, time -> Pair(checkpoint, time) })
+        course.checkPoints.zip(times) { checkpoint, time -> TimeStamp(time, checkpoint.id, participant.getId()) })
 }
 
 fun buildGroups(teams: List<Team>, courses: Map<String, Course>): List<Group> {
@@ -53,52 +53,43 @@ fun buildGroups(teams: List<Team>, courses: Map<String, Course>): List<Group> {
     }
 }
 
-data class GenTimeStamp(val participant: Participant, val checkPoint: CheckPoint, val time: LocalTime)
-
 fun convertParticipantProtocolsIntoCheckPointProtocols(participantProtocols: List<ParticipantsProtocol>): List<CheckPointsProtocol> {
-    return participantProtocols
-        .flatMap { it.protocol.map { i -> GenTimeStamp(it.participant, i.first, i.second) } }
-        .groupBy { it.checkPoint }
-        .mapValues { i -> i.value.map { Pair(it.participant, it.time) } }
-        .map { CheckPointsProtocol(it.key, it.value) }
+    return participantProtocols.flatMap { it.protocol }
+        .groupBy { it.checkPointId }
+        .map { CheckPointsProtocol(CheckPoint(it.key), it.value) }
 }
+
 
 fun main() {
     val random = Random(0)
-    val courses = generateCoursesForGroups(getAllGroups(), 10, random)
-    val teams = List(10) {
-        val teamSize = random.nextInt(2, 5)
-        generateTeam(it, teamSize, random)
-    }
-    val groups = buildGroups(teams, courses)
 
     val protocolsDir = "test_generator/protocols"
     if (!File(protocolsDir).exists()) {
-        File(protocolsDir).mkdir()
+        File(protocolsDir).mkdirs()
     }
-    val competition = Competition(
-        Event("test-event", LocalDate(2021, 11, 25)),
-        Path(""),
-        teams,
-        groups
-    )
-    competition.simpleToss(LocalTime.NOON, 5)
+    generateCheckPointProtocols(Path("competitions/competition-1"), Path(protocolsDir), random)
+}
+
+fun generateCheckPointProtocols(competitionPath: Path, protocolsDir: Path, random: Random = Random(0)) : List<CheckPointsProtocol> {
+    val groups = formTossedGroups(competitionPath)
+    val teams = groups.flatMap { it.members }.groupBy { it.team }.map { Team(it.key, it.value) }
+    val crs = formCoursesList(competitionPath).associateBy { it.name }
+    val courses = formMapGroupsToCourses(competitionPath).mapValues { crs[it.value] }
+
     val participantsProtocols = mutableListOf<ParticipantsProtocol>()
-    for (team in competition.teams) {
+    for (team in teams) {
         for (participant in team.members) {
             val course = courses[participant.group] ?: throw IllegalStateException("course has to be found")
             val protocol = generateParticipantsProtocol(participant, course, LocalTime.MAX, random)
             participantsProtocols.add(protocol)
-            val writer = Writer(File("$protocolsDir/participant${participant.id}"), FileType.CSV)
-            writer.add(protocol)
-            writer.write()
         }
     }
 
     val checkPointProtocols = convertParticipantProtocolsIntoCheckPointProtocols(participantsProtocols)
     for (protocol in checkPointProtocols) {
-        val writer = Writer(File("$protocolsDir/checkpoint${protocol.checkPoint.id}"), FileType.CSV)
+        val writer = Writer(File("$protocolsDir/checkpoint${protocol.checkPoint.id}.csv"), FileType.CSV)
         writer.add(protocol)
         writer.write()
     }
+    return checkPointProtocols
 }
