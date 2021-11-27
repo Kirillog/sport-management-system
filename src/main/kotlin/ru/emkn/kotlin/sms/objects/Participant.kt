@@ -19,6 +19,7 @@ data class Participant(
 
     var id: Int? = null
     var startTime: LocalTime? = null
+    var finishTime: LocalTime? = null
     var timeStamps: List<TimeStamp>? = null
     var finishData: FinishData? = null
 
@@ -36,6 +37,20 @@ data class Participant(
         this.startTime = startTime
     }
 
+    fun getId() : Int {
+        val id = this.id
+        requireNotNull(id) {"Id have to be set up"}
+        return id
+    }
+
+    @JvmName("getStartTime1")
+    fun getStartTime() : LocalTime {
+        val time = startTime
+        requireNotNull(time) {"Start time have to be set up"}
+        return time
+    }
+
+    override fun toLine(): List<String?> = listOf (
     data class FinishData(val time: LocalTime, val place: Int, val laggingFromLeader: Duration)
 
 

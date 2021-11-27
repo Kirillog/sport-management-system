@@ -3,7 +3,8 @@ import ru.emkn.kotlin.sms.io.MultilineWritable
 import ru.emkn.kotlin.sms.io.Writer
 import ru.emkn.kotlin.sms.objects.CheckPoint
 import ru.emkn.kotlin.sms.objects.Course
-import java.io.File
+import java.nio.file.Path
+import kotlin.io.path.Path
 import kotlin.random.Random
 
 fun generateCourse(id: Int, maxCheckPointsCount: Int, courseLength: Int, random: Random): Course {
@@ -26,15 +27,18 @@ class WritableCourses(private val courses: List<Course>) : MultilineWritable {
     }
 }
 
-
-fun main() {
-    val random = Random(0)
-    val coursesList = List(10) {
-        val courseLength = random.nextInt(2, 11)
-        generateCourse(it, 10, courseLength, random)
+fun generateCourses(path : Path, coursesAmount : Int = 10, maxCheckPointsCount: Int = 10, maxCourseLength : Int = 11, random: Random = Random(0)) : List<Course> {
+    val coursesList = List(coursesAmount) {
+        val courseLength = random.nextInt(2, maxCourseLength)
+        generateCourse(it, maxCheckPointsCount, courseLength, random)
     }
-    val file = File("test_generator/course.csv")
+    val file = path.resolve("courses.csv").toFile()
     val writer = Writer(file, FileType.CSV)
     writer.add(WritableCourses(coursesList))
     writer.write()
+    return coursesList
+}
+
+fun main() {
+    generateCourses(Path("test_generator"))
 }
