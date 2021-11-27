@@ -14,7 +14,7 @@ fun generateEvents(path: Path, amountOfEvents: Int = 3, random: Random = Random(
     }
     val writer = Writer(path.resolve("event.csv").toFile(), FileType.CSV)
     writer.add(listOf("Название", "Дата"))
-    writer.addAll(events)
+    writer.addAllLines(events)
     writer.write()
     return events
 }

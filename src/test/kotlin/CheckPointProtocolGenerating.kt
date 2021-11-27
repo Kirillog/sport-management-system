@@ -21,7 +21,7 @@ data class CheckPointsProtocol(val checkPoint: CheckPoint, val protocol: List<Ti
 data class ParticipantsProtocol(val participant: Participant, val protocol: List<TimeStamp>) :
     MultilineWritable {
     override fun toMultiline(): List<List<String>> {
-        return listOf(listOf(participant.id.toString())) +
+        return listOf(listOf(participant.id.toString())) + listOf(listOf("Номер пункта", "Время")) +
                 protocol.map { listOf(it.checkPointId.toString(), it.time.format(DateTimeFormatter.ISO_LOCAL_TIME)) }
     }
 }

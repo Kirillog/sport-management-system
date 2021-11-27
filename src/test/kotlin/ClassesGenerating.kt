@@ -1,14 +1,14 @@
 import ru.emkn.kotlin.sms.FileType
-import ru.emkn.kotlin.sms.io.MultilineWritable
 import ru.emkn.kotlin.sms.io.Writer
 import ru.emkn.kotlin.sms.objects.Course
 import ru.emkn.kotlin.sms.objects.Group
 import ru.emkn.kotlin.sms.objects.Participant
 import ru.emkn.kotlin.sms.objects.Team
-import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.createDirectory
+import kotlin.io.path.notExists
+import kotlin.math.max
 import kotlin.random.Random
 
 fun getAllGroups(): List<String> {
@@ -21,15 +21,6 @@ fun getAllGroups(): List<String> {
     return result
 }
 
-class WritableCoursesForGroups(private val coursesForGroups: Map<String, Course>) : MultilineWritable {
-    override fun toMultiline(): List<List<String>> {
-        return listOf(listOf("Группа", "Дистанция")) +
-                coursesForGroups.map { (group, course) ->
-                    listOf(group, course.name)
-                }
-    }
-}
-
 fun generateCoursesForGroups(
     path: Path,
     groups: List<String> = getAllGroups(),
@@ -37,19 +28,23 @@ fun generateCoursesForGroups(
     random: Random = Random(0)
 ): Map<String, Course> {
     val result = mutableMapOf<String, Course>()
+    var maxLength = 0
     for (groupId in groups.indices) {
         val courseLength = random.nextInt(2, maxCheckPointsCount + 1)
         val course = generateCourse(groupId, maxCheckPointsCount, courseLength, random)
+        maxLength = max(maxLength, courseLength)
         result[groups[groupId]] = course
     }
-    val writableCoursesForGroups = WritableCoursesForGroups(result)
     val classesFile = path.resolve("classes.csv").toFile()
     val classesWriter = Writer(classesFile, FileType.CSV)
-    classesWriter.add(writableCoursesForGroups)
+    classesWriter.add(listOf("Группа", "Дистанция"))
+    classesWriter.addAll(result.map { (group, course) ->
+        listOf(group, course.name) })
     classesWriter.write()
     val coursesFile = path.resolve("courses.csv").toFile()
     val coursesWriter = Writer(coursesFile, FileType.CSV)
-    coursesWriter.add(WritableCourses(result.map { it.value }))
+    coursesWriter.add(listOf("Название") + List(maxLength) { "${it + 1}" })
+    coursesWriter.addAllLines(result.map { it.value })
     coursesWriter.write()
     return result
 }
@@ -62,6 +57,7 @@ fun generateGroups(currentPath: Path, generatedTeams: List<Team>): List<Group> {
 
 fun main() {
     val path = Path("test_generator")
-    path.createDirectory()
+    if (path.notExists())
+        path.createDirectory()
     generateCoursesForGroups(path)
 }

@@ -50,9 +50,7 @@ data class Participant(
         return time
     }
 
-    override fun toLine(): List<String?> = listOf (
     data class FinishData(val time: LocalTime, val place: Int, val laggingFromLeader: Duration)
-
 
     @OptIn(ExperimentalTime::class)
     override fun toLine(): List<String?> = listOf(

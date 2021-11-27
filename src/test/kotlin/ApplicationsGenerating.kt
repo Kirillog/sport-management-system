@@ -1,5 +1,4 @@
 import ru.emkn.kotlin.sms.FileType
-import ru.emkn.kotlin.sms.io.MultilineWritable
 import ru.emkn.kotlin.sms.io.Writer
 import ru.emkn.kotlin.sms.objects.Participant
 import ru.emkn.kotlin.sms.objects.Team
@@ -32,13 +31,21 @@ fun generateTeam(id: Int, teamSize: Int, random: Random): Team {
     return Team(name, members)
 }
 
-class WriteableTeam(private val team: Team) : MultilineWritable {
-    override fun toMultiline(): List<List<String>> {
-        return listOf(listOf(team.name)) +
+fun generateApplication(applicationPath: Path, id: Int, applicationSize: Int, random: Random): Team {
+    val file = applicationPath.toFile()
+    val team = generateTeam(id, applicationSize, random)
+    val writer = Writer(file, FileType.CSV)
+    writer.add(team) {
+        listOf(listOf(it.name)) +
                 listOf(listOf("Имя", "Фамилия", "Г.р.", "Группа", "Разр.")) +
-                team.members.map {
-                    val result = mutableListOf(it.name, it.surname, it.birthdayYear.toString(), it.group)
-                    val grade = it.grade
+                it.members.map { participant ->
+                    val result = mutableListOf(
+                        participant.name,
+                        participant.surname,
+                        participant.birthdayYear.toString(),
+                        participant.group
+                    )
+                    val grade = participant.grade
                     if (grade != null)
                         result.add(grade)
                     else
@@ -46,13 +53,6 @@ class WriteableTeam(private val team: Team) : MultilineWritable {
                     result
                 }
     }
-}
-
-fun generateApplication(applicationPath: Path, id: Int, applicationSize: Int, random: Random): Team {
-    val file = applicationPath.toFile()
-    val team = generateTeam(id, applicationSize, random)
-    val writer = Writer(file, FileType.CSV)
-    writer.add(WriteableTeam(team))
     writer.write()
     return team
 }
