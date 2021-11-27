@@ -38,7 +38,6 @@ data class Participant(
 
     data class FinishData(val time: LocalTime, val place: Int, val laggingFromLeader: Duration)
 
-
     @OptIn(ExperimentalTime::class)
     override fun toLine(): List<String?> = listOf(
         finishData?.place.toString(),
