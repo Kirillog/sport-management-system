@@ -26,6 +26,9 @@ val headers = mapOf(
     "Время" to "time"
 )
 
+/**
+ * A class for defining the format of command line arguments
+ */
 class ArgumentsFormat(parser: ArgParser) {
     val competitionName by parser.positional("EVENT", """
         name of competition directory

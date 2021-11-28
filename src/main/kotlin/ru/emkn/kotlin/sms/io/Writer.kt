@@ -7,14 +7,25 @@ import java.io.File
 
 private val logger = KotlinLogging.logger {}
 
+/**
+ * Interface for classes that can be printed by [Writer] and takes up more than one line
+ */
 interface MultilineWritable {
     fun toMultiline(): List<List<String?>>
 }
 
+/**
+ * Interface for classes that can be printed by [Writer] and takes up one line
+ */
 interface SingleLineWritable {
     fun toLine(): List<String?>
 }
 
+/**
+ * Class for comfortable writing objects implemented [MultilineWritable] and [SingleLineWritable] to supported file types.
+ * It works on the principle of a buffer. You can add([Writer.add] and [Writer.addAll]) objects to the buffer
+ * and write them all when you want with [Writer.write]. After write buffer always clearing
+ */
 class Writer(private val file: File, val filetype: FileType) {
 
     val buffer = mutableListOf<List<String?>>()

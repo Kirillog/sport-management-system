@@ -7,6 +7,10 @@ import java.time.Duration
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
+/**
+ * Class created for every people in application lists.
+ * Contain meta information from application lists and run result, if participant finished.
+ */
 data class Participant(
     val name: String,
     val surname: String,
@@ -68,6 +72,10 @@ data class Participant(
         return Duration.between(getFinishTime(), getStartTime())
     }
 
+    /**
+     * Sets default output format for using with [ru.emkn.kotlin.sms.io.Writer] object.
+     * It returns as lot information about [Participant] as possible in current time
+     */
     override fun toLine(): List<String?> = listOf(
         positionInGroup?.place.toString(),
         id?.toString(),
