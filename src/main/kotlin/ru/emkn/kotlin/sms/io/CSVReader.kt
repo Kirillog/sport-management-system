@@ -17,7 +17,17 @@ import kotlin.reflect.jvm.jvmErasure
 
 private val logger = KotlinLogging.logger { }
 
+/**
+ * Represents [Reader] that can read from csv [file].
+ *
+ * @param reader provides reading with header.
+ */
 class CSVReader(file: File, private val reader: CsvFileReader) : Reader(file) {
+    /**
+     * Converts [field] in [lineNumber] to [kType].
+     *
+     * Throws [IllegalArgumentException] if [field] cannot be converted to [kType].
+     */
     private fun convert(field: String, lineNumber: Int, kType: KType): Any? {
         return when (kType.jvmErasure) {
             Int::class -> field.toIntOrNull()
@@ -53,6 +63,9 @@ class CSVReader(file: File, private val reader: CsvFileReader) : Reader(file) {
         }
     }
 
+    /**
+     * Converts [table] to [Readable] objects using their [constructor]
+     */
     private fun <T> objectList(
         table: List<Map<String, String>>,
         constructor: KFunction<T>
@@ -72,6 +85,9 @@ class CSVReader(file: File, private val reader: CsvFileReader) : Reader(file) {
         }.filterNotNull()
     }
 
+    /**
+     * Converts [parameters] to [Readable] [KClass] constructor
+     */
     private fun <T> constructorByHeader(parameters: Set<String>, kClass: KClass<T>): KFunction<T>? where T : Readable {
         logger.debug { "Header: $parameters" }
         val constructors = kClass.constructors
@@ -84,6 +100,11 @@ class CSVReader(file: File, private val reader: CsvFileReader) : Reader(file) {
         return correctHeader
     }
 
+    /**
+     * Returns list of map, each of which transform header name to field
+     *
+     * Returns `null` if data [file] is inappropriate
+     */
     private fun tableWithHeader(): List<Map<String, String>>? {
         val data = reader.readAllWithHeaderAsSequence().toList().map { record ->
             record.mapKeys {
@@ -100,6 +121,11 @@ class CSVReader(file: File, private val reader: CsvFileReader) : Reader(file) {
         }
     }
 
+    /**
+     * Returns name of table
+     *
+     * Returns `null` if [file] is empty
+     */
     private fun name(): String? {
         val line = reader.readNext()
         return when (line) {
@@ -111,6 +137,9 @@ class CSVReader(file: File, private val reader: CsvFileReader) : Reader(file) {
         }
     }
 
+    /**
+     * Convert start protocol to list of participants
+     */
     private fun preprocess(table: List<Map<String, String>>): List<Map<String, String>> {
         var groupName = ""
         return table.mapNotNull { record ->
@@ -179,10 +208,6 @@ class CSVReader(file: File, private val reader: CsvFileReader) : Reader(file) {
             logger.warn { "List of timestamps is empty" }
         return timeStamps
     }
-
-    /*
-    Looks like a lot of shit code
-     */
 
     override fun participants(): List<Participant>? {
         val table = tableWithHeader() ?: return null
