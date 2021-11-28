@@ -48,12 +48,14 @@ class WriterTest {
         appA.id = 100
         appB.id = 500
         appA.startTime = LocalTime.of(10, 10, 10)
-        appA.finishData = Participant.FinishData(LocalTime.of(23, 59, 59), 1, Duration.ofSeconds(0))
+        appA.finishTime = LocalTime.of(23, 59, 59)
+        appA.positionInGroup = Participant.PositionInGroup(1, Duration.ofSeconds(0))
         appB.startTime = LocalTime.of(0, 0, 0)
-        appB.finishData = Participant.FinishData(LocalTime.of(11, 12, 13), 2, Duration.ofSeconds(4))
+        appB.finishTime = LocalTime.of(11, 12, 13)
+        appB.positionInGroup = Participant.PositionInGroup(2, Duration.ofSeconds(4))
         val filledParticipantDump = listOf(
-            listOf("1","100", "Vasya", "Pupkin", "1998", "Human", "Team A", "I", "10:10:10", "23:59:59", "0s"),
-            listOf("2", "500", "Petya", "Loopkin", "2189", "Human", "Team B", "", "00:00:00", "11:12:13", "4s")
+            listOf("1","100", "Vasya", "Pupkin", "1998", "Human", "Team A", "I", "10:10:10", "23:59:59", "0h 0m 0s"),
+            listOf("2", "500", "Petya", "Loopkin", "2189", "Human", "Team B", "", "00:00:00", "11:12:13", "0h 0m 4s")
         )
 
         writer.add(appA)

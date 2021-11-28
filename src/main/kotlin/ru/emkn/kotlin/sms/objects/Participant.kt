@@ -2,11 +2,10 @@ package ru.emkn.kotlin.sms.objects
 
 import ru.emkn.kotlin.sms.io.Readable
 import ru.emkn.kotlin.sms.io.SingleLineWritable
+import ru.emkn.kotlin.sms.targets.toIntervalString
 import java.time.Duration
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
-import kotlin.time.ExperimentalTime
-import kotlin.time.toKotlinDuration
 
 data class Participant(
     val name: String,
@@ -18,10 +17,17 @@ data class Participant(
 ) : Readable, SingleLineWritable {
 
     var id: Int? = null
+    var timeStamps: List<TimeStamp>? = null
     var startTime: LocalTime? = null
     var finishTime: LocalTime? = null
-    var timeStamps: List<TimeStamp>? = null
-    var finishData: FinishData? = null
+    var positionInGroup: PositionInGroup? = null
+
+    val runTime : Duration?
+        get() {
+            if (finishTime == null || startTime == null)
+                return null
+            return Duration.between(finishTime, startTime)
+        }
 
     constructor(
         name: String,
@@ -50,11 +56,20 @@ data class Participant(
         return time
     }
 
-    data class FinishData(val time: LocalTime, val place: Int, val laggingFromLeader: Duration)
+    data class PositionInGroup(val place: Int, val laggingFromLeader: Duration)
+    @JvmName("getFinishTime1")
+    fun getFinishTime() : LocalTime {
+        val time = finishTime
+        requireNotNull(time) {"Finish time have to be set up"}
+        return time
+    }
 
-    @OptIn(ExperimentalTime::class)
+    fun getDurationTime() : Duration {
+        return Duration.between(getFinishTime(), getStartTime())
+    }
+
     override fun toLine(): List<String?> = listOf(
-        finishData?.place.toString(),
+        positionInGroup?.place.toString(),
         id?.toString(),
         name,
         surname,
@@ -63,7 +78,7 @@ data class Participant(
         team,
         grade,
         startTime?.format(DateTimeFormatter.ISO_LOCAL_TIME),
-        finishData?.time?.format(DateTimeFormatter.ISO_LOCAL_TIME),
-        finishData?.laggingFromLeader?.toKotlinDuration()?.toString()
+        finishTime?.format(DateTimeFormatter.ISO_LOCAL_TIME),
+        positionInGroup?.laggingFromLeader?.toIntervalString()
     )
 }

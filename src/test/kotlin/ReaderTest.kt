@@ -4,8 +4,7 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.RepeatedTest
 import org.junit.jupiter.api.TestInstance
 import ru.emkn.kotlin.sms.io.*
-import ru.emkn.kotlin.sms.objects.Competition
-import ru.emkn.kotlin.sms.tossTarget
+import ru.emkn.kotlin.sms.targets.tossTarget
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.createDirectory
@@ -93,9 +92,7 @@ internal class ReaderTest {
         init("competition/protocols")
         generateGroups(initPath, generateApplications(applicationPath))
         generateEvents(initPath)
-        val competition = Competition(competitionPath)
-        tossTarget(competition)
-        val generatedGroups = competition.groups.toSet()
+        val generatedGroups = tossTarget(competitionPath).groups.toSet()
         val groups = formTossedGroups(competitionPath).toSet()
         assertEquals(generatedGroups, groups)
         competitionPath.toFile().deleteRecursively()
@@ -110,7 +107,7 @@ internal class ReaderTest {
         init("competition/protocols")
         generateGroups(initPath, generateApplications(applicationPath))
         generateEvents(initPath)
-        tossTarget(Competition(competitionPath))
+        tossTarget(competitionPath)
         val checkPointsProtocols = generateCheckPointProtocols(competitionPath, checkPointPath)
         val checkPoints = formTimestamps(competitionPath)
         assertEquals(checkPointsProtocols.flatMap { it.protocol }.toSet(), checkPoints.toSet())

@@ -34,7 +34,7 @@ fun generateParticipantsProtocol(
     val startTime = participant.getStartTime()
     val startSeconds = startTime.toSecondOfDay()
     val maxFinishSeconds: Int = maxFinishTime.toSecondOfDay()
-    val times = List(course.checkPoints.size) {
+    val times = listOf(startTime) + List(course.checkPoints.size - 1) {
         val randomTime = random.nextInt(startSeconds, maxFinishSeconds)
         LocalTime.ofSecondOfDay(randomTime.toLong())
     }.sorted()

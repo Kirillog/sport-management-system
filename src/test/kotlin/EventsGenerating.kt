@@ -1,4 +1,4 @@
-import kotlinx.datetime.LocalDate
+import java.time.LocalDate
 import ru.emkn.kotlin.sms.FileType
 import ru.emkn.kotlin.sms.io.Writer
 import ru.emkn.kotlin.sms.objects.Event
@@ -9,7 +9,7 @@ fun generateEvents(path: Path, amountOfEvents: Int = 3, random: Random = Random(
     val events = List(amountOfEvents) {
         Event(
             "event$it",
-            LocalDate(random.nextInt(2022, 2050), random.nextInt(1, 13), random.nextInt(1, 29))
+            LocalDate.of(random.nextInt(2022, 2050), random.nextInt(1, 13), random.nextInt(1, 29))
         )
     }
     val writer = Writer(path.resolve("event.csv").toFile(), FileType.CSV)

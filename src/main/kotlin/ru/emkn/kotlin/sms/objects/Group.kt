@@ -3,7 +3,7 @@ package ru.emkn.kotlin.sms.objects
 import ru.emkn.kotlin.sms.io.MultilineWritable
 import java.time.format.DateTimeFormatter
 
-data class Group(val name: String, val course: Course, val members: List<Participant>) : MultilineWritable {
+data class Group(val name: String, val course: Course, var members: List<Participant>) : MultilineWritable {
 
     override fun toMultiline(): List<List<String?>> {
         val result = mutableListOf(listOf<String?>(name))
