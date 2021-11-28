@@ -18,12 +18,13 @@ data class Participant(
 ) : Readable, SingleLineWritable {
 
     var id: Int? = null
-    var startTime: LocalTime? = null
     var timeStamps: List<TimeStamp>? = null
+    var startTime: LocalTime? = null
     var finishTime: LocalTime? = null
-    var place: Place? = null
+    var positionInGroup: PositionInGroup? = null
+
     @OptIn(ExperimentalTime::class)
-    val time : Duration?
+    val runTime : Duration?
         get() {
             if (finishTime == null || startTime == null)
                 return null
@@ -57,11 +58,11 @@ data class Participant(
         return time
     }
 
-    data class Place(val number: Int, val laggingFromLeader: Duration)
+    data class PositionInGroup(val place: Int, val laggingFromLeader: Duration)
 
     @OptIn(ExperimentalTime::class)
     override fun toLine(): List<String?> = listOf(
-        place?.number.toString(),
+        positionInGroup?.place.toString(),
         id?.toString(),
         name,
         surname,
@@ -71,6 +72,6 @@ data class Participant(
         grade,
         startTime?.format(DateTimeFormatter.ISO_LOCAL_TIME),
         finishTime?.format(DateTimeFormatter.ISO_LOCAL_TIME),
-        place?.laggingFromLeader?.toKotlinDuration()?.toString()
+        positionInGroup?.laggingFromLeader?.toKotlinDuration()?.toString()
     )
 }

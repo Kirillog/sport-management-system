@@ -54,18 +54,18 @@ fun getNotCheaters(groups: List<Group>): List<Participant> {
 fun fillFinishData(participants: List<Participant>) {
 
     participants.groupBy { it.group }.forEach { (groupName, members) ->
-        val sortedGroup = members.sortedByDescending { it.time }
-        val leaderFinishTime = sortedGroup[0].time
+        val sortedGroup = members.sortedByDescending { it.runTime }
+        val leaderFinishTime = sortedGroup[0].runTime
         if (leaderFinishTime == null) {
             logger.info { "Not a single participant finished" }
             return@forEach
         }
         sortedGroup.forEachIndexed { place, participant ->
-            val time = participant.time
+            val time = participant.runTime
             requireNotNull(time) { "Banned user cannot finish the competition" }
-            participant.place = Participant.Place(
+            participant.positionInGroup = Participant.PositionInGroup(
                 place + 1,
-                leaderFinishTime - participant.time
+                leaderFinishTime - participant.runTime
             )
         }
     }
@@ -73,7 +73,7 @@ fun fillFinishData(participants: List<Participant>) {
 
 @OptIn(ExperimentalTime::class)
 private fun formatterForPersonalResults(participant: Participant) = listOf(
-    participant.place?.number?.toString(),
+    participant.positionInGroup?.place?.toString(),
     participant.id?.toString(),
     participant.name,
     participant.surname,
@@ -81,7 +81,7 @@ private fun formatterForPersonalResults(participant: Participant) = listOf(
     participant.grade,
     participant.startTime?.format(DateTimeFormatter.ISO_LOCAL_TIME),
     participant.finishTime?.format(DateTimeFormatter.ISO_LOCAL_TIME),
-    participant.place?.laggingFromLeader?.toKotlinDuration()?.toString()
+    participant.positionInGroup?.laggingFromLeader?.toKotlinDuration()?.toString()
 )
 
 fun personalResultsTarget(path: Path) {
@@ -100,7 +100,7 @@ fun personalResultsTarget(path: Path) {
     )
     groups.forEach { group ->
         writer.add(group.name)
-        group.members.sortedBy { it.place?.number }.forEach { participant ->
+        group.members.sortedBy { it.positionInGroup?.place }.forEach { participant ->
             writer.add(participant, ::formatterForPersonalResults)
         }
     }
