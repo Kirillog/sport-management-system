@@ -82,7 +82,7 @@ fun generateCheckPointProtocols(
 fun main() {
     val random = Random(0)
 
-    val protocolsDir = "test_generator/protocols"
+    val protocolsDir = "competitions/competition-1/checkpoints"
     if (!File(protocolsDir).exists()) {
         File(protocolsDir).mkdirs()
     }
