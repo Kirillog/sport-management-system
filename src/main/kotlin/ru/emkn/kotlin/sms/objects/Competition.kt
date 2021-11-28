@@ -8,6 +8,7 @@ import ru.emkn.kotlin.sms.io.formTeamsList
 import ru.emkn.kotlin.sms.io.formTossedGroups
 import java.nio.file.Path
 import java.time.LocalTime
+import kotlin.random.Random
 
 private val logger = KotlinLogging.logger {}
 
@@ -72,7 +73,7 @@ data class Competition(
         var currentId = 100
         var currentTime = startTime
         groups.forEach { group ->
-            group.members.shuffled().forEach { participant ->
+            group.members.shuffled(Random(0)).forEach { participant ->
                 participant.startTime = currentTime
                 currentTime = currentTime.plusMinutes(deltaMinutes)
                 participant.id = currentId++
