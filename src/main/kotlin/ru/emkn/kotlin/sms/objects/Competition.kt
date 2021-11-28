@@ -51,7 +51,7 @@ data class Competition(
             Target.PERSONAL_RESULT ->
                 makeCompetitionFromStartingProtocol(path)
             else ->
-                TODO()
+                makeCompetitionFromStartingProtocol(path)
         }
     ) {
         logger.info { "Competition files read success" }

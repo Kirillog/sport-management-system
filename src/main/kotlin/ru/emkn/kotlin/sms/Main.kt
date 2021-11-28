@@ -11,9 +11,11 @@ import ru.emkn.kotlin.sms.io.Writer
 import ru.emkn.kotlin.sms.io.formTimestamps
 import ru.emkn.kotlin.sms.objects.*
 import java.nio.file.Path
+import java.time.Duration
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import kotlin.io.path.Path
+import kotlin.math.max
 import kotlin.time.ExperimentalTime
 import kotlin.time.toKotlinDuration
 
@@ -27,6 +29,11 @@ fun getTimestampsByParticipant(groups: List<Group>, timestamps: List<TimeStamp>)
 
 fun getCourseByParticipant(groups: List<Group>): Map<Participant, Course> =
     groups.flatMap { group -> group.members.associateWith { group.course }.toList() }.toMap()
+
+fun getGroupByParticipant(groups: List<Group>) : Map<Participant, Group> {
+    val groupByName = groups.associateBy {it.name}
+    return groups.flatMap { it.members }.associateWith { groupByName[it.group] ?: throw IllegalStateException() }
+}
 
 fun fillTimestamps(groups: List<Group>, timestamps: List<TimeStamp>) {
     val timestampsByParticipant = getTimestampsByParticipant(groups, timestamps)
@@ -52,7 +59,6 @@ fun getNotCheaters(groups: List<Group>): List<Participant> {
 }
 
 fun fillFinishData(participants: List<Participant>) {
-
     participants.groupBy { it.group }.forEach { (groupName, members) ->
         val sortedGroup = members.sortedByDescending { it.time }
         val leaderFinishTime = sortedGroup[0].time
@@ -91,6 +97,7 @@ fun personalResultsTarget(path: Path) {
     fillTimestamps(groups, timestamps)
     val trueParticipants = getNotCheaters(groups)
     fillFinishData(trueParticipants)
+    sortGroupsByPlace(groups)
 
     val writer = Writer(competition.path.resolve("protocols/results.csv").toFile(), FileType.CSV)
     writer.add(
@@ -100,11 +107,64 @@ fun personalResultsTarget(path: Path) {
     )
     groups.forEach { group ->
         writer.add(group.name)
-        group.members.sortedBy { it.place?.number }.forEach { participant ->
+        group.members.forEach { participant ->
             writer.add(participant, ::formatterForPersonalResults)
         }
     }
     writer.write()
+}
+
+fun sortGroupsByPlace(groups : List<Group>) {
+    groups.forEach { group ->
+        val (banned, notBanned) = group.members.partition { it.place == null }
+        group.members = notBanned.sortedBy { it.place?.number } + banned
+    }
+}
+
+fun teamResultsTarget(path : Path) {
+    val competition = makeCompetitionFromStartingProtocol(path)
+    val timestamps = formTimestamps(competition.path)
+    fillTimestamps(competition.groups, timestamps)
+    val trueParticipants = getNotCheaters(competition.groups)
+    fillFinishData(trueParticipants)
+    sortGroupsByPlace(competition.groups)
+    calculateResultsForTeams(competition)
+
+    val writer = Writer(competition.path.resolve("protocols/teamResults.csv").toFile(), FileType.CSV)
+    writer.add(
+        listOf(
+            "Место", "Команда", "Результат"
+        )
+    )
+    competition.teams.sortedByDescending { it.result }.forEachIndexed { index, team ->
+        writer.add(team) {
+            listOf(listOf((index + 1).toString(), it.name, it.getResult().toString()))
+        }
+    }
+    writer.write()
+}
+
+fun calculateResultsForTeams(
+    competition: Competition,
+) {
+    val groupByParticipant = getGroupByParticipant(competition.groups)
+    competition.teams.forEach { team ->
+        team.result = team.members.sumOf {
+            if (it.place == null)
+                0
+            else {
+                val group = groupByParticipant[it]
+                requireNotNull(group) { "Group of $it hasn't been found" }
+                val groupLeaderResult = group.members[0].getDurationTime()
+                val time = it.getDurationTime()
+                max(0, (100 * (2 - time / groupLeaderResult)).toLong())
+            }
+        }
+    }
+}
+
+operator fun Duration.div(other: Duration): Double {
+    return this.seconds.toDouble() / other.seconds
 }
 
 fun tossTarget(competitionPath: Path) :Competition {
@@ -127,7 +187,7 @@ fun main(args: Array<String>): Unit = mainBody {
         when (parsedArgs.target) {
             Target.TOSS -> tossTarget(competitionPath)
             Target.PERSONAL_RESULT -> personalResultsTarget(competitionPath)
-            Target.TEAM_RESULT -> TODO()
+            Target.TEAM_RESULT -> teamResultsTarget(competitionPath)
         }
 
         logger.info { "Program successfully finished" }

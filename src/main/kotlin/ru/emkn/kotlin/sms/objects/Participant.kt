@@ -57,6 +57,17 @@ data class Participant(
         return time
     }
 
+    @JvmName("getFinishTime1")
+    fun getFinishTime() : LocalTime {
+        val time = finishTime
+        requireNotNull(time) {"Finish time have to be set up"}
+        return time
+    }
+
+    fun getDurationTime() : Duration {
+        return Duration.between(getFinishTime(), getStartTime())
+    }
+
     data class Place(val number: Int, val laggingFromLeader: Duration)
 
     @OptIn(ExperimentalTime::class)
