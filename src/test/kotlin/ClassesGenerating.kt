@@ -1,3 +1,4 @@
+import mu.KotlinLogging
 import ru.emkn.kotlin.sms.FileType
 import ru.emkn.kotlin.sms.io.Writer
 import ru.emkn.kotlin.sms.objects.Course
@@ -5,16 +6,16 @@ import ru.emkn.kotlin.sms.objects.Group
 import ru.emkn.kotlin.sms.objects.Participant
 import ru.emkn.kotlin.sms.objects.Team
 import java.nio.file.Path
-import kotlin.io.path.Path
-import kotlin.io.path.createDirectory
-import kotlin.io.path.notExists
+import kotlin.io.path.*
 import kotlin.math.max
 import kotlin.random.Random
+
+private val logger = KotlinLogging.logger {}
 
 fun getAllGroups(): List<String> {
     val result = mutableListOf<String>()
     for (gender in listOf("М", "Ж")) {
-        for (age in ages) {
+        for (age in possibleGroupAges) {
             result.add("$gender$age")
         }
     }
@@ -39,7 +40,8 @@ fun generateCoursesForGroups(
     val classesWriter = Writer(classesFile, FileType.CSV)
     classesWriter.add(listOf("Группа", "Дистанция"))
     classesWriter.addAll(result.map { (group, course) ->
-        listOf(group, course.name) })
+        listOf(group, course.name)
+    })
     classesWriter.write()
     val coursesFile = path.resolve("courses.csv").toFile()
     val coursesWriter = Writer(coursesFile, FileType.CSV)
@@ -52,11 +54,18 @@ fun generateCoursesForGroups(
 fun generateGroups(currentPath: Path, generatedTeams: List<Team>): List<Group> {
     val generatedGroups = generatedTeams.flatMap { it.members }.groupBy(Participant::group)
     val courses = generateCoursesForGroups(currentPath, generatedGroups.keys.toList())
-    return generatedGroups.map { Group(it.key, courses[it.key]!!, it.value) }
+    return generatedGroups.map {
+        val course = courses[it.key] ?: throw IllegalStateException("course has to be found")
+        Group(it.key, course, it.value)
+    }
 }
 
 fun main() {
     val path = Path("test_generator")
+    if (path.exists() && !path.isDirectory()) {
+        logger.error { "path $path is not a directory" }
+        return
+    }
     if (path.notExists())
         path.createDirectory()
     generateCoursesForGroups(path)
