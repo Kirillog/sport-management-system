@@ -2,12 +2,12 @@ package ru.emkn.kotlin.sms.io
 
 import com.github.doyaaaaaken.kotlincsv.client.CsvFileReader
 import com.sksamuel.hoplite.simpleName
-import kotlinx.datetime.LocalDate
 import mu.KotlinLogging
 import ru.emkn.kotlin.sms.headers
 import ru.emkn.kotlin.sms.objects.*
 import java.io.File
 import java.io.IOException
+import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
@@ -45,7 +45,7 @@ class CSVReader(file: File, private val reader: CsvFileReader) : Reader(file) {
             LocalDate::class ->
                 try {
                     val (date, month, year) = field.split(".").map(String::toInt)
-                    LocalDate(year, month, date)
+                    LocalDate.of(year, month, date)
                 } catch (e: Exception) {
                     throw IllegalArgumentException("Cannot parse $field as Date at ${lineNumber}th position")
                 }

@@ -2,11 +2,10 @@ package ru.emkn.kotlin.sms.objects
 
 import ru.emkn.kotlin.sms.io.Readable
 import ru.emkn.kotlin.sms.io.SingleLineWritable
+import ru.emkn.kotlin.sms.toIntervalString
 import java.time.Duration
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
-import kotlin.time.ExperimentalTime
-import kotlin.time.toKotlinDuration
 
 data class Participant(
     val name: String,
@@ -23,7 +22,6 @@ data class Participant(
     var finishTime: LocalTime? = null
     var positionInGroup: PositionInGroup? = null
 
-    @OptIn(ExperimentalTime::class)
     val runTime : Duration?
         get() {
             if (finishTime == null || startTime == null)
@@ -60,7 +58,6 @@ data class Participant(
 
     data class PositionInGroup(val place: Int, val laggingFromLeader: Duration)
 
-    @OptIn(ExperimentalTime::class)
     override fun toLine(): List<String?> = listOf(
         positionInGroup?.place.toString(),
         id?.toString(),
@@ -72,6 +69,6 @@ data class Participant(
         grade,
         startTime?.format(DateTimeFormatter.ISO_LOCAL_TIME),
         finishTime?.format(DateTimeFormatter.ISO_LOCAL_TIME),
-        positionInGroup?.laggingFromLeader?.toKotlinDuration()?.toString()
+        positionInGroup?.laggingFromLeader?.toIntervalString()
     )
 }

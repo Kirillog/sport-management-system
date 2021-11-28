@@ -11,13 +11,14 @@ import ru.emkn.kotlin.sms.io.Writer
 import ru.emkn.kotlin.sms.io.formTimestamps
 import ru.emkn.kotlin.sms.objects.*
 import java.nio.file.Path
+import java.time.Duration
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import kotlin.io.path.Path
-import kotlin.time.ExperimentalTime
-import kotlin.time.toKotlinDuration
 
 private val logger = KotlinLogging.logger {}
+
+fun Duration.toIntervalString(): String = "${this.toHoursPart()}h ${this.toMinutesPart()}m ${this.toSecondsPart()}s"
 
 fun getTimestampsByParticipant(groups: List<Group>, timestamps: List<TimeStamp>): Map<Participant, List<TimeStamp>> {
     val participantById = groups.flatMap { it.members }.associateBy { it.id ?: 0 }
@@ -71,7 +72,6 @@ fun fillFinishData(participants: List<Participant>) {
     }
 }
 
-@OptIn(ExperimentalTime::class)
 private fun formatterForPersonalResults(participant: Participant) = listOf(
     participant.positionInGroup?.place?.toString(),
     participant.id?.toString(),
@@ -81,7 +81,7 @@ private fun formatterForPersonalResults(participant: Participant) = listOf(
     participant.grade,
     participant.startTime?.format(DateTimeFormatter.ISO_LOCAL_TIME),
     participant.finishTime?.format(DateTimeFormatter.ISO_LOCAL_TIME),
-    participant.positionInGroup?.laggingFromLeader?.toKotlinDuration()?.toString()
+    participant.positionInGroup?.laggingFromLeader?.toIntervalString()
 )
 
 fun personalResultsTarget(path: Path) {
