@@ -101,7 +101,7 @@ fun formEvent(competitionPath: Path): Event {
 fun formTimestamps(competitionPath: Path): List<TimeStamp> {
     val reader = csvReader()
     val dir = competitionPath.resolve("checkpoints/").toFile()
-    return dir.walk().filter(File::isFile).map { file ->
+    return dir.walk().filter { it.isFile && it.extension == "csv" }.map { file ->
         logger.debug { "Processing ${file.name}" }
         reader.open(file) {
             CSVReader(file, this).timestamps()

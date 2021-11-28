@@ -19,9 +19,16 @@ data class Participant(
 
     var id: Int? = null
     var startTime: LocalTime? = null
-    var finishTime: LocalTime? = null
     var timeStamps: List<TimeStamp>? = null
-    var finishData: FinishData? = null
+    var finishTime: LocalTime? = null
+    var place: Place? = null
+    @OptIn(ExperimentalTime::class)
+    val time : Duration?
+        get() {
+            if (finishTime == null || startTime == null)
+                return null
+            return Duration.between(finishTime, startTime)
+        }
 
     constructor(
         name: String,
@@ -50,11 +57,11 @@ data class Participant(
         return time
     }
 
-    data class FinishData(val time: LocalTime, val place: Int, val laggingFromLeader: Duration)
+    data class Place(val number: Int, val laggingFromLeader: Duration)
 
     @OptIn(ExperimentalTime::class)
     override fun toLine(): List<String?> = listOf(
-        finishData?.place.toString(),
+        place?.number.toString(),
         id?.toString(),
         name,
         surname,
@@ -63,7 +70,7 @@ data class Participant(
         team,
         grade,
         startTime?.format(DateTimeFormatter.ISO_LOCAL_TIME),
-        finishData?.time?.format(DateTimeFormatter.ISO_LOCAL_TIME),
-        finishData?.laggingFromLeader?.toKotlinDuration()?.toString()
+        finishTime?.format(DateTimeFormatter.ISO_LOCAL_TIME),
+        place?.laggingFromLeader?.toKotlinDuration()?.toString()
     )
 }

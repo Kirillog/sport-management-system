@@ -6,16 +6,16 @@ package ru.emkn.kotlin.sms
 
 import com.xenomachina.argparser.ArgParser
 import com.xenomachina.argparser.mainBody
-import kotlinx.datetime.toJavaLocalDate
 import mu.KotlinLogging
 import ru.emkn.kotlin.sms.io.Writer
 import ru.emkn.kotlin.sms.io.formTimestamps
-import ru.emkn.kotlin.sms.io.formTossedGroups
 import ru.emkn.kotlin.sms.objects.*
-import java.time.Duration
+import java.nio.file.Path
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import kotlin.io.path.Path
+import kotlin.time.ExperimentalTime
+import kotlin.time.toKotlinDuration
 
 private val logger = KotlinLogging.logger {}
 
@@ -30,14 +30,17 @@ fun getCourseByParticipant(groups: List<Group>): Map<Participant, Course> =
 
 fun fillTimestamps(groups: List<Group>, timestamps: List<TimeStamp>) {
     val timestampsByParticipant = getTimestampsByParticipant(groups, timestamps)
-    groups.flatMap {it.members}.forEach { it.timeStamps = timestampsByParticipant[it] }
+    groups.flatMap { it.members }.forEach {
+        it.timeStamps = timestampsByParticipant[it]
+        it.finishTime = it.timeStamps?.last()?.time
+    }
 }
 
 fun getNotCheaters(groups: List<Group>): List<Participant> {
     val courseByParticipant = getCourseByParticipant(groups)
     return groups.flatMap { it.members }.filter { participant ->
         val course = courseByParticipant[participant]
-        val isBanned = course?.checkPoints != participant.timeStamps?.map { it.checkPointId }
+        val isBanned = course?.checkPoints?.map { it.id } != participant.timeStamps?.map { it.checkPointId }
         if (isBanned) {
             logger.info {
                 "Participant ${participant.id} ${participant.name} ${participant.surname} " +
@@ -48,48 +51,46 @@ fun getNotCheaters(groups: List<Group>): List<Participant> {
     }
 }
 
-fun fillFinishData(participants: List<Participant>, competition: Competition) {
-    val finishTimeByParticipant = participants.associateWith {
-        it.timeStamps?.last()?.time ?: throw IllegalStateException("Lost time for finished not banned participant")
-    }
+fun fillFinishData(participants: List<Participant>) {
+
     participants.groupBy { it.group }.forEach { (groupName, members) ->
-        val sortedGroup = members.sortedBy { finishTimeByParticipant[it] }
-        val leaderFinish = members[0].finishData
-        if (leaderFinish == null) {
+        val sortedGroup = members.sortedByDescending { it.time }
+        val leaderFinishTime = sortedGroup[0].time
+        if (leaderFinishTime == null) {
             logger.info { "Not a single participant finished" }
             return@forEach
         }
         sortedGroup.forEachIndexed { place, participant ->
-            val time = finishTimeByParticipant.getOrElse(participant) {
-                throw IllegalStateException("Can not found time for participant")
-            }
-            val date = competition.event.date.toJavaLocalDate()
-            participant.finishData = Participant.FinishData(
-                time, place,
-                Duration.between(leaderFinish.time.atDate(date), time.atDate(date))
+            val time = participant.time
+            requireNotNull(time) { "Banned user cannot finish the competition" }
+            participant.place = Participant.Place(
+                place + 1,
+                leaderFinishTime - participant.time
             )
         }
     }
 }
 
+@OptIn(ExperimentalTime::class)
 private fun formatterForPersonalResults(participant: Participant) = listOf(
-    participant.finishData?.place?.toString(),
+    participant.place?.number?.toString(),
     participant.id?.toString(),
     participant.name,
     participant.surname,
     participant.birthdayYear.toString(),
     participant.grade,
     participant.startTime?.format(DateTimeFormatter.ISO_LOCAL_TIME),
-    participant.finishData?.time?.format(DateTimeFormatter.ISO_LOCAL_TIME),
-    participant.finishData?.laggingFromLeader?.toString()
+    participant.finishTime?.format(DateTimeFormatter.ISO_LOCAL_TIME),
+    participant.place?.laggingFromLeader?.toKotlinDuration()?.toString()
 )
 
-fun personalResultsTarget(competition: Competition) {
-    val groups = formTossedGroups(competition.path)
+fun personalResultsTarget(path: Path) {
+    val competition = makeCompetitionFromStartingProtocol(path)
     val timestamps = formTimestamps(competition.path)
+    val groups = competition.groups
     fillTimestamps(groups, timestamps)
     val trueParticipants = getNotCheaters(groups)
-    fillFinishData(trueParticipants, competition)
+    fillFinishData(trueParticipants)
 
     val writer = Writer(competition.path.resolve("protocols/results.csv").toFile(), FileType.CSV)
     writer.add(
@@ -97,22 +98,24 @@ fun personalResultsTarget(competition: Competition) {
             "Место", "Номер", "Имя", "Фамилия", "Г.р.", "Разр.", "Время старта", "Время финиша", "Отставание"
         )
     )
-    competition.groups.forEach { group ->
+    groups.forEach { group ->
         writer.add(group.name)
-        group.members.forEach { participant ->
+        group.members.sortedBy { it.place?.number }.forEach { participant ->
             writer.add(participant, ::formatterForPersonalResults)
         }
     }
     writer.write()
 }
 
-fun tossTarget(competition: Competition) {
+fun tossTarget(competitionPath: Path) :Competition {
+    val competition = Competition(competitionPath, Target.TOSS)
     competition.simpleToss(LocalTime.NOON, 5)
     val writer = Writer(competition.path.resolve("protocols/toss.csv").toFile(), FileType.CSV)
 
     writer.add(listOf("Номер", "Имя", "Фамилия", "Г.р.", "Команда", "Разр.", "Время старта"))
     writer.addAll(competition.groups)
     writer.write()
+    return competition
 }
 
 fun main(args: Array<String>): Unit = mainBody {
@@ -121,18 +124,15 @@ fun main(args: Array<String>): Unit = mainBody {
     val parsedArgs = ArgParser(args).parseInto(::ArgumentsFormat)
     val competitionPath = Path(parsedArgs.competitionsRoot).resolve(parsedArgs.competitionName)
     try {
-        val competition = Competition(competitionPath)
-        logger.info { "Competition files read success" }
-
         when (parsedArgs.target) {
-            Target.TOSS -> tossTarget(competition)
-            Target.PERSONAL_RESULT -> personalResultsTarget(competition)
+            Target.TOSS -> tossTarget(competitionPath)
+            Target.PERSONAL_RESULT -> personalResultsTarget(competitionPath)
             Target.TEAM_RESULT -> TODO()
         }
+
         logger.info { "Program successfully finished" }
-    }
-    catch (error : Exception) {
-        logger.info {"Wow, that's a big surprise, program was fault"}
+    } catch (error: Exception) {
+        logger.info { "Wow, that's a big surprise, program was fault" }
         logger.error { error.message }
     }
 }

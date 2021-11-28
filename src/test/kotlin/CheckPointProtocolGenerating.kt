@@ -35,7 +35,7 @@ fun generateParticipantsProtocol(
     val startTime = participant.getStartTime()
     val startSeconds = startTime.toSecondOfDay()
     val maxFinishSeconds: Int = maxFinishTime.toSecondOfDay()
-    val times = List(course.checkPoints.size) {
+    val times = listOf(startTime) + List(course.checkPoints.size - 1) {
         val randomTime = random.nextInt(startSeconds, maxFinishSeconds)
         LocalTime.ofSecondOfDay(randomTime.toLong())
     }.sorted()
@@ -63,7 +63,7 @@ fun convertParticipantProtocolsIntoCheckPointProtocols(participantProtocols: Lis
 fun main() {
     val random = Random(0)
 
-    val protocolsDir = "test_generator/protocols"
+    val protocolsDir = "competitions/competition-1/checkpoints"
     if (!File(protocolsDir).exists()) {
         File(protocolsDir).mkdirs()
     }

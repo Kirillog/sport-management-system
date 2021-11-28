@@ -1,9 +1,11 @@
 package ru.emkn.kotlin.sms.objects
 
 import mu.KotlinLogging
+import ru.emkn.kotlin.sms.Target
 import ru.emkn.kotlin.sms.io.formEvent
 import ru.emkn.kotlin.sms.io.formGroupsList
 import ru.emkn.kotlin.sms.io.formTeamsList
+import ru.emkn.kotlin.sms.io.formTossedGroups
 import java.nio.file.Path
 import java.time.LocalTime
 
@@ -16,16 +18,44 @@ fun makeCompetition(path: Path): Competition {
     return Competition(event, path, teams, groups)
 }
 
-data class Competition(val event: Event, val path: Path, val teams: List<Team>, val groups: List<Group>) {
+fun makeCompetitionFromStartingProtocol(path: Path): Competition {
+    val event = formEvent(path)
+    val groups = formTossedGroups(path)
+    val teams = convertGroupsToTeams(groups)
+    return Competition(event, path, teams, groups)
+}
+
+fun convertGroupsToTeams(groups: List<Group>): List<Team> =
+    groups.flatMap { it.members }.groupBy { it.team }.map {
+        Team(it.key, it.value)
+    }
+
+data class Competition(
+    val event: Event,
+    val path: Path,
+    val teams: List<Team>,
+    val groups: List<Group>,
+) {
 
     constructor(competition: Competition) : this(
         competition.event,
         competition.path,
         competition.teams,
-        competition.groups
+        competition.groups,
     )
 
-    constructor(path: Path) : this(makeCompetition(path))
+    constructor(path: Path, target: Target) : this(
+        when (target) {
+            Target.TOSS ->
+                makeCompetition(path)
+            Target.PERSONAL_RESULT ->
+                makeCompetitionFromStartingProtocol(path)
+            else ->
+                TODO()
+        }
+    ) {
+        logger.info { "Competition files read success" }
+    }
 
     fun simpleToss(startTime: LocalTime, deltaMinutes: Long) {
         //TODO("подумать как получше реализовать id")
