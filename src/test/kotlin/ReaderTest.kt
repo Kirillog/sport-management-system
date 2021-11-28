@@ -4,7 +4,7 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.RepeatedTest
 import org.junit.jupiter.api.TestInstance
 import ru.emkn.kotlin.sms.io.*
-import ru.emkn.kotlin.sms.tossTarget
+import ru.emkn.kotlin.sms.targets.tossTarget
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.createDirectory
