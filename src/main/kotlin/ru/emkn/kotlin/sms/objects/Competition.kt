@@ -58,7 +58,6 @@ data class Competition(
     }
 
     fun simpleToss(startTime: LocalTime, deltaMinutes: Long) {
-        //TODO("подумать как получше реализовать id")
         var currentId = 100
         var currentTime = startTime
         groups.forEach { group ->
