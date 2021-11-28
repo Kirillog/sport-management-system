@@ -1,4 +1,3 @@
-
 import ru.emkn.kotlin.sms.FileType
 import ru.emkn.kotlin.sms.io.*
 import ru.emkn.kotlin.sms.objects.*
@@ -42,15 +41,8 @@ fun generateParticipantsProtocol(
 
     return ParticipantsProtocol(
         participant,
-        course.checkPoints.zip(times) { checkpoint, time -> TimeStamp(time, checkpoint.id, participant.getId()) })
-}
-
-fun buildGroups(teams: List<Team>, courses: Map<String, Course>): List<Group> {
-    val groups = teams.flatMap(Team::members).groupBy { it.group }
-    return groups.map {
-        val course = courses[it.key] ?: throw IllegalStateException("course has to be found")
-        Group(it.key, course, it.value)
-    }
+        course.checkPoints.zip(times) { checkpoint, time -> TimeStamp(time, checkpoint.id, participant.getId()) }
+    )
 }
 
 fun convertParticipantProtocolsIntoCheckPointProtocols(participantProtocols: List<ParticipantsProtocol>): List<CheckPointsProtocol> {
@@ -59,18 +51,11 @@ fun convertParticipantProtocolsIntoCheckPointProtocols(participantProtocols: Lis
         .map { CheckPointsProtocol(CheckPoint(it.key), it.value) }
 }
 
-
-fun main() {
-    val random = Random(0)
-
-    val protocolsDir = "test_generator/protocols"
-    if (!File(protocolsDir).exists()) {
-        File(protocolsDir).mkdirs()
-    }
-    generateCheckPointProtocols(Path("competitions/competition-1"), Path(protocolsDir), random)
-}
-
-fun generateCheckPointProtocols(competitionPath: Path, protocolsDir: Path, random: Random = Random(0)) : List<CheckPointsProtocol> {
+fun generateCheckPointProtocols(
+    competitionPath: Path,
+    protocolsDir: Path,
+    random: Random = Random(0)
+): List<CheckPointsProtocol> {
     val groups = formTossedGroups(competitionPath)
     val teams = groups.flatMap { it.members }.groupBy { it.team }.map { Team(it.key, it.value) }
     val crs = formCoursesList(competitionPath).associateBy { it.name }
@@ -92,4 +77,14 @@ fun generateCheckPointProtocols(competitionPath: Path, protocolsDir: Path, rando
         writer.write()
     }
     return checkPointProtocols
+}
+
+fun main() {
+    val random = Random(0)
+
+    val protocolsDir = "test_generator/protocols"
+    if (!File(protocolsDir).exists()) {
+        File(protocolsDir).mkdirs()
+    }
+    generateCheckPointProtocols(Path("competitions/competition-1"), Path(protocolsDir), random)
 }

@@ -1,3 +1,4 @@
+import mu.KotlinLogging
 import ru.emkn.kotlin.sms.FileType
 import ru.emkn.kotlin.sms.io.Writer
 import ru.emkn.kotlin.sms.objects.Participant
@@ -6,29 +7,31 @@ import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.random.Random
 
-val grades = listOf("1р", "2р", "3р", "1ю", "2ю", "3ю")
-val ages = listOf(10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 40, 45, 50, 60, 70, 80)
+val possibleGrades = listOf("1р", "2р", "3р", "1ю", "2ю", "3ю")
+val possibleGroupAges = listOf(10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 40, 45, 50, 60, 70, 80)
+
+private val logger = KotlinLogging.logger {}
 
 fun generateParticipant(id: Int, teamName: String, random: Random): Participant {
-    val name = "name$id"
+    val name = "name$id-$teamName"
     val surname = "surname$id"
     val birthdayYear = random.nextInt(1950, 2012)
     val group = (if (random.nextBoolean()) "М" else "Ж") +
-            "${ages.first { it >= 2021 - birthdayYear }}"
+            "${possibleGroupAges.first { it >= 2021 - birthdayYear }}"
     val grade: String? =
         if (random.nextInt(10) == 0)
-            grades[random.nextInt(grades.size)]
+            possibleGrades[random.nextInt(possibleGrades.size)]
         else
             null
     return Participant(name, surname, birthdayYear, group, teamName, grade)
 }
 
 fun generateTeam(id: Int, teamSize: Int, random: Random): Team {
-    val name = "team$id"
+    val teamName = "team$id"
     val members = List(teamSize) {
-        generateParticipant(it, name, random)
+        generateParticipant(it, teamName, random)
     }
-    return Team(name, members)
+    return Team(teamName, members)
 }
 
 fun generateApplication(applicationPath: Path, id: Int, applicationSize: Int, random: Random): Team {
@@ -43,13 +46,9 @@ fun generateApplication(applicationPath: Path, id: Int, applicationSize: Int, ra
                         participant.name,
                         participant.surname,
                         participant.birthdayYear.toString(),
-                        participant.group
+                        participant.group,
+                        participant.grade ?: ""
                     )
-                    val grade = participant.grade
-                    if (grade != null)
-                        result.add(grade)
-                    else
-                        result.add("")
                     result
                 }
     }
@@ -77,5 +76,10 @@ fun generateApplications(
 }
 
 fun main() {
-    generateApplications(Path("test_generator"))
+    try {
+        generateApplications(Path("test_generator"))
+    }
+    catch (error: Exception) {
+        logger.error { error.message }
+    }
 }
