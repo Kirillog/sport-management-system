@@ -7,7 +7,12 @@ import java.nio.file.Path
 import java.time.Duration
 import kotlin.math.max
 
-fun teamResultsTarget(path : Path) {
+/**
+ * Prints team results protocol for [Competition] located in [path]
+ *
+ * Returns [Competition]
+ */
+fun teamResultsTarget(path : Path) : Competition {
     val competition = prepareCompetition(path)
     calculateResultsForTeams(competition)
 
@@ -23,8 +28,12 @@ fun teamResultsTarget(path : Path) {
         }
     }
     writer.write()
+    return competition
 }
 
+/**
+ * Calculates results for teams of [competition]
+ */
 fun calculateResultsForTeams(
     competition: Competition,
 ) {

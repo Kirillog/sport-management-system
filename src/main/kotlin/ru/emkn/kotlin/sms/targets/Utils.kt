@@ -18,12 +18,12 @@ fun getTimestampsByParticipant(groups: List<Group>, timestamps: List<TimeStamp>)
 fun getCourseByParticipant(groups: List<Group>): Map<Participant, Course> =
     groups.flatMap { group -> group.members.associateWith { group.course }.toList() }.toMap()
 
-fun getGroupByParticipant(groups: List<Group>) : Map<Participant, Group> {
-    val groupByName = groups.associateBy {it.name}
+fun getGroupByParticipant(groups: List<Group>): Map<Participant, Group> {
+    val groupByName = groups.associateBy { it.name }
     return groups.flatMap { it.members }.associateWith { groupByName[it.group] ?: throw IllegalStateException() }
 }
 
-fun sortGroupsByPlace(groups : List<Group>) {
+fun sortGroupsByPlace(groups: List<Group>) {
     groups.forEach { group ->
         val (banned, notBanned) = group.members.partition { it.positionInGroup == null }
         group.members = notBanned.sortedBy { it.positionInGroup?.place } + banned

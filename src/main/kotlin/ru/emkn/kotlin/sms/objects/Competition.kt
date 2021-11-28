@@ -8,9 +8,14 @@ import ru.emkn.kotlin.sms.io.formTeamsList
 import ru.emkn.kotlin.sms.io.formTossedGroups
 import java.nio.file.Path
 import java.time.LocalTime
+import kotlin.random.Random
 
 private val logger = KotlinLogging.logger {}
 
+/**
+ * Function to create an instance of the competition needed for the toss.
+ * Needs all files from input folder
+ */
 fun makeCompetition(path: Path): Competition {
     val event = formEvent(path)
     val teams = formTeamsList(path)
@@ -18,6 +23,10 @@ fun makeCompetition(path: Path): Competition {
     return Competition(event, path, teams, groups)
 }
 
+/**
+ * Function to create an instance of the competition needed for formation the results.
+ * Needs all files from input folder and file with the toss
+ */
 fun makeCompetitionFromStartingProtocol(path: Path): Competition {
     val event = formEvent(path)
     val groups = formTossedGroups(path)
@@ -30,6 +39,9 @@ fun convertGroupsToTeams(groups: List<Group>): List<Team> =
         Team(it.key, it.value)
     }
 
+/**
+ * The widest class that stores all the information about the competition
+ */
 data class Competition(
     val event: Event,
     val path: Path,
@@ -58,11 +70,10 @@ data class Competition(
     }
 
     fun simpleToss(startTime: LocalTime, deltaMinutes: Long) {
-        //TODO("подумать как получше реализовать id")
         var currentId = 100
         var currentTime = startTime
         groups.forEach { group ->
-            group.members.shuffled().forEach { participant ->
+            group.members.shuffled(Random(0)).forEach { participant ->
                 participant.startTime = currentTime
                 currentTime = currentTime.plusMinutes(deltaMinutes)
                 participant.id = currentId++

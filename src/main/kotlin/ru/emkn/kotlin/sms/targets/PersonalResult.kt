@@ -9,7 +9,9 @@ import ru.emkn.kotlin.sms.objects.makeCompetitionFromStartingProtocol
 import java.nio.file.Path
 import java.time.format.DateTimeFormatter
 
-
+/**
+ * Function for up-to-date competition with runs results
+ */
 fun prepareCompetition(path: Path): Competition {
     val competition = makeCompetitionFromStartingProtocol(path)
     val timestamps = formTimestamps(competition.path)
@@ -38,7 +40,9 @@ fun personalResultsTarget(path: Path) {
     writer.write()
 }
 
-
+/**
+ * Declare output format for participant used by [ru.emkn.kotlin.sms.io.Writer]
+ */
 private fun formatterForPersonalResults(participant: Participant) = listOf(
     participant.positionInGroup?.place?.toString(),
     participant.id?.toString(),
