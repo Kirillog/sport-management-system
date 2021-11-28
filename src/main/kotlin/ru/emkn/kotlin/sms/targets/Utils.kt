@@ -5,6 +5,7 @@ import ru.emkn.kotlin.sms.objects.Course
 import ru.emkn.kotlin.sms.objects.Group
 import ru.emkn.kotlin.sms.objects.Participant
 import ru.emkn.kotlin.sms.objects.TimeStamp
+import java.time.Duration
 
 private val logger = KotlinLogging.logger {}
 
@@ -24,8 +25,8 @@ fun getGroupByParticipant(groups: List<Group>) : Map<Participant, Group> {
 
 fun sortGroupsByPlace(groups : List<Group>) {
     groups.forEach { group ->
-        val (banned, notBanned) = group.members.partition { it.place == null }
-        group.members = notBanned.sortedBy { it.place?.number } + banned
+        val (banned, notBanned) = group.members.partition { it.positionInGroup == null }
+        group.members = notBanned.sortedBy { it.positionInGroup?.place } + banned
     }
 }
 
@@ -38,19 +39,20 @@ fun fillTimestamps(groups: List<Group>, timestamps: List<TimeStamp>) {
 }
 
 fun fillFinishData(participants: List<Participant>) {
+
     participants.groupBy { it.group }.forEach { (groupName, members) ->
-        val sortedGroup = members.sortedByDescending { it.time }
-        val leaderFinishTime = sortedGroup[0].time
+        val sortedGroup = members.sortedByDescending { it.runTime }
+        val leaderFinishTime = sortedGroup[0].runTime
         if (leaderFinishTime == null) {
             logger.info { "Not a single participant finished" }
             return@forEach
         }
         sortedGroup.forEachIndexed { place, participant ->
-            val time = participant.time
+            val time = participant.runTime
             requireNotNull(time) { "Banned user cannot finish the competition" }
-            participant.place = Participant.Place(
+            participant.positionInGroup = Participant.PositionInGroup(
                 place + 1,
-                leaderFinishTime - participant.time
+                leaderFinishTime - participant.runTime
             )
         }
     }
@@ -70,3 +72,5 @@ fun getNotCheaters(groups: List<Group>): List<Participant> {
         !isBanned
     }
 }
+
+fun Duration.toIntervalString(): String = "${this.toHoursPart()}h ${this.toMinutesPart()}m ${this.toSecondsPart()}s"

@@ -31,7 +31,7 @@ fun calculateResultsForTeams(
     val groupByParticipant = getGroupByParticipant(competition.groups)
     competition.teams.forEach { team ->
         team.result = team.members.sumOf {
-            if (it.place == null)
+            if (it.positionInGroup == null)
                 0
             else {
                 val group = groupByParticipant[it]

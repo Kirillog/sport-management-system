@@ -7,12 +7,26 @@ package ru.emkn.kotlin.sms
 import com.xenomachina.argparser.ArgParser
 import com.xenomachina.argparser.mainBody
 import mu.KotlinLogging
+import ru.emkn.kotlin.sms.io.Writer
+import ru.emkn.kotlin.sms.objects.Competition
 import ru.emkn.kotlin.sms.targets.personalResultsTarget
 import ru.emkn.kotlin.sms.targets.teamResultsTarget
-import ru.emkn.kotlin.sms.targets.tossTarget
+import java.nio.file.Path
+import java.time.LocalTime
 import kotlin.io.path.Path
 
 private val logger = KotlinLogging.logger {}
+
+fun tossTarget(competitionPath: Path) :Competition {
+    val competition = Competition(competitionPath, Target.TOSS)
+    competition.simpleToss(LocalTime.NOON, 5)
+    val writer = Writer(competition.path.resolve("protocols/toss.csv").toFile(), FileType.CSV)
+
+    writer.add(listOf("Номер", "Имя", "Фамилия", "Г.р.", "Команда", "Разр.", "Время старта"))
+    writer.addAll(competition.groups)
+    writer.write()
+    return competition
+}
 
 fun main(args: Array<String>): Unit = mainBody {
 

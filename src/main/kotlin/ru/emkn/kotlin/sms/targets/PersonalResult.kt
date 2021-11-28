@@ -1,6 +1,5 @@
 package ru.emkn.kotlin.sms.targets
 
-import mu.KotlinLogging
 import ru.emkn.kotlin.sms.FileType
 import ru.emkn.kotlin.sms.io.Writer
 import ru.emkn.kotlin.sms.io.formTimestamps
@@ -9,8 +8,6 @@ import ru.emkn.kotlin.sms.objects.Participant
 import ru.emkn.kotlin.sms.objects.makeCompetitionFromStartingProtocol
 import java.nio.file.Path
 import java.time.format.DateTimeFormatter
-import kotlin.time.ExperimentalTime
-import kotlin.time.toKotlinDuration
 
 
 fun prepareCompetition(path: Path): Competition {
@@ -41,9 +38,9 @@ fun personalResultsTarget(path: Path) {
     writer.write()
 }
 
-@OptIn(ExperimentalTime::class)
+
 private fun formatterForPersonalResults(participant: Participant) = listOf(
-    participant.place?.number?.toString(),
+    participant.positionInGroup?.place?.toString(),
     participant.id?.toString(),
     participant.name,
     participant.surname,
@@ -51,5 +48,5 @@ private fun formatterForPersonalResults(participant: Participant) = listOf(
     participant.grade,
     participant.startTime?.format(DateTimeFormatter.ISO_LOCAL_TIME),
     participant.finishTime?.format(DateTimeFormatter.ISO_LOCAL_TIME),
-    participant.place?.laggingFromLeader?.toKotlinDuration()?.toString()
+    participant.positionInGroup?.laggingFromLeader?.toIntervalString()
 )

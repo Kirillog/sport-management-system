@@ -2,11 +2,10 @@ package ru.emkn.kotlin.sms.objects
 
 import ru.emkn.kotlin.sms.io.Readable
 import ru.emkn.kotlin.sms.io.SingleLineWritable
+import ru.emkn.kotlin.sms.targets.toIntervalString
 import java.time.Duration
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
-import kotlin.time.ExperimentalTime
-import kotlin.time.toKotlinDuration
 
 data class Participant(
     val name: String,
@@ -18,12 +17,12 @@ data class Participant(
 ) : Readable, SingleLineWritable {
 
     var id: Int? = null
-    var startTime: LocalTime? = null
     var timeStamps: List<TimeStamp>? = null
+    var startTime: LocalTime? = null
     var finishTime: LocalTime? = null
-    var place: Place? = null
-    @OptIn(ExperimentalTime::class)
-    val time : Duration?
+    var positionInGroup: PositionInGroup? = null
+
+    val runTime : Duration?
         get() {
             if (finishTime == null || startTime == null)
                 return null
@@ -57,6 +56,7 @@ data class Participant(
         return time
     }
 
+    data class PositionInGroup(val place: Int, val laggingFromLeader: Duration)
     @JvmName("getFinishTime1")
     fun getFinishTime() : LocalTime {
         val time = finishTime
@@ -68,11 +68,8 @@ data class Participant(
         return Duration.between(getFinishTime(), getStartTime())
     }
 
-    data class Place(val number: Int, val laggingFromLeader: Duration)
-
-    @OptIn(ExperimentalTime::class)
     override fun toLine(): List<String?> = listOf(
-        place?.number.toString(),
+        positionInGroup?.place.toString(),
         id?.toString(),
         name,
         surname,
@@ -82,6 +79,6 @@ data class Participant(
         grade,
         startTime?.format(DateTimeFormatter.ISO_LOCAL_TIME),
         finishTime?.format(DateTimeFormatter.ISO_LOCAL_TIME),
-        place?.laggingFromLeader?.toKotlinDuration()?.toString()
+        positionInGroup?.laggingFromLeader?.toIntervalString()
     )
 }
