@@ -1,9 +1,9 @@
 import ru.emkn.kotlin.sms.FileType
-import ru.emkn.kotlin.sms.io.MultilineWritable
 import ru.emkn.kotlin.sms.io.Writer
 import ru.emkn.kotlin.sms.objects.Participant
 import ru.emkn.kotlin.sms.objects.Team
-import java.io.File
+import java.nio.file.Path
+import kotlin.io.path.Path
 import kotlin.random.Random
 
 val grades = listOf("1р", "2р", "3р", "1ю", "2ю", "3ю")
@@ -31,45 +31,51 @@ fun generateTeam(id: Int, teamSize: Int, random: Random): Team {
     return Team(name, members)
 }
 
-class WriteableTeam(private val team: Team) : MultilineWritable {
-    override fun toMultiline(): List<List<String>> {
-        return listOf(listOf(team.name)) +
-                team.members.map {
-                    val result = mutableListOf(it.name, it.surname, it.birthdayYear.toString())
-                    val grade = it.grade
+fun generateApplication(applicationPath: Path, id: Int, applicationSize: Int, random: Random): Team {
+    val file = applicationPath.toFile()
+    val team = generateTeam(id, applicationSize, random)
+    val writer = Writer(file, FileType.CSV)
+    writer.add(team) {
+        listOf(listOf(it.name)) +
+                listOf(listOf("Имя", "Фамилия", "Г.р.", "Группа", "Разр.")) +
+                it.members.map { participant ->
+                    val result = mutableListOf(
+                        participant.name,
+                        participant.surname,
+                        participant.birthdayYear.toString(),
+                        participant.group
+                    )
+                    val grade = participant.grade
                     if (grade != null)
                         result.add(grade)
+                    else
+                        result.add("")
                     result
                 }
     }
-}
-
-fun generateApplication(applicationPath: String, id: Int, applicationSize: Int, random: Random) {
-    val file = File(applicationPath)
-    val team = generateTeam(id, applicationSize, random)
-    val writer = Writer(file, FileType.CSV)
-    writer.add(WriteableTeam(team))
     writer.write()
+    return team
 }
 
 fun generateApplications(
-    applicationsDirectory: String,
-    applicationsCount: Int,
-    maxApplicationSize: Int,
-    random: Random
-) {
-    val dir = File(applicationsDirectory)
-
+    applicationsDirectory: Path,
+    applicationsCount: Int = 3,
+    maxApplicationSize: Int = 10,
+    random: Random = Random(0)
+): List<Team> {
+    val dir = applicationsDirectory.toFile()
     if (!dir.isDirectory) {
         throw Exception("Path \"$dir\" is not a directory")
     }
 
+    val teamsList = mutableListOf<Team>()
     for (i in 1..applicationsCount) {
         val applicationSize = random.nextInt(1, maxApplicationSize)
-        generateApplication("$applicationsDirectory/$i.csv", i, applicationSize, random)
+        teamsList.add(generateApplication(applicationsDirectory.resolve("$i.csv"), i, applicationSize, random))
     }
+    return teamsList
 }
 
 fun main() {
-    generateApplications("test_generator", 3, 10, Random(1))
+    generateApplications(Path("test_generator"))
 }

@@ -120,14 +120,19 @@ fun main(args: Array<String>): Unit = mainBody {
     logger.info { "Program started" }
     val parsedArgs = ArgParser(args).parseInto(::ArgumentsFormat)
     val competitionPath = Path(parsedArgs.competitionsRoot).resolve(parsedArgs.competitionName)
+    try {
+        val competition = Competition(competitionPath)
+        logger.info { "Competition files read success" }
 
-    val competition = Competition(competitionPath)
-    logger.info { "Competition files read success" }
-
-    when (parsedArgs.target) {
-        Target.TOSS -> tossTarget(competition)
-        Target.PERSONAL_RESULT -> personalResultsTarget(competition)
-        Target.TEAM_RESULT -> TODO()
+        when (parsedArgs.target) {
+            Target.TOSS -> tossTarget(competition)
+            Target.PERSONAL_RESULT -> personalResultsTarget(competition)
+            Target.TEAM_RESULT -> TODO()
+        }
+        logger.info { "Program successfully finished" }
     }
-    logger.info { "Program successfully finished" }
+    catch (error : Exception) {
+        logger.info {"Wow, that's a big surprise, program was fault"}
+        logger.error { error.message }
+    }
 }

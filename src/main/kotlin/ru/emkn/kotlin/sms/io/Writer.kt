@@ -22,6 +22,9 @@ class Writer(private val file: File, val filetype: FileType) {
     fun <T : SingleLineWritable> add(el: T, formatter: (T) -> List<String?> = { it.toLine() }) =
         buffer.add(formatter(el))
 
+    fun <T : SingleLineWritable> addAllLines(el: List<T>, formatter: (T) -> List<String?> = { it.toLine() }) =
+        buffer.addAll(el.map { formatter(it) })
+
     fun <T : MultilineWritable> add(el: T, formatter: (T) -> List<List<String?>> = { it.toMultiline() }) =
         buffer.addAll(formatter(el))
 
@@ -34,6 +37,8 @@ class Writer(private val file: File, val filetype: FileType) {
     }
 
     fun add(el: List<String>) = buffer.add(el)
+
+    fun addAll(el: List<List<String>>) = buffer.addAll(el)
 
     fun clear() = buffer.clear()
 
