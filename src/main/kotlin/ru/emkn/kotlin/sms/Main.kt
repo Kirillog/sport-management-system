@@ -7,6 +7,10 @@ package ru.emkn.kotlin.sms
 import com.xenomachina.argparser.ArgParser
 import com.xenomachina.argparser.mainBody
 import mu.KotlinLogging
+import ru.emkn.kotlin.sms.io.Writer2
+import ru.emkn.kotlin.sms.objects.Course
+import ru.emkn.kotlin.sms.objects.Group
+import ru.emkn.kotlin.sms.objects.Participant
 import ru.emkn.kotlin.sms.targets.tossTarget
 import ru.emkn.kotlin.sms.targets.personalResultsTarget
 import ru.emkn.kotlin.sms.targets.teamResultsTarget
@@ -15,6 +19,12 @@ import kotlin.io.path.Path
 private val logger = KotlinLogging.logger {}
 
 fun main(args: Array<String>): Unit = mainBody {
+
+    val group = Group("", Course("", listOf()), listOf(Participant("kek", "lol", 192, "kk", "kk", "k")))
+    println(group)
+    val writer = Writer2(Group, setOf(Group::name))
+    println(writer.header)
+    println(writer.formattedHeader)
 
     logger.info { "Program started" }
     val parsedArgs = ArgParser(args).parseInto(::ArgumentsFormat)
