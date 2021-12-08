@@ -13,33 +13,6 @@ import kotlin.random.Random
 private val logger = KotlinLogging.logger {}
 
 /**
- * Function to create an instance of the competition needed for the toss.
- * Needs all files from input folder
- */
-fun makeCompetition(path: Path): Competition {
-    val event = formEvent(path)
-    val teams = formTeamsList(path)
-    val groups = formGroupsList(teams, path)
-    return Competition(event, path, teams, groups)
-}
-
-/**
- * Function to create an instance of the competition needed for formation the results.
- * Needs all files from input folder and file with the toss
- */
-fun makeCompetitionFromStartingProtocol(path: Path): Competition {
-    val event = formEvent(path)
-    val groups = formTossedGroups(path)
-    val teams = convertGroupsToTeams(groups)
-    return Competition(event, path, teams, groups)
-}
-
-fun convertGroupsToTeams(groups: List<Group>): List<Team> =
-    groups.flatMap { it.members }.groupBy { it.team }.map {
-        Team(it.key, it.value)
-    }
-
-/**
  * The widest class that stores all the information about the competition
  */
 data class Competition(
@@ -48,6 +21,35 @@ data class Competition(
     val teams: List<Team>,
     val groups: List<Group>,
 ) {
+
+    companion object {
+        /**
+         * Function to create an instance of the competition needed for the toss.
+         * Needs all files from input folder
+         */
+        fun makeCompetition(path: Path): Competition {
+            val event = formEvent(path)
+            val teams = formTeamsList(path)
+            val groups = formGroupsList(teams, path)
+            return Competition(event, path, teams, groups)
+        }
+
+        private fun convertGroupsToTeams(groups: List<Group>): List<Team> =
+            groups.flatMap { it.members }.groupBy { it.team }.map {
+                Team(it.key, it.value)
+            }
+
+        /**
+         * Function to create an instance of the competition needed for formation the results.
+         * Needs all files from input folder and file with the toss
+         */
+        fun makeCompetitionFromStartingProtocol(path: Path): Competition {
+            val event = formEvent(path)
+            val groups = formTossedGroups(path)
+            val teams = convertGroupsToTeams(groups)
+            return Competition(event, path, teams, groups)
+        }
+    }
 
     constructor(competition: Competition) : this(
         competition.event,
@@ -60,8 +62,6 @@ data class Competition(
         when (target) {
             Target.TOSS ->
                 makeCompetition(path)
-            Target.PERSONAL_RESULT ->
-                makeCompetitionFromStartingProtocol(path)
             else ->
                 makeCompetitionFromStartingProtocol(path)
         }

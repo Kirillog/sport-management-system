@@ -5,7 +5,6 @@ import ru.emkn.kotlin.sms.io.Writer
 import ru.emkn.kotlin.sms.io.formTimestamps
 import ru.emkn.kotlin.sms.objects.Competition
 import ru.emkn.kotlin.sms.objects.Participant
-import ru.emkn.kotlin.sms.objects.makeCompetitionFromStartingProtocol
 import java.nio.file.Path
 import java.time.format.DateTimeFormatter
 
@@ -13,7 +12,7 @@ import java.time.format.DateTimeFormatter
  * Function for up-to-date competition with runs results
  */
 fun prepareCompetition(path: Path): Competition {
-    val competition = makeCompetitionFromStartingProtocol(path)
+    val competition = Competition.makeCompetitionFromStartingProtocol(path)
     val timestamps = formTimestamps(competition.path)
     val groups = competition.groups
     fillTimestamps(groups, timestamps)
