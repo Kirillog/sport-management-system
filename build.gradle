@@ -40,3 +40,15 @@ compileTestKotlin {
 application {
     mainClassName = 'MainKt'
 }
+
+task fatJar(type: Jar) {
+    manifest {
+        attributes 'Main-Class': 'ru.emkn.kotlin.sms.MainKt'
+    }
+    archiveClassifier = "all"
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    with jar
+    duplicatesStrategy "exclude"
+}
