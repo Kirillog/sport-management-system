@@ -27,21 +27,21 @@ data class ParticipantsProtocol(val participant: Participant, val protocol: List
 
 fun generateParticipantsProtocol(
     participant: Participant,
-    course: Course,
+    route: Route,
     maxFinishTime: LocalTime,
     random: Random
 ): ParticipantsProtocol {
     val startTime = participant.getStartTime()
     val startSeconds = startTime.toSecondOfDay()
     val maxFinishSeconds: Int = maxFinishTime.toSecondOfDay()
-    val times = listOf(startTime) + List(course.checkPoints.size - 1) {
+    val times = listOf(startTime) + List(route.checkPoints.size - 1) {
         val randomTime = random.nextInt(startSeconds, maxFinishSeconds)
         LocalTime.ofSecondOfDay(randomTime.toLong())
     }.sorted()
 
     return ParticipantsProtocol(
         participant,
-        course.checkPoints.zip(times) { checkpoint, time -> TimeStamp(time, checkpoint.id, participant.getId()) }
+        route.checkPoints.zip(times) { checkpoint, time -> TimeStamp(time, checkpoint.id, participant.getId()) }
     )
 }
 

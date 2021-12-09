@@ -17,37 +17,37 @@ abstract class Reader(protected val file: File) {
     abstract fun team(): Team?
 
     /**
-     * Map from name of [Group] to name of [Course] located in [file].
+     * Map from name of [Group] to name of [Route] located in [file].
      *
      * Returns `null` if data has incorrect format.
      */
-    abstract fun groupsToCourses(): Map<String, String>?
+    abstract fun groups(): Set<Group>?
 
     /**
-     * [Course] list located in [file].
+     * [Route] list located in [file].
      *
      * Returns `null` if data has incorrect format.
      */
-    abstract fun courses(): List<Course>?
+    abstract fun courses(): Set<Route>?
 
     /**
      * [Event] list located in [file].
      *
      * Returns `null` if data has incorrect format.
      */
-    abstract fun events(): List<Event>?
+    abstract fun events(): Set<Event>?
 
     /**
      * [TimeStamp] list located in [file].
      *
      * Returns `null` if data has incorrect format.
      */
-    abstract fun timestamps(): List<TimeStamp>?
+    abstract fun timestamps(): Set<TimeStamp>?
 
     /**
      * [Participant] list located in [file].
      *
      * Returns `null` if data has incorrect format.
      */
-    abstract fun participants(): List<Participant>?
+    abstract fun participants(): Set<Participant>?
 }

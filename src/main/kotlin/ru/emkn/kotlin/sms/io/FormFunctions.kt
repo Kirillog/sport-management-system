@@ -1,6 +1,6 @@
 package ru.emkn.kotlin.sms.io
 
-import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
+/*import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import mu.KotlinLogging
 import ru.emkn.kotlin.sms.objects.*
 import java.io.File
@@ -26,7 +26,7 @@ fun formTeamsList(competitionPath: Path): List<Team> {
 }
 
 /**
- * Converts list of [Team] to list of [Group] using information about [Course] and [GroupToCourse] in [competitionPath].
+ * Converts list of [Team] to list of [Group] using information about [Route] and [GroupToCourse] in [competitionPath].
  */
 
 fun formGroupsList(teams: List<Team>, competitionPath: Path): List<Group> {
@@ -44,7 +44,7 @@ fun formGroupsList(teams: List<Team>, competitionPath: Path): List<Group> {
 }
 
 /**
- * Returns map from name of [Group] to name of [Course] located in [competitionPath]/input/classes.csv.
+ * Returns map from name of [Group] to name of [Route] located in [competitionPath]/input/classes.csv.
  *
  * Throws [IllegalArgumentException] if file cannot be read.
  */
@@ -59,12 +59,12 @@ fun formMapGroupsToCourses(competitionPath: Path): Map<String, String> {
 }
 
 /**
- * Returns list of [Course] located in [competitionPath]/input/courses.csv.
+ * Returns list of [Route] located in [competitionPath]/input/courses.csv.
  *
  * Throws [IllegalArgumentException] if file cannot be read.
  */
 
-fun formCoursesList(competitionPath: Path): List<Course> {
+fun formCoursesList(competitionPath: Path): List<Route> {
     val reader = csvReader()
     val file = competitionPath.resolve("input/courses.csv").toFile()
     return reader.open(file) {
@@ -111,7 +111,7 @@ fun formTimestamps(competitionPath: Path): List<TimeStamp> {
 
 /**
  * Returns list of tossed [Group] located in [competitionPath]/protocols/toss.csv.
- *
+ *dir
  * Throws [IllegalArgumentException] if file cannot be read.
  */
 
@@ -131,4 +131,4 @@ fun formTossedGroups(competitionPath: Path): List<Group> {
                 group.value
             )
         }
-}
+}*/

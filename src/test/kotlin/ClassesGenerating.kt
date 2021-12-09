@@ -1,7 +1,7 @@
 import mu.KotlinLogging
 import ru.emkn.kotlin.sms.FileType
 import ru.emkn.kotlin.sms.io.Writer
-import ru.emkn.kotlin.sms.objects.Course
+import ru.emkn.kotlin.sms.objects.Route
 import ru.emkn.kotlin.sms.objects.Group
 import ru.emkn.kotlin.sms.objects.Participant
 import ru.emkn.kotlin.sms.objects.Team
@@ -27,8 +27,8 @@ fun generateCoursesForGroups(
     groups: List<String> = getAllGroups(),
     maxCheckPointsCount: Int = 10,
     random: Random = Random(0)
-): Map<String, Course> {
-    val result = mutableMapOf<String, Course>()
+): Map<String, Route> {
+    val result = mutableMapOf<String, Route>()
     var maxLength = 0
     for (groupId in groups.indices) {
         val courseLength = random.nextInt(2, maxCheckPointsCount + 1)

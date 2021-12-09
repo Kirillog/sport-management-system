@@ -21,8 +21,8 @@ internal class TeamResultTest {
         Participant("РОМАН", "МЕРЦАЛОВ", 2013, "М10", "0-ПСКОВ", "3р", 125, LocalTime.of(13, 55, 0))
     )
 
-    private val courses = listOf(
-        Course("МЖ10 14", listOf(CheckPoint(1), CheckPoint(2), CheckPoint(3), CheckPoint(4)))
+    private val cours = listOf(
+        Route("МЖ10 14", listOf(CheckPoint(1), CheckPoint(2), CheckPoint(3), CheckPoint(4)))
     )
 
     private val teams = listOf(
@@ -32,9 +32,9 @@ internal class TeamResultTest {
     )
 
     private val groups = listOf(
-        Group("МЖ14", courses[0], listOf(participants[1], participants[2])),
-        Group("М10", courses[0], listOf(participants[3], participants[4])),
-        Group("Ж10", courses[0], listOf(participants[0]))
+        Group("МЖ14", cours[0], listOf(participants[1], participants[2])),
+        Group("М10", cours[0], listOf(participants[3], participants[4])),
+        Group("Ж10", cours[0], listOf(participants[0]))
     )
 
     private val competition = Competition(

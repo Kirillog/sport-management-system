@@ -2,7 +2,7 @@ import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import org.junit.jupiter.api.Test
 import ru.emkn.kotlin.sms.FileType
 import ru.emkn.kotlin.sms.io.Writer
-import ru.emkn.kotlin.sms.objects.Course
+import ru.emkn.kotlin.sms.objects.Route
 import ru.emkn.kotlin.sms.objects.Group
 import ru.emkn.kotlin.sms.objects.Participant
 import ru.emkn.kotlin.sms.objects.Team
@@ -134,11 +134,11 @@ class WriterTest {
     @Test
     fun testWriteGroup() {
         val groupA = Group(
-            name = "Human", course = Course("Course for 'Human'", listOf()),
+            name = "Human", route = Route("Course for 'Human'", listOf()),
             listOf(participant[0], participant[1])
         )
         val groupB = Group(
-            name = "Pokemon", course = Course("Course for 'Pokemon'", listOf()),
+            name = "Pokemon", route = Route("Course for 'Pokemon'", listOf()),
             listOf(participant[2], participant[3])
         )
 

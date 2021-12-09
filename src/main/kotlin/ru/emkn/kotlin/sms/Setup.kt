@@ -12,13 +12,14 @@ enum class Target {
 }
 
 val headers = mapOf(
+    "Название группы" to "name",
     "Группа" to "group",
     "Фамилия" to "surname",
     "Имя" to "name",
     "Название" to "name",
     "Г.р." to "birthdayYear",
     "Разр." to "grade",
-    "Дистанция" to "course",
+    "Дистанция" to "routeName",
     "Команда" to "team",
     "Дата" to "date",
     "Номер" to "participantId",

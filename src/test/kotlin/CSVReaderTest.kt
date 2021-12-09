@@ -21,7 +21,7 @@ internal class CSVReaderTest {
         }
     }
 
-    private fun readCourses(file: File): List<Course>? {
+    private fun readCourses(file: File): List<Route>? {
         return csvReader().open(file) {
             CSVReader(file, this).courses()
         }
@@ -128,8 +128,8 @@ internal class CSVReaderTest {
             val coursesFile = resources.resolve("courses/incorrectTypeOfField.csv").toFile()
             assertEquals(
                 listOf(
-                    Course("М18 21 40 50", listOf(CheckPoint(31), CheckPoint(32))),
-                    Course("Ж14", listOf(CheckPoint(47), CheckPoint(46), CheckPoint(45), CheckPoint(34)))
+                    Route("М18 21 40 50", listOf(CheckPoint(31), CheckPoint(32))),
+                    Route("Ж14", listOf(CheckPoint(47), CheckPoint(46), CheckPoint(45), CheckPoint(34)))
                 ),
                 readCourses(coursesFile)
             )
@@ -140,11 +140,11 @@ internal class CSVReaderTest {
             val coursesFile = resources.resolve("courses/simple.csv").toFile()
             assertEquals(
                 listOf(
-                    Course(
+                    Route(
                         "МЖ9 10",
                         listOf(CheckPoint(32), CheckPoint(46), CheckPoint(34), CheckPoint(33), CheckPoint(53))
                     ),
-                    Course(
+                    Route(
                         "Ж14",
                         listOf(
                             CheckPoint(47),
@@ -155,7 +155,7 @@ internal class CSVReaderTest {
                             CheckPoint(32)
                         )
                     ),
-                    Course("Ж12", listOf(CheckPoint(32), CheckPoint(46)))
+                    Route("Ж12", listOf(CheckPoint(32), CheckPoint(46)))
                 ),
                 readCourses(coursesFile)
             )

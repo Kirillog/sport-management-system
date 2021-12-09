@@ -2,20 +2,20 @@ import mu.KotlinLogging
 import ru.emkn.kotlin.sms.FileType
 import ru.emkn.kotlin.sms.io.Writer
 import ru.emkn.kotlin.sms.objects.CheckPoint
-import ru.emkn.kotlin.sms.objects.Course
+import ru.emkn.kotlin.sms.objects.Route
 import java.nio.file.Path
 import kotlin.io.path.*
 import kotlin.random.Random
 
 private val logger = KotlinLogging.logger {}
 
-fun generateCourse(id: Int, maxCheckPointsCount: Int, courseLength: Int, random: Random): Course {
+fun generateCourse(id: Int, maxCheckPointsCount: Int, courseLength: Int, random: Random): Route {
     val name = "course$id"
     val checkpointsInCourse = MutableList(maxCheckPointsCount) { CheckPoint(it) }
     checkpointsInCourse.shuffle(random)
     while (checkpointsInCourse.size > courseLength)
         checkpointsInCourse.removeAt(checkpointsInCourse.lastIndex)
-    return Course(name, checkpointsInCourse)
+    return Route(name, checkpointsInCourse)
 }
 
 
@@ -25,7 +25,7 @@ fun generateCourses(
     maxCheckPointsCount: Int = 10,
     maxCourseLength: Int = 11,
     random: Random = Random(0)
-): List<Course> {
+): List<Route> {
     val coursesList = List(coursesAmount) {
         val courseLength = random.nextInt(2, maxCourseLength)
         generateCourse(it, maxCheckPointsCount, courseLength, random)
