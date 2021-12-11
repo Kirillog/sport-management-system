@@ -5,8 +5,54 @@ import mu.KotlinLogging
 import ru.emkn.kotlin.sms.io.CSVReader
 import java.io.File
 import java.nio.file.Path
+import java.time.LocalTime
 
 private val logger = KotlinLogging.logger {}
+
+abstract class Toss {
+    val participants = mutableSetOf<Participant>()
+    val startTimeByParticipant = mutableMapOf<Participant, LocalTime>()
+
+    fun getParticipantStartTime(participant: Participant): LocalTime
+
+    fun addParticipant(participant: Participant)
+
+    fun addAllParticipant() {
+        Participant.byId.values.forEach { this.addParticipant(it) }
+    }
+
+    fun completeToss()
+}
+
+class SimpleToss() : Toss {
+
+    override val participants = mutableSetOf<Participant>()
+
+    override val startTimeByParticipant = mutableMapOf<Participant, LocalTime> ()
+
+    enum class State {
+        PREPARING, TOSSED
+    }
+
+    var state = State.PREPARING
+
+    override fun completeToss() {
+
+        state = State.TOSSED
+    }
+
+    override fun addParticipant(participant: Participant) {
+        require(state == State.PREPARING)
+        participants.add(participant)
+    }
+
+    override fun getParticipantStartTime(participant: Participant): LocalTime {
+        require(state == State.TOSSED)
+        return startTimeByParticipant.getOrElse(participant) {
+            throw IllegalStateException("This participant ${participant.id} has not been tossed")
+        }
+    }
+}
 
 class RuntimeDump() {
 
@@ -34,49 +80,10 @@ enum class CompetitionStates {
     FINISHED
 }
 
-interface Loader {
-    fun loadGroups(): Set<Group>
-    fun loadTeams(): Set<Team>
-    fun loadRoutes(): Set<Route>
-    fun loadTimestamps(): Set<TimeStamp>
-}
-
-class FileLoader(path: Path) : Loader {
-    private val reader = csvReader()
-    private val file = path.toFile()
-
-    override fun loadGroups(): Set<Group> =
-        reader.open(file) {
-            CSVReader(file, this).groups()
-        } ?: throw IllegalArgumentException("Cannot read file ${file.name}")
-
-    override fun loadRoutes(): Set<Route> =
-        reader.open(file) {
-            CSVReader(file, this).courses()
-        } ?: throw IllegalArgumentException("Cannot read file ${file.name}")
-
-
-    override fun loadTeams(): Set<Team> =
-        file.walk().filter(File::isFile).map { file ->
-            logger.debug { "Processing ${file.name}" }
-            reader.open(file) {
-                CSVReader(file, this).team()
-            }
-        }.filterNotNull().toSet()
-
-    override fun loadTimestamps(): Set<TimeStamp> =
-        file.walk().filter { it.isFile && it.extension == "csv" }.map { file ->
-            logger.debug { "Processing ${file.name}" }
-            reader.open(file) {
-                CSVReader(file, this).timestamps()
-            }
-        }.filterNotNull().flatten().toSet()
-}
-
 /**
  * The widest class that stores all the information about the competition
  */
-data class Competition(var event: Event) {
+data class Competition(var event: Event, var toss: Toss) {
 
     val checkPoints: MutableSet<CheckPoint> = mutableSetOf()
     val routes: MutableSet<Route> = mutableSetOf()
@@ -84,7 +91,7 @@ data class Competition(var event: Event) {
     val groups: MutableSet<Group> = mutableSetOf()
 
     val state: CompetitionStates = CompetitionStates.ANNOUNCED
-    val dump = RuntimeDump()
+    var dump = RuntimeDump()
 
     fun loadGroups(loader: Loader) {
         groups.addAll(loader.loadGroups())

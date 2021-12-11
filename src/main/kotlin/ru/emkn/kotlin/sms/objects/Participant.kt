@@ -27,11 +27,4 @@ class Participant(
     }
 
     var id = nextFreeId++.also { byId[it] = this }
-
-//    val runTime : Duration?
-//        get() {
-//            if (finishTime == null || startTime == null)
-//                return null
-//            return Duration.between(finishTime, startTime)
-//        }
 }
