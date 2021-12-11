@@ -1,7 +1,4 @@
-package ru.emkn.kotlin.sms.objects
-
-import ru.emkn.kotlin.sms.io.MultilineWritable
-import java.time.format.DateTimeFormatter
+package ru.emkn.kotlin.sms.model
 
 /**
  *  Class for saving data about one sports group whose members follow the same route

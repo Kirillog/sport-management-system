@@ -22,7 +22,7 @@ val headers = mapOf(
     "Дистанция" to "routeName",
     "Команда" to "team",
     "Дата" to "date",
-    "Номер" to "participantId",
+    "Номер" to "id",
     "Время старта" to "startTime",
     "Время" to "time"
 )

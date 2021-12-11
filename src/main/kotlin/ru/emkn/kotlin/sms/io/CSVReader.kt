@@ -1,10 +1,11 @@
 package ru.emkn.kotlin.sms.io
 
 import com.github.doyaaaaaken.kotlincsv.client.CsvFileReader
+import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import com.sksamuel.hoplite.simpleName
 import mu.KotlinLogging
 import ru.emkn.kotlin.sms.headers
-import ru.emkn.kotlin.sms.objects.*
+import ru.emkn.kotlin.sms.model.*
 import java.io.File
 import java.io.IOException
 import java.time.LocalDate
@@ -22,7 +23,16 @@ private val logger = KotlinLogging.logger { }
  *
  * @param reader provides reading with header.
  */
-class CSVReader(file: File, private val reader: CsvFileReader) : Reader(file) {
+class CSVReader(file: File) : Reader(file) {
+    private val csvReader = csvReader()
+    private lateinit var reader: CsvFileReader
+
+    init {
+        csvReader.open(file) {
+            reader = this
+        }
+    }
+
     /**
      * Converts [field] in [lineNumber] to [kType].
      *
@@ -64,7 +74,7 @@ class CSVReader(file: File, private val reader: CsvFileReader) : Reader(file) {
     }
 
     /**
-     * Converts [table] to [Readable] objects using their [constructor]
+     * Converts [table] to objects using their [constructor]
      */
     private fun <T> objectList(
         table: List<Map<String, String>>,
@@ -86,7 +96,7 @@ class CSVReader(file: File, private val reader: CsvFileReader) : Reader(file) {
     }
 
     /**
-     * Converts [parameters] to [Readable] [KClass] constructor
+     * Converts [parameters] to [KClass] constructor
      */
     private fun <T : Any> constructorByHeader(parameters: Set<String>, kClass: KClass<T>): KFunction<T>? {
         logger.debug { "Header: $parameters" }
@@ -186,15 +196,18 @@ class CSVReader(file: File, private val reader: CsvFileReader) : Reader(file) {
         return checkPoints
     }
 
-    override fun events(): Set<Event>? {
+    override fun event(): Event? {
         val table = tableWithHeader() ?: return null
         val constructor = constructorByHeader(table.first().keys, Event::class)
         requireNotNull(constructor) { "Events doesn't have appropriate constructors" }
         val events = objectList(table, constructor)
         if (events.isEmpty())
             logger.warn { "List of events is empty" }
-        return events
+        else if (events.size > 1)
+            logger.warn { "There is some events, chose first from them" }
+        return events.first()
     }
+
 
     override fun timestamps(): Set<TimeStamp>? {
         val name = name()?.toIntOrNull() ?: throw IOException("Wrong type of checkPoint id")
@@ -209,14 +222,21 @@ class CSVReader(file: File, private val reader: CsvFileReader) : Reader(file) {
         return timeStamps
     }
 
-    override fun participants(): Set<Participant>? {
+    override fun toss(): Map<Participant, LocalTime>? {
         val table = tableWithHeader() ?: return null
         val correctedTable = preprocess(table)
         val constructor = constructorByHeader(correctedTable.first().keys, Participant::class)
         requireNotNull(constructor) { "Participant doesn't have appropriate constructors" }
-        val participants = objectList(correctedTable, constructor)
+        val participants = objectList(correctedTable, constructor).toList()
         if (participants.isEmpty())
             logger.warn { "List of participants is empty" }
-        return participants
+        val startTimes = correctedTable.mapIndexed { number, line ->
+            convert(line["id"] ?: "", number, Participant::id.returnType) as Int to
+                    convert(line["startTime"] ?: "", number, Participant::startTime.returnType) as LocalTime
+        }.toMap()
+        return participants.associateWith {
+            startTimes[it.id] ?: throw IllegalStateException("Cannot find ${it.id} in startTimes")
+        }
     }
+
 }

@@ -1,8 +1,8 @@
 import mu.KotlinLogging
 import ru.emkn.kotlin.sms.FileType
 import ru.emkn.kotlin.sms.io.Writer
-import ru.emkn.kotlin.sms.objects.CheckPoint
-import ru.emkn.kotlin.sms.objects.Route
+import ru.emkn.kotlin.sms.model.CheckPoint
+import ru.emkn.kotlin.sms.model.Route
 import java.nio.file.Path
 import kotlin.io.path.*
 import kotlin.random.Random

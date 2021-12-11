@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import ru.emkn.kotlin.sms.io.CSVReader
-import ru.emkn.kotlin.sms.objects.*
+import ru.emkn.kotlin.sms.model.*
 import java.io.File
 import java.io.IOException
 import java.time.LocalDate

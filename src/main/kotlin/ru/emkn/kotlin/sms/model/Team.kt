@@ -1,8 +1,5 @@
-package ru.emkn.kotlin.sms.objects
+package ru.emkn.kotlin.sms.model
 
-
-import ru.emkn.kotlin.sms.io.MultilineWritable
-import java.time.format.DateTimeFormatter
 
 /**
  * Class for representing all information about one team, with read from single application file

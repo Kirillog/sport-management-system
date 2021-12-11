@@ -4,18 +4,16 @@ package ru.emkn.kotlin.sms
 //https://github.com/doyaaaaaken/kotlin-csv
 //https://github.com/Kotlin/kotlinx-datetime
 
-import com.xenomachina.argparser.mainBody
-import mu.KotlinLogging
-import ru.emkn.kotlin.sms.io.Writer
 //import com.xenomachina.argparser.ArgParser
 //import ru.emkn.kotlin.sms.targets.tossTarget
 //import ru.emkn.kotlin.sms.targets.personalResultsTarget
 //import ru.emkn.kotlin.sms.targets.teamResultsTarget
-import kotlin.io.path.Path
 
-import ru.emkn.kotlin.sms.objects.*
-import java.io.File
+import com.xenomachina.argparser.mainBody
+import mu.KotlinLogging
+import ru.emkn.kotlin.sms.model.*
 import java.time.LocalDate
+import kotlin.io.path.Path
 
 private val logger = KotlinLogging.logger {}
 
