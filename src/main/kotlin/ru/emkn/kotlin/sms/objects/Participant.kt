@@ -1,5 +1,7 @@
 package ru.emkn.kotlin.sms.objects
 
+import java.time.LocalTime
+
 /**
  * Class created for every people in application lists.
  * Contain meta information from application lists and run result, if participant finished.
@@ -15,6 +17,9 @@ class Participant(
 
     val group = Group.byName[group] ?: throw IllegalArgumentException("Can not find group $group")
     val team = Team.byName[team] ?: throw IllegalArgumentException("Can not find team $team")
+
+    val startTime: LocalTime
+        get() = Competition.toss.getParticipantStartTime(this)
 
     init {
         this.group.members.add(this)

@@ -23,12 +23,17 @@ fun main(args: Array<String>): Unit = mainBody {
 
     logger.info { "Program started" }
 
-    val competition = Competition(Event("Event Name", LocalDate.of(2021, 11, 11)))
+    Competition.event = Event("Event Name", LocalDate.of(2021, 11, 11))
     val path = Path("competitions/competition-1")
-    competition.loadRoutes(FileLoader(path.resolve("input/courses.csv")))
-    competition.loadGroups(FileLoader(path.resolve("input/classes.csv")))
-    competition.loadTeams(FileLoader(path.resolve("applications")))
-
+    Competition.loadRoutes(FileLoader(path.resolve("input/courses.csv")))
+    Competition.loadGroups(FileLoader(path.resolve("input/classes.csv")))
+    Competition.loadTeams(FileLoader(path.resolve("applications")))
+    Competition.toss.addAllParticipant()
+    Competition.toss.build()
+    println("kek")
+    Competition.toss = Toss()
+    Competition.toss.addAllParticipant()
+    Competition.toss.build()
     println("kek")
 //    val parsedArgs = ArgParser(args).parseInto(::ArgumentsFormat)
 //    val competitionPath = Path(parsedArgs.competitionsRoot).resolve(parsedArgs.competitionName)
