@@ -6,72 +6,57 @@ import ru.emkn.kotlin.sms.io.CSVReader
 import java.io.File
 import java.nio.file.Path
 import java.time.LocalTime
+import kotlin.random.Random
 
 private val logger = KotlinLogging.logger {}
 
-abstract class Toss {
-    val participants = mutableSetOf<Participant>()
-    val startTimeByParticipant = mutableMapOf<Participant, LocalTime>()
-
-    fun getParticipantStartTime(participant: Participant): LocalTime
-
-    fun addParticipant(participant: Participant)
-
-    fun addAllParticipant() {
-        Participant.byId.values.forEach { this.addParticipant(it) }
-    }
-
-    fun completeToss()
-}
-
-class SimpleToss() : Toss {
-
-    override val participants = mutableSetOf<Participant>()
-
-    override val startTimeByParticipant = mutableMapOf<Participant, LocalTime> ()
+open class Toss {
 
     enum class State {
         PREPARING, TOSSED
     }
 
     var state = State.PREPARING
+        protected set
+    protected val participants = mutableSetOf<Participant>()
+    val startTimeByParticipant = mutableMapOf<Participant, LocalTime>()
 
-    override fun completeToss() {
-
-        state = State.TOSSED
-    }
-
-    override fun addParticipant(participant: Participant) {
+    private fun addParticipant(participant: Participant) {
         require(state == State.PREPARING)
         participants.add(participant)
     }
 
-    override fun getParticipantStartTime(participant: Participant): LocalTime {
+    private fun build(loader: Loader) {
+        //TODO()
+    }
+
+    private fun addAllParticipant() {
+        require(state == State.PREPARING)
+        Participant.byId.values.forEach { this.addParticipant(it) }
+    }
+
+    private fun getParticipantStartTime(participant: Participant): LocalTime {
         require(state == State.TOSSED)
         return startTimeByParticipant.getOrElse(participant) {
             throw IllegalStateException("This participant ${participant.id} has not been tossed")
         }
     }
+
+    fun build() {
+        var currentId = 100
+        var currentTime = LocalTime.NOON
+        val deltaMinutes = 5L
+        participants.groupBy { it.group }.forEach { (group, members) ->
+            members.shuffled(Random(0)).forEach { participant ->
+                startTimeByParticipant[participant] = currentTime
+                currentTime = currentTime.plusMinutes(deltaMinutes)
+                participant.id = currentId++
+            }
+        }
+        state = State.TOSSED
+    }
 }
 
-class RuntimeDump() {
-
-    fun addTimestamp(timeStamp: TimeStamp) {
-        TODO("Add checkpoint to checkPointDump")
-    }
-
-    fun addAllTimestamps(timeStamps: Set<TimeStamp>) {
-        TODO("Add checkpoint to checkPointDump")
-    }
-
-    fun completeDump() {
-        TODO("fill participantDump by checkPointDump")
-        //TODO("А ещё лучше автоматически добавлять сразу в addCheckpoint")
-    }
-
-    val checkPointDump: MutableMap<CheckPoint, List<TimeStamp>> = mutableMapOf()
-    val participantDump: Map<Participant, List<TimeStamp>> = mapOf()
-}
 
 enum class CompetitionStates {
     ANNOUNCED,
