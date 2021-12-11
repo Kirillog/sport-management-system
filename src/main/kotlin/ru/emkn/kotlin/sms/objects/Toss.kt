@@ -37,13 +37,6 @@ open class Toss {
         }
     }
 
-//    inner class Entrypoint : ReadOnlyProperty<Participant, LocalTime> {
-//        override fun getValue(thisRef: Participant, property: KProperty<*>): LocalTime {
-//            require(state == State.TOSSED)
-//            return startTimeByParticipant[thisRef] ?: throw IllegalStateException("Participant ${thisRef.id} has not been tossed")
-//        }
-//    }
-
     open fun build() {
         var currentId = 100
         var currentTime = LocalTime.NOON

@@ -18,8 +18,11 @@ class Participant(
     val group = Group.byName[group] ?: throw IllegalArgumentException("Can not find group $group")
     val team = Team.byName[team] ?: throw IllegalArgumentException("Can not find team $team")
 
-    val startTime: LocalTime
+    var startTime: LocalTime
         get() = Competition.toss.getParticipantStartTime(this)
+        set(time) {
+            Competition.toss.startTimeByParticipant[this] = time
+        }
 
     init {
         this.group.members.add(this)
