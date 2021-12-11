@@ -11,14 +11,18 @@ private val logger = KotlinLogging.logger {}
 class FileLoader(path: Path) : Loader {
     private val file = path.toFile()
     private val reader = CSVReader(file)
+
+    fun error(): Nothing =
+        throw IllegalArgumentException("Cannot read file ${file.name}")
+
     override fun loadEvent(): Event =
-        reader.event() ?: throw IllegalArgumentException("Cannot read file ${file.name}")
+        reader.event() ?: error()
 
     override fun loadGroups(): Set<Group> =
-        reader.groups() ?: throw IllegalArgumentException("Cannot read file ${file.name}")
+        reader.groups() ?: error()
 
     override fun loadRoutes(): Set<Route> =
-        reader.courses() ?: throw IllegalArgumentException("Cannot read file ${file.name}")
+        reader.courses() ?: error()
 
     override fun loadTeams(): Set<Team> =
         file.walk().filter(File::isFile).map { file ->
@@ -33,6 +37,6 @@ class FileLoader(path: Path) : Loader {
         }.filterNotNull().flatten().toSet()
 
     override fun loadToss(): Map<Participant, LocalTime> =
-        reader.toss() ?: throw IllegalArgumentException("Cannot read ${file.name}")
+        reader.toss() ?: error()
 }
 

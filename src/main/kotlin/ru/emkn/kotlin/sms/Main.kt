@@ -24,33 +24,18 @@ fun main(args: Array<String>): Unit = mainBody {
 
     logger.info { "Program started" }
 
-//    val path = Path("competitions/competition-1")
-//    CompetitionController.announceFromPath(
-//        path.resolve("input/event.csv"),
-//        path.resolve("input/courses.csv")
-//    )
-//
-//    Competition.loadGroups(FileLoader(path.resolve("input/classes.csv")))
-//    Competition.loadTeams(FileLoader(path.resolve("applications")))
-//    Competition.toss.addAllParticipant()
-//    Competition.toss.build()
-//
-//    val writer = Writer(File("test.csv"), FileType.CSV)
-//    CompetitionController.saveToss(writer)
+    val path = Path("competitions/competition-1")
+    CompetitionController.announceFromPath(
+        path.resolve("input/event.csv"),
+        path.resolve("input/courses.csv")
+    )
 
-//    val parsedArgs = ArgParser(args).parseInto(::ArgumentsFormat)
-//    val competitionPath = Path(parsedArgs.competitionsRoot).resolve(parsedArgs.competitionName)
-//    try {
-//        when (parsedArgs.target) {
-//            Target.TOSS -> tossTarget(competitionPath)
-//            Target.PERSONAL_RESULT -> personalResultsTarget(competitionPath)
-//            Target.TEAM_RESULT -> teamResultsTarget(competitionPath)
-//        }
-//
-//        logger.info { "Program successfully finished" }
-//    } catch (error: Exception) {
-//        logger.info { "Wow, that's a big surprise, program was fault" }
-//        logger.error { error.message }
-//    }
+    CompetitionController.registerFromPath(
+        path.resolve("input/classes.csv"),
+        path.resolve("applications")
+    )
 
+    CompetitionController.toss()
+    val writer = Writer(File("test.csv"), FileType.CSV)
+    CompetitionController.saveToss(writer)
 }

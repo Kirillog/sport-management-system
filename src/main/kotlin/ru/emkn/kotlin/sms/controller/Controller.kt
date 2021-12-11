@@ -1,8 +1,11 @@
 package ru.emkn.kotlin.sms.controller
 
+import ru.emkn.kotlin.sms.io.FileLoader
 import ru.emkn.kotlin.sms.io.Loader
 import ru.emkn.kotlin.sms.model.*
 import ru.emkn.kotlin.sms.io.Writer
+import java.nio.file.Path
+import kotlin.io.path.extension
 
 enum class State {
     CREATED,
@@ -15,17 +18,45 @@ enum class State {
 object CompetitionController {
     var state: State = State.CREATED
 
+
+    fun announceFromPath(event: Path, routes: Path) {
+        val eventLoader = getLoader(event)
+        val routesLoader = getLoader(routes)
+        announce(eventLoader, routesLoader)
+    }
+
     fun announce(eventLoader: Loader, routesLoader: Loader) {
         require(state == State.CREATED)
-//        Competition.loadEvent(eventLoader)
-//        Competition.loadRoutes(routesLoader)
+        loadEvent(eventLoader)
+        loadRoutes(routesLoader)
         state = State.ANNOUNCED
     }
 
-    fun saveToss(writer: Writer) {
-        writer.add(listOf("Номер", "Имя", "Фамилия", "Г.р.", "Команда", "Разр.", "Время старта"))
-        writer.addAll(Group.byName.values.toList())
-        writer.write()
+    fun registerFromPath(group: Path, team: Path) {
+        val groupLoader = getLoader(group)
+        val teamLoader = getLoader(team)
+        register(groupLoader, teamLoader)
+    }
+
+    fun register(groupLoader: Loader, teamLoader: Loader) {
+        require(state == State.ANNOUNCED)
+        loadGroups(groupLoader)
+        loadTeams(teamLoader)
+        state = State.REGISTER_OUT
+    }
+
+    fun toss() {
+        require(state == State.REGISTER_OUT)
+        Competition.toss.addAllParticipant()
+        Competition.toss.build()
+        state = State.TOSSED
+    }
+
+    private fun getLoader(path: Path): Loader {
+        return when(path.extension) {
+            "csv" -> FileLoader(path)
+            else -> throw IllegalStateException("Unsupported file format for $path")
+        }
     }
 
     fun loadGroups(loader: Loader) {
@@ -43,4 +74,15 @@ object CompetitionController {
     fun loadDump(loader: Loader) {
         Competition.dump.addAllTimestamps(loader.loadTimestamps())
     }
+
+    fun loadEvent(loader: Loader) {
+        Competition.event = loader.loadEvent()
+    }
+
+    fun saveToss(writer: Writer) {
+        writer.add(listOf("Номер", "Имя", "Фамилия", "Г.р.", "Команда", "Разр.", "Время старта"))
+        writer.addAll(Group.byName.values.toList())
+        writer.write()
+    }
+
 }
