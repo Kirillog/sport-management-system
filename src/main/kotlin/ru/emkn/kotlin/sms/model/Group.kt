@@ -1,12 +1,11 @@
-package ru.emkn.kotlin.sms.objects
+package ru.emkn.kotlin.sms.model
 
 import ru.emkn.kotlin.sms.io.MultilineWritable
-import java.time.format.DateTimeFormatter
 
 /**
  *  Class for saving data about one sports group whose members follow the same route
  */
-class Group(val name: String, routeName: String) {
+class Group(val name: String, routeName: String): MultilineWritable {
 
     val route = Route.byName[routeName]
 
@@ -18,5 +17,13 @@ class Group(val name: String, routeName: String) {
 
     init {
         byName[name] = this
+    }
+
+    override fun toString() = this.name
+
+    override fun toMultiline(): List<List<Any?>> {
+        val res: MutableList<List<Any?>> = mutableListOf(listOf(this))
+        res.addAll(this.members.map { it.toLine() })
+        return res
     }
 }

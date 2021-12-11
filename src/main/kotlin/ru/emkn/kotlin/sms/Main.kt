@@ -6,16 +6,17 @@ package ru.emkn.kotlin.sms
 
 import com.xenomachina.argparser.mainBody
 import mu.KotlinLogging
+import kotlin.io.path.Path
+
+import ru.emkn.kotlin.sms.model.*
+import ru.emkn.kotlin.sms.controller.*
 import ru.emkn.kotlin.sms.io.Writer
+import java.io.File
+
 //import com.xenomachina.argparser.ArgParser
 //import ru.emkn.kotlin.sms.targets.tossTarget
 //import ru.emkn.kotlin.sms.targets.personalResultsTarget
 //import ru.emkn.kotlin.sms.targets.teamResultsTarget
-import kotlin.io.path.Path
-
-import ru.emkn.kotlin.sms.objects.*
-import java.io.File
-import java.time.LocalDate
 
 private val logger = KotlinLogging.logger {}
 
@@ -23,18 +24,20 @@ fun main(args: Array<String>): Unit = mainBody {
 
     logger.info { "Program started" }
 
-    Competition.event = Event("Event Name", LocalDate.of(2021, 11, 11))
-    val path = Path("competitions/competition-1")
-    Competition.loadRoutes(FileLoader(path.resolve("input/courses.csv")))
-    Competition.loadGroups(FileLoader(path.resolve("input/classes.csv")))
-    Competition.loadTeams(FileLoader(path.resolve("applications")))
-    Competition.toss.addAllParticipant()
-    Competition.toss.build()
-    println("kek")
-    Competition.toss = Toss()
-    Competition.toss.addAllParticipant()
-    Competition.toss.build()
-    println("kek")
+//    val path = Path("competitions/competition-1")
+//    CompetitionController.announceFromPath(
+//        path.resolve("input/event.csv"),
+//        path.resolve("input/courses.csv")
+//    )
+//
+//    Competition.loadGroups(FileLoader(path.resolve("input/classes.csv")))
+//    Competition.loadTeams(FileLoader(path.resolve("applications")))
+//    Competition.toss.addAllParticipant()
+//    Competition.toss.build()
+//
+//    val writer = Writer(File("test.csv"), FileType.CSV)
+//    CompetitionController.saveToss(writer)
+
 //    val parsedArgs = ArgParser(args).parseInto(::ArgumentsFormat)
 //    val competitionPath = Path(parsedArgs.competitionsRoot).resolve(parsedArgs.competitionName)
 //    try {

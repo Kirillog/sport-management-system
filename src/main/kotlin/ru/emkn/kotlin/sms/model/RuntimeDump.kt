@@ -1,4 +1,4 @@
-package ru.emkn.kotlin.sms.objects
+package ru.emkn.kotlin.sms.model
 
 class RuntimeDump() {
 

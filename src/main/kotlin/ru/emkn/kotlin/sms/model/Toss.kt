@@ -1,9 +1,8 @@
-package ru.emkn.kotlin.sms.objects
+package ru.emkn.kotlin.sms.model
 
+import ru.emkn.kotlin.sms.io.Loader
 import java.time.LocalTime
-import kotlin.properties.ReadOnlyProperty
 import kotlin.random.Random
-import kotlin.reflect.KProperty
 
 open class Toss {
 
@@ -22,7 +21,8 @@ open class Toss {
     }
 
     fun build(loader: Loader) {
-        //TODO()
+        startTimeByParticipant.putAll(loader.loadToss())
+        state = State.TOSSED
     }
 
     fun addAllParticipant() {
@@ -38,14 +38,12 @@ open class Toss {
     }
 
     open fun build() {
-        var currentId = 100
         var currentTime = LocalTime.NOON
         val deltaMinutes = 5L
         participants.groupBy { it.group }.forEach { (group, members) ->
             members.shuffled(Random(0)).forEach { participant ->
                 startTimeByParticipant[participant] = currentTime
                 currentTime = currentTime.plusMinutes(deltaMinutes)
-                participant.id = currentId++
             }
         }
         state = State.TOSSED

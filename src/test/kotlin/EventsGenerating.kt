@@ -1,7 +1,7 @@
 import java.time.LocalDate
 import ru.emkn.kotlin.sms.FileType
 import ru.emkn.kotlin.sms.io.Writer
-import ru.emkn.kotlin.sms.objects.Event
+import ru.emkn.kotlin.sms.model.Event
 import java.nio.file.Path
 import kotlin.random.Random
 

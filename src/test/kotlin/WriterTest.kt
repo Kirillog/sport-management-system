@@ -2,10 +2,10 @@ import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import org.junit.jupiter.api.Test
 import ru.emkn.kotlin.sms.FileType
 import ru.emkn.kotlin.sms.io.Writer
-import ru.emkn.kotlin.sms.objects.Route
-import ru.emkn.kotlin.sms.objects.Group
-import ru.emkn.kotlin.sms.objects.Participant
-import ru.emkn.kotlin.sms.objects.Team
+import ru.emkn.kotlin.sms.model.Route
+import ru.emkn.kotlin.sms.model.Group
+import ru.emkn.kotlin.sms.model.Participant
+import ru.emkn.kotlin.sms.model.Team
 import java.io.File
 import java.time.Duration
 import java.time.LocalTime

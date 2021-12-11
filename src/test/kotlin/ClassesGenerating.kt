@@ -1,10 +1,10 @@
 import mu.KotlinLogging
 import ru.emkn.kotlin.sms.FileType
 import ru.emkn.kotlin.sms.io.Writer
-import ru.emkn.kotlin.sms.objects.Route
-import ru.emkn.kotlin.sms.objects.Group
-import ru.emkn.kotlin.sms.objects.Participant
-import ru.emkn.kotlin.sms.objects.Team
+import ru.emkn.kotlin.sms.model.Route
+import ru.emkn.kotlin.sms.model.Group
+import ru.emkn.kotlin.sms.model.Participant
+import ru.emkn.kotlin.sms.model.Team
 import java.nio.file.Path
 import kotlin.io.path.*
 import kotlin.math.max

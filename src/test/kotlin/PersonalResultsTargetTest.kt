@@ -1,8 +1,6 @@
 import org.junit.jupiter.api.Test
-import ru.emkn.kotlin.sms.objects.*
+import ru.emkn.kotlin.sms.model.*
 import ru.emkn.kotlin.sms.targets.personalResultsTarget
-import ru.emkn.kotlin.sms.targets.prepareCompetition
-import java.time.LocalDate
 import kotlin.io.path.Path
 import kotlin.test.assertEquals
 

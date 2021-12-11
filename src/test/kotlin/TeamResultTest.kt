@@ -1,7 +1,7 @@
 
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import org.junit.jupiter.api.Test
-import ru.emkn.kotlin.sms.objects.*
+import ru.emkn.kotlin.sms.model.*
 import ru.emkn.kotlin.sms.targets.calculateResultsForTeams
 import ru.emkn.kotlin.sms.targets.teamResultsTarget
 import java.time.Duration

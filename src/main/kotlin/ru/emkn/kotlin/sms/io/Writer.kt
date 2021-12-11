@@ -11,14 +11,14 @@ private val logger = KotlinLogging.logger {}
  * Interface for classes that can be printed by [Writer] and takes up more than one line
  */
 interface MultilineWritable {
-    fun toMultiline(): List<List<String?>>
+    fun toMultiline(): List<List<Any?>>
 }
 
 /**
  * Interface for classes that can be printed by [Writer] and takes up one line
  */
 interface SingleLineWritable {
-    fun toLine(): List<String?>
+    fun toLine(): List<Any?>
 }
 
 /**
@@ -28,21 +28,21 @@ interface SingleLineWritable {
  */
 class Writer(private val file: File, val filetype: FileType) {
 
-    val buffer = mutableListOf<List<String?>>()
+    val buffer = mutableListOf<List<Any?>>()
 
-    fun <T : SingleLineWritable> add(el: T, formatter: (T) -> List<String?> = { it.toLine() }) =
+    fun <T : SingleLineWritable> add(el: T, formatter: (T) -> List<Any?> = { it.toLine() }) =
         buffer.add(formatter(el))
 
-    fun <T : SingleLineWritable> addAllLines(el: List<T>, formatter: (T) -> List<String?> = { it.toLine() }) =
+    fun <T : SingleLineWritable> addAllLines(el: List<T>, formatter: (T) -> List<Any?> = { it.toLine() }) =
         buffer.addAll(el.map { formatter(it) })
 
-    fun <T : MultilineWritable> add(el: T, formatter: (T) -> List<List<String?>> = { it.toMultiline() }) =
+    fun <T : MultilineWritable> add(el: T, formatter: (T) -> List<List<Any?>> = { it.toMultiline() }) =
         buffer.addAll(formatter(el))
 
-    fun <T : MultilineWritable> addAll(el: List<T>, formatter: (T) -> List<List<String?>> = { it.toMultiline() }) =
+    fun <T : MultilineWritable> addAll(el: List<T>, formatter: (T) -> List<List<Any?>> = { it.toMultiline() }) =
         buffer.addAll(el.map { formatter(it) }.flatten())
 
-    fun add(el: String?) {
+    fun add(el: Any?) {
         if (el != null) buffer.add(listOf(el))
         else logger.warn { "try to write null string" }
     }
