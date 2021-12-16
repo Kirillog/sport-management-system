@@ -12,11 +12,11 @@ import java.time.format.DateTimeFormatter
  * Contain meta information from application lists and run result, if participant finished.
  */
 data class Participant(
-    val name: String,
+    var name: String,
     val surname: String,
     val birthdayYear: Int,
     val group: String,
-    val team: String,
+    var team: String,
     val grade: String? = null
 ) : Readable, SingleLineWritable {
 
