@@ -2,24 +2,29 @@ package ru.emkn.kotlin.sms.model
 
 import ru.emkn.kotlin.sms.io.MultilineWritable
 import ru.emkn.kotlin.sms.io.SingleLineWritable
+import org.jetbrains.exposed.dao.IntEntity
+import org.jetbrains.exposed.dao.IntEntityClass
+import org.jetbrains.exposed.dao.id.EntityID
+import org.jetbrains.exposed.dao.id.IntIdTable
+import org.jetbrains.exposed.sql.Column
+import ru.emkn.kotlin.sms.MAX_TEXT_FIELD_SIZE
+
+
+object Teams : IntIdTable("team") {
+    val name: Column<String> = varchar("name", MAX_TEXT_FIELD_SIZE)
+}
 
 /**
  * Class for representing all information about one team, with read from single application file
  */
-data class Team(val name: String) : MultilineWritable, SingleLineWritable {
+class Team(id: EntityID<Int>) : IntEntity(id), MultilineWritable, SingleLineWritable {
+    companion object : IntEntityClass<Team>(Teams)
 
-    val members: MutableSet<Participant> = mutableSetOf()
+    val name: String by Teams.name
+    val members by Participant referrersOn Participants.teamID
 
     val score
         get() = Competition.teamResult.getScore(this)
-
-    companion object {
-        val byName: MutableMap<String, Team> = mutableMapOf()
-    }
-
-    init {
-        byName[name] = this
-    }
 
     constructor(name: String, members: List<Participant>) : this(name) {
         this.members.addAll(members)

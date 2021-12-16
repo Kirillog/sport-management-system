@@ -27,7 +27,7 @@ open class Toss {
 
     fun addAllParticipant() {
         require(state == State.PREPARING)
-        Participant.byId.values.forEach { this.addParticipant(it) }
+//        Participant.byId.values.forEach { this.addParticipant(it) } TODO()
     }
 
     fun getParticipantStartTime(participant: Participant): LocalTime {
@@ -40,7 +40,7 @@ open class Toss {
     open fun build() {
         var currentTime = LocalTime.NOON
         val deltaMinutes = 5L
-        participants.groupBy { it.group }.forEach { (_, members) ->
+        participants.groupBy { it.groupID }.forEach { (groupID, members) ->
             members.shuffled(Random(0)).forEach { participant ->
                 startTimeByParticipant[participant] = currentTime
                 currentTime = currentTime.plusMinutes(deltaMinutes)

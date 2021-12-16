@@ -1,36 +1,45 @@
 package ru.emkn.kotlin.sms.model
 
+import org.jetbrains.exposed.dao.IntEntity
+import org.jetbrains.exposed.dao.IntEntityClass
+import org.jetbrains.exposed.dao.id.EntityID
+import org.jetbrains.exposed.dao.id.IntIdTable
+import org.jetbrains.exposed.sql.Column
+import ru.emkn.kotlin.sms.MAX_TEXT_FIELD_SIZE
 import ru.emkn.kotlin.sms.io.MultilineWritable
+
+object Groups : IntIdTable("teams") {
+    val name: Column<String> = varchar("name", MAX_TEXT_FIELD_SIZE)
+}
 
 /**
  *  Class for saving data about one sports group whose members follow the same route
  */
-class Group(val name: String, routeName: String) : MultilineWritable {
+class Group(id: EntityID<Int>): IntEntity(id), MultilineWritable {
 
-    val route =
-        Route.byName[routeName] ?: throw IllegalArgumentException("There is no appropriate route for $routeName")
+    companion object : IntEntityClass<Group>(Groups)
 
-    val members: MutableSet<Participant> = mutableSetOf()
+//    TODO()
+//    val route =
+//        Route.byName[routeName] ?: throw IllegalArgumentException("There is no appropriate route for $routeName")
 
+    val name by Groups.name
+    val members by Participant referrersOn Participants.groupID
 
-    init {
-        byName[name] = this
-    }
-
-    constructor(name: String, routeName: String, participants: List<Participant>) : this(name, routeName) {
-        members.addAll(participants)
-    }
-
-    companion object {
-        val byName: MutableMap<String, Group> = mutableMapOf()
-    }
-
+//    TODO()
+//    constructor(name: String, routeName: String, participants: List<Participant>) : this(name, routeName) {
+//        members.addAll(participants)
+//    }
+//
+//    companion object {
+//        val byName: MutableMap<String, Group> = mutableMapOf()
+//    }
 
     override fun toString() = this.name
 
     override fun toMultiline(): List<List<Any?>> {
         val res: MutableList<List<Any?>> = mutableListOf(listOf(this))
-        res.addAll(this.members.map { it.toLine() })
+        res.addAll(this.members.toList().map { it.toLine() })
         return res
     }
 

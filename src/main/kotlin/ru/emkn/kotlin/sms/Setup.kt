@@ -3,6 +3,8 @@ package ru.emkn.kotlin.sms
 import com.xenomachina.argparser.ArgParser
 import com.xenomachina.argparser.default
 
+const val MAX_TEXT_FIELD_SIZE = 127
+
 enum class FileType {
     JSON, CSV
 }
