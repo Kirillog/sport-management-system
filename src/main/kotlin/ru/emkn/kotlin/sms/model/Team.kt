@@ -15,4 +15,6 @@ data class Team(val name: String) {
     init {
         byName[name] = this
     }
+
+    override fun toString() = this.name
 }

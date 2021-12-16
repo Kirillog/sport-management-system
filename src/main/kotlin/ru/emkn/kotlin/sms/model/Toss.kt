@@ -2,9 +2,7 @@ package ru.emkn.kotlin.sms.model
 
 import ru.emkn.kotlin.sms.io.Loader
 import java.time.LocalTime
-import kotlin.properties.ReadOnlyProperty
 import kotlin.random.Random
-import kotlin.reflect.KProperty
 
 open class Toss {
 
@@ -36,14 +34,6 @@ open class Toss {
         require(state == State.TOSSED)
         return startTimeByParticipant.getOrElse(participant) {
             throw IllegalStateException("This participant ${participant.id} has not been tossed")
-        }
-    }
-
-    inner class Entrypoint : ReadOnlyProperty<Participant, LocalTime> {
-        override fun getValue(thisRef: Participant, property: KProperty<*>): LocalTime {
-            require(state == State.TOSSED)
-            return startTimeByParticipant[thisRef]
-                ?: throw IllegalStateException("Participant ${thisRef.id} has not been tossed")
         }
     }
 

@@ -1,13 +1,15 @@
 package ru.emkn.kotlin.sms.model
 
 import java.time.Duration
+import ru.emkn.kotlin.sms.io.SingleLineWritable
 import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 
 /**
  * Class created for every people in application lists.
  * Contain meta information from application lists and run result, if participant finished.
  */
-class Participant {
+class Participant : SingleLineWritable {
     val name: String
     val surname: String
     val birthdayYear: Int
@@ -76,4 +78,6 @@ class Participant {
         val byId: MutableMap<Int, Participant> = mutableMapOf()
     }
 
+    override fun toLine() =
+        listOf(id, name, surname, birthdayYear, team, grade, startTime.format(DateTimeFormatter.ISO_LOCAL_TIME))
 }

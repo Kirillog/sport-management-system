@@ -4,16 +4,19 @@ package ru.emkn.kotlin.sms
 //https://github.com/doyaaaaaken/kotlin-csv
 //https://github.com/Kotlin/kotlinx-datetime
 
+import com.xenomachina.argparser.mainBody
+import mu.KotlinLogging
+import kotlin.io.path.Path
+
+import ru.emkn.kotlin.sms.model.*
+import ru.emkn.kotlin.sms.controller.*
+import ru.emkn.kotlin.sms.io.Writer
+import java.io.File
+
 //import com.xenomachina.argparser.ArgParser
 //import ru.emkn.kotlin.sms.targets.tossTarget
 //import ru.emkn.kotlin.sms.targets.personalResultsTarget
 //import ru.emkn.kotlin.sms.targets.teamResultsTarget
-
-import com.xenomachina.argparser.mainBody
-import mu.KotlinLogging
-import ru.emkn.kotlin.sms.io.FileLoader
-import ru.emkn.kotlin.sms.model.Competition
-import kotlin.io.path.Path
 
 private val logger = KotlinLogging.logger {}
 
@@ -22,24 +25,17 @@ fun main(args: Array<String>): Unit = mainBody {
     logger.info { "Program started" }
 
     val path = Path("competitions/competition-1")
-    Competition.loadRoutes(FileLoader(path.resolve("input/courses.csv")))
-    Competition.loadGroups(FileLoader(path.resolve("input/classes.csv")))
-    Competition.loadTeams(FileLoader(path.resolve("applications")))
+    CompetitionController.announceFromPath(
+        path.resolve("input/event.csv"),
+        path.resolve("input/courses.csv")
+    )
 
-    println("kek")
-//    val parsedArgs = ArgParser(args).parseInto(::ArgumentsFormat)
-//    val competitionPath = Path(parsedArgs.competitionsRoot).resolve(parsedArgs.competitionName)
-//    try {
-//        when (parsedArgs.target) {
-//            Target.TOSS -> tossTarget(competitionPath)
-//            Target.PERSONAL_RESULT -> personalResultsTarget(competitionPath)
-//            Target.TEAM_RESULT -> teamResultsTarget(competitionPath)
-//        }
-//
-//        logger.info { "Program successfully finished" }
-//    } catch (error: Exception) {
-//        logger.info { "Wow, that's a big surprise, program was fault" }
-//        logger.error { error.message }
-//    }
+    CompetitionController.registerFromPath(
+        path.resolve("input/classes.csv"),
+        path.resolve("applications")
+    )
 
+    CompetitionController.toss()
+    val writer = Writer(File("test.csv"), FileType.CSV)
+    CompetitionController.saveToss(writer)
 }

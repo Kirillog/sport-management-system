@@ -1,4 +1,6 @@
 import ru.emkn.kotlin.sms.FileType
+import ru.emkn.kotlin.sms.io.MultilineWritable
+import ru.emkn.kotlin.sms.io.Writer
 import ru.emkn.kotlin.sms.io.*
 import ru.emkn.kotlin.sms.model.*
 import java.io.File
