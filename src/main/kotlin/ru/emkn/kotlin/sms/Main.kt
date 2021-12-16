@@ -11,8 +11,8 @@ package ru.emkn.kotlin.sms
 
 import com.xenomachina.argparser.mainBody
 import mu.KotlinLogging
-import ru.emkn.kotlin.sms.model.*
-import java.time.LocalDate
+import ru.emkn.kotlin.sms.io.FileLoader
+import ru.emkn.kotlin.sms.model.Competition
 import kotlin.io.path.Path
 
 private val logger = KotlinLogging.logger {}
@@ -21,11 +21,10 @@ fun main(args: Array<String>): Unit = mainBody {
 
     logger.info { "Program started" }
 
-    val competition = Competition(Event("Event Name", LocalDate.of(2021, 11, 11)))
     val path = Path("competitions/competition-1")
-    competition.loadRoutes(FileLoader(path.resolve("input/courses.csv")))
-    competition.loadGroups(FileLoader(path.resolve("input/classes.csv")))
-    competition.loadTeams(FileLoader(path.resolve("applications")))
+    Competition.loadRoutes(FileLoader(path.resolve("input/courses.csv")))
+    Competition.loadGroups(FileLoader(path.resolve("input/classes.csv")))
+    Competition.loadTeams(FileLoader(path.resolve("applications")))
 
     println("kek")
 //    val parsedArgs = ArgParser(args).parseInto(::ArgumentsFormat)
