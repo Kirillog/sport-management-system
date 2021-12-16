@@ -53,3 +53,5 @@ class ArgumentsFormat(parser: ArgParser) {
     """.trimIndent()).default<String>("competitions")
 }
 
+const val maxTextLength = 127
+
