@@ -1,5 +1,6 @@
 package ru.emkn.kotlin.sms.model
 
+import java.time.Duration
 import java.time.LocalTime
 
 /**
@@ -20,6 +21,15 @@ class Participant {
         set(time) {
             Competition.toss.startTimeByParticipant[this] = time
         }
+
+    val runTime: Duration
+        get() = Duration.between(finishTime, startTime)
+
+    val finishTime: LocalTime?
+        get() = Competition.result.getParticipantFinishTime(this)
+
+    val positionInGroup: Result.PositionInGroup
+        get() = Competition.result.getPositionInGroup(this)
 
     constructor(
         name: String,

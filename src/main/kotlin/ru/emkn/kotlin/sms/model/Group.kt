@@ -5,7 +5,8 @@ package ru.emkn.kotlin.sms.model
  */
 class Group(val name: String, routeName: String) {
 
-    val route = Route.byName[routeName]
+    val route =
+        Route.byName[routeName] ?: throw IllegalArgumentException("There is no appropriate route for $routeName")
 
     val members: MutableSet<Participant> = mutableSetOf()
 

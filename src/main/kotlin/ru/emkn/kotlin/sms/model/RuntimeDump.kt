@@ -1,22 +1,19 @@
-import ru.emkn.kotlin.sms.model.CheckPoint
-import ru.emkn.kotlin.sms.model.Participant
-import ru.emkn.kotlin.sms.model.TimeStamp
+package ru.emkn.kotlin.sms.model
 
-class RuntimeDump {
+object RuntimeDump {
+
+    var timeStampDump: MutableSet<TimeStamp> = mutableSetOf()
+    val participantDump: Map<Participant, List<TimeStamp>> = mapOf()
 
     fun addTimestamp(timeStamp: TimeStamp) {
-        TODO("Add checkpoint to checkPointDump")
+        timeStampDump.add(timeStamp)
     }
 
     fun addAllTimestamps(timeStamps: Set<TimeStamp>) {
-        TODO("Add checkpoint to checkPointDump")
+        timeStampDump.addAll(timeStamps)
     }
 
-    fun completeDump() {
-        TODO("fill participantDump by checkPointDump")
-        //TODO("А ещё лучше автоматически добавлять сразу в addCheckpoint")
-    }
+    fun resultsByParticipant() = timeStampDump.groupBy { it.participant }
+        .mapValues { it.value.sortedBy(ru.emkn.kotlin.sms.model.TimeStamp::time) }
 
-    val checkPointDump: MutableMap<CheckPoint, List<TimeStamp>> = mutableMapOf()
-    val participantDump: Map<Participant, List<TimeStamp>> = mapOf()
 }

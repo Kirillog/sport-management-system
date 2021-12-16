@@ -1,6 +1,5 @@
 package ru.emkn.kotlin.sms.model
 
-import RuntimeDump
 import ru.emkn.kotlin.sms.io.Loader
 import java.time.LocalDate
 
@@ -24,8 +23,7 @@ object Competition {
     val routes: MutableSet<Route> = mutableSetOf()
     val teams: MutableSet<Team> = mutableSetOf()
     val groups: MutableSet<Group> = mutableSetOf()
-
-    var dump = RuntimeDump()
+    var result: Result = ResultByTime()
 
     fun loadGroups(loader: Loader) {
         groups.addAll(loader.loadGroups())
@@ -37,10 +35,11 @@ object Competition {
 
     fun loadRoutes(loader: Loader) {
         routes.addAll(loader.loadRoutes())
+        checkPoints.addAll(routes.flatMap { it.checkPoints })
     }
 
     fun loadDump(loader: Loader) {
-        dump.addAllTimestamps(loader.loadTimestamps())
+        RuntimeDump.addAllTimestamps(loader.loadTimestamps())
     }
 
 }
