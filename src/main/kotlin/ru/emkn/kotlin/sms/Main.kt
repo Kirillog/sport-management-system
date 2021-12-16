@@ -6,12 +6,10 @@ package ru.emkn.kotlin.sms
 
 import com.xenomachina.argparser.mainBody
 import mu.KotlinLogging
-import kotlin.io.path.Path
-
-import ru.emkn.kotlin.sms.model.*
-import ru.emkn.kotlin.sms.controller.*
+import ru.emkn.kotlin.sms.controller.CompetitionController
 import ru.emkn.kotlin.sms.io.Writer
 import java.io.File
+import kotlin.io.path.Path
 
 //import com.xenomachina.argparser.ArgParser
 //import ru.emkn.kotlin.sms.targets.tossTarget

@@ -1,6 +1,5 @@
 package ru.emkn.kotlin.sms.io
 
-import com.github.doyaaaaaken.kotlincsv.client.CsvFileReader
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import com.sksamuel.hoplite.simpleName
 import mu.KotlinLogging
@@ -25,13 +24,7 @@ private val logger = KotlinLogging.logger { }
  */
 class CSVReader(file: File) : Reader(file) {
     private val csvReader = csvReader()
-    private lateinit var reader: CsvFileReader
-
-    init {
-        csvReader.open(file) {
-            reader = this
-        }
-    }
+    private var buffer: List<List<String>> = csvReader.readAll(file)
 
     /**
      * Converts [field] in [lineNumber] to [kType].
@@ -74,7 +67,7 @@ class CSVReader(file: File) : Reader(file) {
     }
 
     /**
-     * Converts [table] to objects using their [constructor]
+     * Converts [table] to [Readable] objects using their [constructor]
      */
     private fun <T> objectList(
         table: List<Map<String, String>>,
@@ -96,7 +89,7 @@ class CSVReader(file: File) : Reader(file) {
     }
 
     /**
-     * Converts [parameters] to [KClass] constructor
+     * Converts [parameters] to [Readable] [KClass] constructor
      */
     private fun <T : Any> constructorByHeader(parameters: Set<String>, kClass: KClass<T>): KFunction<T>? {
         logger.debug { "Header: $parameters" }
@@ -116,19 +109,32 @@ class CSVReader(file: File) : Reader(file) {
      * Returns `null` if data [file] is inappropriate
      */
     private fun tableWithHeader(): List<Map<String, String>>? {
-        val data = reader.readAllWithHeaderAsSequence().toList().map { record ->
-            record.mapKeys {
-                val key = it.key.trim()
-                if (key.toIntOrNull() == null)
-                    headers[key] ?: throw IOException("Wrong name in header")
-                else
-                    key
-            }.mapValues { it.value.trim() }
-        }
-        return data.ifEmpty {
-            logger.warn { "${file.name} doesn't have header or members, so it was ignored" }
+        return try {
+            val header = buffer.first()
+            buffer = buffer.drop(1)
+            val table = buffer.map { line ->
+                line.mapIndexed { index, field ->
+                    Pair(header[index], field)
+                }.toMap()
+            }
+            val data = table.map { record ->
+                record.mapKeys {
+                    val key = it.key.trim()
+                    if (key.toIntOrNull() == null)
+                        headers[key] ?: throw IOException("Wrong name in header")
+                    else
+                        key
+                }.mapValues { it.value.trim() }
+            }
+            data.ifEmpty {
+                logger.warn { "${file.name} doesn't have header or members, so it was ignored" }
+                null
+            }
+        } catch (err: NoSuchElementException) {
+            logger.warn { "There is no header in ${file.name}" }
             null
         }
+
     }
 
     /**
@@ -136,16 +142,15 @@ class CSVReader(file: File) : Reader(file) {
      *
      * Returns `null` if [file] is empty
      */
-    private fun name(): String? {
-        val line = reader.readNext()
-        return when (line) {
-            null -> {
-                logger.warn { "${file.name} is empty, so it was ignored" }
-                null
-            }
-            else -> line[0]
+    private fun name(): String? =
+        try {
+            val line = buffer.first()
+            buffer = buffer.drop(1)
+            line[0]
+        } catch (err: NoSuchElementException) {
+            logger.warn { "${file.name} is empty, so it was ignored" }
+            null
         }
-    }
 
     /**
      * Convert start protocol to list of participants

@@ -57,6 +57,7 @@ object CompetitionController {
     private fun getLoader(path: Path): Loader {
         return when(path.extension) {
             "csv" -> FileLoader(path)
+            "" -> FileLoader(path)
             else -> throw IllegalStateException("Unsupported file format for $path")
         }
     }
