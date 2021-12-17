@@ -1,10 +1,10 @@
 package ru.emkn.kotlin.sms.io
 
-import com.github.doyaaaaaken.kotlincsv.client.CsvFileReader
+import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import com.sksamuel.hoplite.simpleName
 import mu.KotlinLogging
 import ru.emkn.kotlin.sms.headers
-import ru.emkn.kotlin.sms.objects.*
+import ru.emkn.kotlin.sms.model.*
 import java.io.File
 import java.io.IOException
 import java.time.LocalDate
@@ -20,9 +20,11 @@ private val logger = KotlinLogging.logger { }
 /**
  * Represents [Reader] that can read from csv [file].
  *
- * @param reader provides reading with header.
  */
-class CSVReader(file: File, private val reader: CsvFileReader) : Reader(file) {
+class CSVReader(file: File) : Reader(file) {
+    private val csvReader = csvReader()
+    private var buffer: List<List<String>> = csvReader.readAll(file)
+
     /**
      * Converts [field] in [lineNumber] to [kType].
      *
@@ -69,7 +71,7 @@ class CSVReader(file: File, private val reader: CsvFileReader) : Reader(file) {
     private fun <T> objectList(
         table: List<Map<String, String>>,
         constructor: KFunction<T>
-    ): List<T> where T : Readable {
+    ): Set<T> {
         return table.mapIndexed { lineNumber, recordWithHeader ->
             try {
                 val parametersWithValues = constructor.parameters.associateWith {
@@ -82,13 +84,13 @@ class CSVReader(file: File, private val reader: CsvFileReader) : Reader(file) {
                 logger.warn { e.message }
                 null
             }
-        }.filterNotNull()
+        }.filterNotNull().toSet()
     }
 
     /**
      * Converts [parameters] to [Readable] [KClass] constructor
      */
-    private fun <T> constructorByHeader(parameters: Set<String>, kClass: KClass<T>): KFunction<T>? where T : Readable {
+    private fun <T : Any> constructorByHeader(parameters: Set<String>, kClass: KClass<T>): KFunction<T>? {
         logger.debug { "Header: $parameters" }
         val constructors = kClass.constructors
         require(constructors.isNotEmpty()) { "Try to get instance of class without constructors" }
@@ -106,19 +108,32 @@ class CSVReader(file: File, private val reader: CsvFileReader) : Reader(file) {
      * Returns `null` if data [file] is inappropriate
      */
     private fun tableWithHeader(): List<Map<String, String>>? {
-        val data = reader.readAllWithHeaderAsSequence().toList().map { record ->
-            record.mapKeys {
-                val key = it.key.trim()
-                if (key.toIntOrNull() == null)
-                    headers[key] ?: throw IOException("Wrong name in header")
-                else
-                    key
-            }.mapValues { it.value.trim() }
-        }
-        return data.ifEmpty {
-            logger.warn { "${file.name} doesn't have header or members, so it was ignored" }
+        return try {
+            val header = buffer.first()
+            buffer = buffer.drop(1)
+            val table = buffer.map { line ->
+                line.mapIndexed { index, field ->
+                    Pair(header[index], field)
+                }.toMap()
+            }
+            val data = table.map { record ->
+                record.mapKeys {
+                    val key = it.key.trim()
+                    if (key.toIntOrNull() == null)
+                        headers[key] ?: throw IOException("Wrong name in header")
+                    else
+                        key
+                }.mapValues { it.value.trim() }
+            }
+            data.ifEmpty {
+                logger.warn { "${file.name} doesn't have header or members, so it was ignored" }
+                null
+            }
+        } catch (err: NoSuchElementException) {
+            logger.warn { "There is no header in ${file.name}" }
             null
         }
+
     }
 
     /**
@@ -126,16 +141,15 @@ class CSVReader(file: File, private val reader: CsvFileReader) : Reader(file) {
      *
      * Returns `null` if [file] is empty
      */
-    private fun name(): String? {
-        val line = reader.readNext()
-        return when (line) {
-            null -> {
-                logger.warn { "${file.name} is empty, so it was ignored" }
-                null
-            }
-            else -> line[0]
+    private fun name(): String? =
+        try {
+            val line = buffer.first()
+            buffer = buffer.drop(1)
+            line[0]
+        } catch (err: NoSuchElementException) {
+            logger.warn { "${file.name} is empty, so it was ignored" }
+            null
         }
-    }
 
     /**
      * Convert start protocol to list of participants
@@ -159,26 +173,26 @@ class CSVReader(file: File, private val reader: CsvFileReader) : Reader(file) {
         } ?: return null
         val constructor = constructorByHeader(table.first().keys, Participant::class)
         requireNotNull(constructor) { "Team doesn't have appropriate constructors" }
-        val members = objectList(table, constructor)
-        if (members.isEmpty())
+        val team = Team(name)
+        team.members.addAll(objectList(table, constructor))
+        if (team.members.isEmpty())
             logger.warn { "Team $name is empty" }
-        return Team(name, members)
+        return team
     }
 
-    override fun groupsToCourses(): Map<String, String>? {
+    override fun groups(): Set<Group>? {
         val table = tableWithHeader() ?: return null
-        val constructor = constructorByHeader(table.first().keys, GroupToCourse::class)
+        val constructor = constructorByHeader(table.first().keys, Group::class)
         requireNotNull(constructor) { "Groups to courses doesn't have appropriate constructors" }
-        val records = objectList(table, constructor)
-        return records.associate { it.group to it.course }
+        return objectList(table, constructor)
     }
 
-    override fun courses(): List<Course>? {
+    override fun courses(): Set<Route>? {
         val table = tableWithHeader()?.map { record ->
             val checkPoints = "checkPoints" to record.filterKeys { it.toIntOrNull() != null }.values.joinToString(",")
             record.filterKeys { it.toIntOrNull() == null } + checkPoints
         } ?: return null
-        val constructor = constructorByHeader(table.first().keys, Course::class)
+        val constructor = constructorByHeader(table.first().keys, Route::class)
         requireNotNull(constructor) { "Courses doesn't have appropriate constructors" }
         val checkPoints = objectList(table, constructor)
         if (checkPoints.isEmpty())
@@ -186,17 +200,20 @@ class CSVReader(file: File, private val reader: CsvFileReader) : Reader(file) {
         return checkPoints
     }
 
-    override fun events(): List<Event>? {
+    override fun event(): Event? {
         val table = tableWithHeader() ?: return null
         val constructor = constructorByHeader(table.first().keys, Event::class)
         requireNotNull(constructor) { "Events doesn't have appropriate constructors" }
         val events = objectList(table, constructor)
         if (events.isEmpty())
             logger.warn { "List of events is empty" }
-        return events
+        else if (events.size > 1)
+            logger.warn { "There is some events, chose first from them" }
+        return events.first()
     }
 
-    override fun timestamps(): List<TimeStamp>? {
+
+    override fun timestamps(): Set<TimeStamp>? {
         val name = name()?.toIntOrNull() ?: throw IOException("Wrong type of checkPoint id")
         val table = tableWithHeader()?.map { record ->
             record + ("checkPointId" to name.toString())
@@ -209,14 +226,15 @@ class CSVReader(file: File, private val reader: CsvFileReader) : Reader(file) {
         return timeStamps
     }
 
-    override fun participants(): List<Participant>? {
+    override fun toss(): Unit? {
         val table = tableWithHeader() ?: return null
         val correctedTable = preprocess(table)
         val constructor = constructorByHeader(correctedTable.first().keys, Participant::class)
         requireNotNull(constructor) { "Participant doesn't have appropriate constructors" }
-        val participants = objectList(correctedTable, constructor)
+        val participants = objectList(correctedTable, constructor).toList()
         if (participants.isEmpty())
             logger.warn { "List of participants is empty" }
-        return participants
+        return Unit
     }
+
 }
