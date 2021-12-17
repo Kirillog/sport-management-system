@@ -7,6 +7,7 @@ package ru.emkn.kotlin.sms
 import com.xenomachina.argparser.mainBody
 import mu.KotlinLogging
 import ru.emkn.kotlin.sms.controller.CompetitionController
+import ru.emkn.kotlin.sms.view.GUI
 import kotlin.io.path.Path
 
 //import com.xenomachina.argparser.ArgParser
@@ -20,30 +21,32 @@ fun main(args: Array<String>): Unit = mainBody {
 
     logger.info { "Program started" }
 
-    val path = Path("competitions/competition-1")
-    CompetitionController.announceFromPath(
-        event = path.resolve("input/event.csv"),
-        routes = path.resolve("input/courses.csv")
-    )
+    GUI.run()
 
-//    CompetitionController.registerFromPath(
-//        group = path.resolve("input/classes.csv"),
-//        team = path.resolve("applications")
+//    val path = Path("competitions/competition-1")
+//    CompetitionController.announceFromPath(
+//        event = path.resolve("input/event.csv"),
+//        routes = path.resolve("input/courses.csv")
 //    )
-
-
-//    CompetitionController.toss()
-//    val writer = Writer(path.resolve("protocols/toss.csv").toFile(), FileType.CSV)
-//    CompetitionController.saveToss(writer)
-
-    CompetitionController.groupsAndTossFromPath(
-        group = path.resolve("input/classes.csv"),
-        toss = path.resolve("protocols/toss.csv")
-    )
-    CompetitionController.registerResultsFromPath(
-        checkPoints = path.resolve("checkpoints")
-    )
-    CompetitionController.calculatePersonalResults()
-    CompetitionController.saveResultsToPath(results = path.resolve("protocols/results.csv"))
-    CompetitionController.saveTeamResultsToPath(results = path.resolve("protocols/teamResults.csv"))
+//
+////    CompetitionController.registerFromPath(
+////        group = path.resolve("input/classes.csv"),
+////        team = path.resolve("applications")
+////    )
+//
+//
+////    CompetitionController.toss()
+////    val writer = Writer(path.resolve("protocols/toss.csv").toFile(), FileType.CSV)
+////    CompetitionController.saveToss(writer)
+//
+//    CompetitionController.groupsAndTossFromPath(
+//        group = path.resolve("input/classes.csv"),
+//        toss = path.resolve("protocols/toss.csv")
+//    )
+//    CompetitionController.registerResultsFromPath(
+//        checkPoints = path.resolve("checkpoints")
+//    )
+//    CompetitionController.calculatePersonalResults()
+//    CompetitionController.saveResultsToPath(results = path.resolve("protocols/results.csv"))
+//    CompetitionController.saveTeamResultsToPath(results = path.resolve("protocols/teamResults.csv"))
 }

@@ -1,8 +1,7 @@
 package ru.emkn.kotlin.sms.view
 
-import androidx.compose.ui.Modifier
 import mu.KotlinLogging
-import ru.emkn.kotlin.sms.objects.Participant
+import ru.emkn.kotlin.sms.model.Participant
 
 private val logger = KotlinLogging.logger {}
 
@@ -11,9 +10,9 @@ class ParticipantsTable(participants: List<Participant>) : Table<Participant>() 
     override val header = TableHeader(
         listOf(
             TableColumn<Participant>("Номер", "id") { { it.id.toString() } },
-            TableColumn < Participant >("Имя", "name") { { it.name } },
+            TableColumn<Participant>("Имя", "name") { { it.name } },
             TableColumn<Participant>("Фамилия", "surname") { { it.surname } },
-            TableColumn<Participant>("Группа", "group") { { it.group } },
+            TableColumn<Participant>("Группа", "group") { { it.group.name } },
             TableColumn<Participant>("Год рождения", "birthdayYear") { { it.birthdayYear.toString() } }
         )
     )
