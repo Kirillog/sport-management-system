@@ -12,7 +12,7 @@ data class Route(val name: String, val checkPoints: List<CheckPoint>) : SingleLi
     }
 
     init {
-        Route.byName[name] = this
+        byName[name] = this
     }
 
     override fun toLine(): List<String?> = listOf(name) + checkPoints.map { it.id.toString() }

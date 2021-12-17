@@ -21,7 +21,7 @@ open class Toss {
     }
 
     fun build(loader: Loader) {
-        startTimeByParticipant.putAll(loader.loadToss())
+        loader.loadToss()
         state = State.TOSSED
     }
 
@@ -40,7 +40,7 @@ open class Toss {
     open fun build() {
         var currentTime = LocalTime.NOON
         val deltaMinutes = 5L
-        participants.groupBy { it.group }.forEach { (group, members) ->
+        participants.groupBy { it.group }.forEach { (_, members) ->
             members.shuffled(Random(0)).forEach { participant ->
                 startTimeByParticipant[participant] = currentTime
                 currentTime = currentTime.plusMinutes(deltaMinutes)
