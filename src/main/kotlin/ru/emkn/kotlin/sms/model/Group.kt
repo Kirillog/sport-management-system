@@ -56,10 +56,16 @@ class Group(id: EntityID<Int>): IntEntity(id), MultilineWritable {
             routeID = RouteTable.select { RouteTable.id eq route.id }.first()[GroupTable.id]
         }
 
-//    TODO()
-//    constructor(name: String, routeName: String, participants: List<Participant>) : this(name, routeName) {
-//        members.addAll(participants)
-//    }
+    fun change(name: String, routeName: String) {
+//        TODO()
+//        if (this.name != name) {
+//            byName.remove(this.name)
+//            this.name = name
+//            byName[name] = this
+//        }
+//        val route = Route.byName[routeName] ?: throw IllegalStateException("There is no such route")
+//        this.route = route
+    }
 
     override fun toString() = this.name
 

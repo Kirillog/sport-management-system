@@ -112,6 +112,29 @@ class Participant(id: EntityID<Int>) : IntEntity(id), SingleLineWritable {
     val positionInGroup: Result.PositionInGroup
         get() = Competition.result.getPositionInGroup(this)
 
+    fun change(
+        name: String,
+        surname: String,
+        birthdayYear: Int,
+        group: String,
+        team: String,
+        grade: String?
+    ) {
+        // TODO()
+//        this.name = name
+//        this.surname = surname
+//        this.birthdayYear = birthdayYear
+//        this.grade = grade
+//        if (group != this.group.name) {
+//            this.group.members.remove(this)
+//            this.group = Group.byName[group] ?: throw IllegalArgumentException("Can not find group $group")
+//        }
+//        if (team != this.team.name) {
+//            this.team.members.remove(this)
+//            this.team = Team.byName[team] ?: throw IllegalArgumentException("Can not find team $team")
+//        }
+    }
+
     override fun toLine() =
         listOf(id, name, surname, birthdayYear, team, grade, startTime.format(DateTimeFormatter.ISO_LOCAL_TIME))
 }

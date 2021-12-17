@@ -41,6 +41,16 @@ class Route(id: EntityID<Int>) : IntEntity(id), SingleLineWritable {
     var name by RouteTable.name
     var checkPoints by Checkpoint via RouteCheckpointsTable
 
+    fun change(name: String, checkPoints: List<Checkpoint>) {
+        // TODO()
+//        if (name != this.name) {
+//            byName.remove(this.name)
+//            this.name = name
+//            byName[name] = this
+//        }
+//        this.checkPoints = checkPoints
+    }
+
     override fun toLine(): List<String?> = listOf(name) + checkPoints.map { it.id.toString() }
 }
 
