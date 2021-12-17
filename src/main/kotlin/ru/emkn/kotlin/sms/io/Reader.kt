@@ -50,5 +50,5 @@ abstract class Reader(protected val file: File) {
      *
      * Returns `null` if data has incorrect format.
      */
-    abstract fun toss(): Map<Participant, LocalTime>?
+    abstract fun toss(): Unit?
 }

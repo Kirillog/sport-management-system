@@ -20,7 +20,6 @@ private val logger = KotlinLogging.logger { }
 /**
  * Represents [Reader] that can read from csv [file].
  *
- * @param reader provides reading with header.
  */
 class CSVReader(file: File) : Reader(file) {
     private val csvReader = csvReader()
@@ -227,7 +226,7 @@ class CSVReader(file: File) : Reader(file) {
         return timeStamps
     }
 
-    override fun toss(): Map<Participant, LocalTime>? {
+    override fun toss(): Unit? {
         val table = tableWithHeader() ?: return null
         val correctedTable = preprocess(table)
         val constructor = constructorByHeader(correctedTable.first().keys, Participant::class)
@@ -235,13 +234,7 @@ class CSVReader(file: File) : Reader(file) {
         val participants = objectList(correctedTable, constructor).toList()
         if (participants.isEmpty())
             logger.warn { "List of participants is empty" }
-        val startTimes = correctedTable.mapIndexed { number, line ->
-            convert(line["id"] ?: "", number, Participant::id.returnType) as Int to
-                    convert(line["startTime"] ?: "", number, Participant::startTime.returnType) as LocalTime
-        }.toMap()
-        return participants.associateWith {
-            startTimes[it.id] ?: throw IllegalStateException("Cannot find ${it.id} in startTimes")
-        }
+        return Unit
     }
 
 }

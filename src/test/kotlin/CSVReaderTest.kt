@@ -1,4 +1,3 @@
-import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import com.github.doyaaaaaken.kotlincsv.util.MalformedCSVException
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Nested
@@ -15,41 +14,23 @@ import kotlin.io.path.Path
 internal class CSVReaderTest {
     private val resources = Path("src/test/resources")
 
-    private fun readTeam(file: File): Team? {
-        return csvReader().open(file) {
-            CSVReader(file, this).team()
-        }
-    }
+    private fun readTeam(file: File): Team? =
+        CSVReader(file).team()
 
-    private fun readCourses(file: File): List<Route>? {
-        return csvReader().open(file) {
-            CSVReader(file, this).courses()
-        }
-    }
+    private fun readCourses(file: File): Set<Route>? =
+        CSVReader(file).courses()
 
-    private fun readEvents(file: File): List<Event>? {
-        return csvReader().open(file) {
-            CSVReader(file, this).events()
-        }
-    }
+    private fun readEvent(file: File): Event? =
+        CSVReader(file).event()
 
-    private fun readGroupsToCourses(file: File): Map<String, String>? {
-        return csvReader().open(file) {
-            CSVReader(file, this).groupsToCourses()
-        }
-    }
+    private fun readGroups(file: File): Set<Group>? =
+        CSVReader(file).groups()
 
-    private fun readTimeStamps(file: File): List<TimeStamp>? {
-        return csvReader().open(file) {
-            CSVReader(file, this).timestamps()
-        }
-    }
+    private fun readTimeStamps(file: File): Set<TimeStamp>? =
+        CSVReader(file).timestamps()
 
-    private fun readParticipants(file: File): List<Participant>? {
-        return csvReader().open(file) {
-            CSVReader(file, this).participants()
-        }
-    }
+    private fun readToss(file: File): Unit? =
+        CSVReader(file).toss()
 
     interface ReadTest {
         @Test
@@ -66,7 +47,7 @@ internal class CSVReaderTest {
             val file = kotlin.io.path.createTempFile().toFile()
             assertEquals(null, readTeam(file))
             assertEquals(null, readCourses(file))
-            assertEquals(null, readGroupsToCourses(file))
+            assertEquals(null, readGroups(file))
         }
 
         @Test
@@ -162,33 +143,33 @@ internal class CSVReaderTest {
         }
     }
 
-    @Nested
-    inner class ReadGroupsToCoursesTest : ReadTest {
-        @Test
-        override fun simple() {
-            val file = resources.resolve("groups/simple.csv").toFile()
-            assertEquals(mapOf("М10" to "МЖ9 10", "М12" to "М12", "М14" to "М14 20"), readGroupsToCourses(file))
-        }
-
-        @Test
-        override fun incorrectTypeOfField() {
-            val file = resources.resolve("groups/incorrectTypeOfField.csv").toFile()
-            assertEquals(mapOf("М10" to "МЖ9 10", "М16" to "М16 Ж6"), readGroupsToCourses(file))
-        }
-    }
+//    @Nested
+//    inner class ReadGroups : ReadTest {
+//        @Test
+//        override fun simple() {
+//            val file = resources.resolve("groups/simple.csv").toFile()
+//            assertEquals(setOf(Group("М10" to "МЖ9 10", "М12" to "М12", "М14" to "М14 20"), readGroups(file))
+//        }
+//
+//        @Test
+//        override fun incorrectTypeOfField() {
+//            val file = resources.resolve("groups/incorrectTypeOfField.csv").toFile()
+//            assertEquals(mapOf("М10" to "МЖ9 10", "М16" to "М16 Ж6"), readGroupsToCourses(file))
+//        }
+//    }
 
     @Nested
     inner class ReadEventsTest : ReadTest {
         @Test
         override fun simple() {
             val file = resources.resolve("events/simple.csv").toFile()
-            assertEquals(listOf(Event("Первенство пятой бани", LocalDate.parse("2022-01-01"))), readEvents(file))
+            assertEquals(Event("Первенство пятой бани", LocalDate.parse("2022-01-01")), readEvent(file))
         }
 
         @Test
         override fun incorrectTypeOfField() {
             val file = resources.resolve("events/incorrectTypeOfField.csv").toFile()
-            assertEquals(listOf<Event>(), readEvents(file))
+            assertEquals(listOf<Event>(), readEvent(file))
         }
     }
 
@@ -198,10 +179,10 @@ internal class CSVReaderTest {
         override fun simple() {
             val file = resources.resolve("checkPoints/simple.csv").toFile()
             assertEquals(
-                listOf(
-                    TimeStamp(LocalTime.of(21, 22, 30), 12, 100),
-                    TimeStamp(LocalTime.of(19, 15, 30), 12, 102),
-                    TimeStamp(LocalTime.of(17, 15, 56), 12, 105)
+                setOf(
+                    TimeStamp(LocalTime.of(21, 22, 30), CheckPoint(12), 100),
+                    TimeStamp(LocalTime.of(19, 15, 30), CheckPoint(12), 102),
+                    TimeStamp(LocalTime.of(17, 15, 56), CheckPoint(12), 105)
                 ), readTimeStamps(file)
             )
         }
@@ -210,8 +191,8 @@ internal class CSVReaderTest {
         override fun incorrectTypeOfField() {
             val file = resources.resolve("checkPoints/incorrectTypeOfField.csv").toFile()
             assertEquals(
-                listOf(
-                    TimeStamp(LocalTime.of(17, 15, 56), 2, 105)
+                setOf(
+                    TimeStamp(LocalTime.of(17, 15, 56), CheckPoint(2), 105)
                 ),
                 readTimeStamps(file)
             )
@@ -224,23 +205,49 @@ internal class CSVReaderTest {
         @Test
         override fun simple() {
             val file = resources.resolve("protocols/simple.csv").toFile()
+            readToss(file)
             assertEquals(
                 listOf(
-                    Participant("Анна", "Сосницкая", 2013, "Ж10", "0-ПСКОВ", "1р", 101, LocalTime.of(12, 0, 0)),
-                    Participant("АРТЁМ", "КАЧНОВ", 2008, "МЖ14", "ВЕЛИКОЛУКСКИЙ РАЙОН", null, 128, LocalTime.of(12, 5, 0)),
-                    Participant("АЛЕКСАНДРА", "ЛОВЦОВА", 2014, "МЖ14", "ВЕЛИКИЕ ЛУКИ", null, 102, LocalTime.of(12, 10, 0))
-                ), readParticipants(file)
+                    Participant("Анна", "Сосницкая", 2013, "Ж10", "0-ПСКОВ", 101, LocalTime.of(12, 0, 0), "1р"),
+                    Participant(
+                        "АРТЁМ",
+                        "КАЧНОВ",
+                        2008,
+                        "МЖ14",
+                        "ВЕЛИКОЛУКСКИЙ РАЙОН",
+                        128,
+                        LocalTime.of(12, 5, 0)
+                    ),
+                    Participant(
+                        "АЛЕКСАНДРА",
+                        "ЛОВЦОВА",
+                        2014,
+                        "МЖ14",
+                        "ВЕЛИКИЕ ЛУКИ",
+                        102,
+                        LocalTime.of(12, 10, 0)
+                    )
+                ), Participant.byId.values.toList()
             )
         }
 
         override fun incorrectTypeOfField() {
             val file = resources.resolve("protocols/incorrectTypeOfField.csv").toFile()
+            readToss(file)
             assertEquals(
                 listOf(
-                    Participant("ЗАХАР", "МАЖАРОВ", 2012, "M10","ВЕЛИКОЛУКСКИЙ РАЙОН", null, 121, LocalTime.of(13, 45, 0)),
-                    Participant("РОМАН", "МЕРЦАЛОВ", 0, "М40", "ГДОВСКИЙ РАЙОН", "3р", 125, LocalTime.of(13, 55 ,0))
+                    Participant(
+                        "ЗАХАР",
+                        "МАЖАРОВ",
+                        2012,
+                        "M10",
+                        "ВЕЛИКОЛУКСКИЙ РАЙОН",
+                        121,
+                        LocalTime.of(13, 45, 0)
+                    ),
+                    Participant("РОМАН", "МЕРЦАЛОВ", 0, "М40", "ГДОВСКИЙ РАЙОН", 125, LocalTime.of(13, 55, 0), "3р")
                 ),
-                readParticipants(file)
+                Participant.byId.values.toList()
             )
         }
 

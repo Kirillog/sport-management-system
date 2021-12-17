@@ -4,7 +4,6 @@ import mu.KotlinLogging
 import ru.emkn.kotlin.sms.model.*
 import java.io.File
 import java.nio.file.Path
-import java.time.LocalTime
 
 private val logger = KotlinLogging.logger {}
 
@@ -35,7 +34,7 @@ class FileLoader(path: Path) : Loader {
             CSVReader(file).timestamps()
         }.filterNotNull().flatten().toSet()
 
-    override fun loadToss(): Map<Participant, LocalTime> =
+    override fun loadToss() =
         CSVReader(file).toss() ?: error()
 }
 
