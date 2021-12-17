@@ -1,6 +1,5 @@
 package ru.emkn.kotlin.sms.model
 
-import java.time.Duration
 import java.time.LocalTime
 
 class ResultByTime : Result {
@@ -15,29 +14,20 @@ class ResultByTime : Result {
         finishTime = participantResult.map { (participant, timestamps) ->
             Pair(participant, timestamps.last().time)
         }.toMap()
+        state = Result.State.FILLEDTIME
         positionInGroup = positions()
         state = Result.State.COMPLETED
     }
 
     override fun sortMembersIn(group: Group) =
-        group.members.sortedByDescending {
-            finishTime[it] ?: throw IllegalArgumentException("There is no finish time for ${it.id}")
+        group.members.sortedBy {
+            it.runTime
         }
 
 
     override fun disqualifyCheaters(participantResult: Map<Participant, List<TimeStamp>>) =
-        participantResult.filter { (participant, checkPoints) ->
-            participant.group.route.checkPoints == checkPoints
+        participantResult.filter { (participant, timestamps) ->
+            participant.group.route.checkPoints == timestamps.map { it.checkPoint }
         }
-
-    override fun getParticipantFinishTime(participant: Participant): LocalTime? {
-        require(state == Result.State.COMPLETED)
-        return finishTime[participant]
-    }
-
-    override fun getPositionInGroup(participant: Participant): Result.PositionInGroup {
-        require(state == Result.State.COMPLETED)
-        return positionInGroup[participant] ?: Result.PositionInGroup(0, Duration.ZERO)
-    }
 
 }

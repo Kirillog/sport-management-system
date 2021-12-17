@@ -6,7 +6,7 @@ import java.time.LocalTime
 interface Result {
 
     enum class State {
-        PREPARING, COMPLETED
+        PREPARING, FILLEDTIME, COMPLETED
     }
 
     var state: State
@@ -25,7 +25,7 @@ interface Result {
                 val time = participant.runTime
                 tempPositionInGroup[participant] = PositionInGroup(
                     place + 1,
-                    leaderFinishTime - time
+                    time - leaderFinishTime
                 )
             }
         }
@@ -36,9 +36,15 @@ interface Result {
 
     fun disqualifyCheaters(participantResult: Map<Participant, List<TimeStamp>>): Map<Participant, List<TimeStamp>>
 
-    fun getParticipantFinishTime(participant: Participant): LocalTime?
+    fun getParticipantFinishTime(participant: Participant): LocalTime? {
+        require(state >= State.FILLEDTIME)
+        return finishTime[participant]
+    }
 
-    fun getPositionInGroup(participant: Participant): PositionInGroup
+    fun getPositionInGroup(participant: Participant): PositionInGroup {
+        require(state == State.COMPLETED)
+        return positionInGroup[participant] ?: PositionInGroup(0, Duration.ZERO)
+    }
 
     fun calculate()
 
