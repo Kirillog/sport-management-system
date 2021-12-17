@@ -12,14 +12,14 @@ import java.time.Duration
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
-object Participants : IntIdTable("participant") {
+object Participants : IntIdTable("participants") {
     val name: Column<String> = varchar("name", MAX_TEXT_FIELD_SIZE)
     val surname: Column<String> = varchar("surname", MAX_TEXT_FIELD_SIZE)
     val birthdayYear: Column<Int> = integer("birthdayYear")
-    val grade: Column<String> = varchar("grade", MAX_TEXT_FIELD_SIZE)
+    val grade: Column<String?> = varchar("grade", MAX_TEXT_FIELD_SIZE).nullable()
 
-    val groupID: Column<EntityID<Int>> = reference("group", Groups)
-    val teamID: Column<EntityID<Int>> = reference("team", Teams)
+    val groupID: Column<EntityID<Int>> = reference("groups", Groups)
+    val teamID: Column<EntityID<Int>> = reference("teams", Teams)
 }
 
 /**
@@ -32,7 +32,7 @@ class Participant(id: EntityID<Int>) : IntEntity(id), SingleLineWritable {
     val name by Participants.name
     val surname by Participants.surname
     val birthdayYear by Participants.birthdayYear
-    val grade: String by Participants.grade
+    val grade: String? by Participants.grade
     val groupID by Participants.groupID
     val teamID by Participants.teamID
 

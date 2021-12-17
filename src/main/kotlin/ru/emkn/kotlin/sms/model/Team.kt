@@ -10,7 +10,7 @@ import org.jetbrains.exposed.sql.Column
 import ru.emkn.kotlin.sms.MAX_TEXT_FIELD_SIZE
 
 
-object Teams : IntIdTable("team") {
+object Teams : IntIdTable("teams") {
     val name: Column<String> = varchar("name", MAX_TEXT_FIELD_SIZE)
 }
 
