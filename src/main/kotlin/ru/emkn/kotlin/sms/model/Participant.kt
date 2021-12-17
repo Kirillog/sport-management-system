@@ -67,7 +67,7 @@ class Participant(id: EntityID<Int>) : IntEntity(id), SingleLineWritable {
     var grade: String? by ParticipantTable.grade
     private var groupID by ParticipantTable.groupID
     private var teamID by ParticipantTable.teamID
-    private var tossID by ParticipantTable.tossID
+    var tossID by ParticipantTable.tossID
 
     var team: Team
         get() = Team[teamID]

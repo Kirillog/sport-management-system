@@ -1,10 +1,8 @@
 package ru.emkn.kotlin.sms.controller
 
-import ru.emkn.kotlin.sms.io.FileLoader
-import ru.emkn.kotlin.sms.io.FileSaver
-import ru.emkn.kotlin.sms.io.Loader
-import ru.emkn.kotlin.sms.io.Saver
+import ru.emkn.kotlin.sms.io.*
 import ru.emkn.kotlin.sms.model.Competition
+import ru.emkn.kotlin.sms.model.Group
 import ru.emkn.kotlin.sms.model.Team
 import java.nio.file.Path
 import kotlin.io.path.extension
@@ -59,7 +57,7 @@ object CompetitionController {
         val tossLoader = getLoader(toss)
         Competition.loadGroups(groupLoader)
         Competition.toss(tossLoader)
-        Competition.teams.addAll(Team.byName.values.toSet())
+        Competition.teams.addAll(Team.all().toSet())
         state = State.TOSSED
     }
 
@@ -99,11 +97,9 @@ object CompetitionController {
     fun saveTeamResultsToPath(results: Path) =
         getSaver(results).saveTeamResults()
 
-}
-
     fun saveToss(writer: Writer) {
         writer.add(listOf("Номер", "Имя", "Фамилия", "Г.р.", "Команда", "Разр.", "Время старта"))
-//        writer.addAll(Group.byName.values.toList()) TODO()
+        writer.addAll(Group.all().toList())
         writer.write()
     }
 }

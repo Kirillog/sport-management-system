@@ -2,14 +2,7 @@ package ru.emkn.kotlin.sms
 
 import com.xenomachina.argparser.mainBody
 import mu.KotlinLogging
-import ru.emkn.kotlin.sms.controller.CompetitionController
 import org.jetbrains.exposed.sql.*
-import kotlin.io.path.Path
-
-import ru.emkn.kotlin.sms.controller.*
-import ru.emkn.kotlin.sms.io.Writer
-import java.io.File
-
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.emkn.kotlin.sms.model.*
 
@@ -18,8 +11,46 @@ private val logger = KotlinLogging.logger {}
 fun main(args: Array<String>): Unit = mainBody {
 
     logger.info { "Program started" }
-    Database.connect("jdbc:h2:./data/testDB;AUTO_SERVER=TRUE", driver = "org.h2.Driver",
-    user = "scott", password = "tiger")
+    Database.connect(
+        "jdbc:h2:./data/testDB;AUTO_SERVER=TRUE", driver = "org.h2.Driver",
+        user = "scott", password = "tiger"
+    )
+
+    transaction {
+//        // print sql to std-out
+        addLogger(StdOutSqlLogger)
+        SchemaUtils.create(
+            ParticipantTable,
+            GroupTable,
+            TeamTable,
+            RouteTable,
+            CheckpointTable,
+            RouteCheckpointsTable,
+            TossTable
+        )
+//        val checkpoint1 = Checkpoint.create("first check", 1)
+//        val checkpoint2 = Checkpoint.create("second check", 2)
+//        val route = Route.new {
+//            name = "Main route"
+//        }
+//        RouteCheckpointsTable.insert {
+//            it[this.route] = route.id
+//            it[checkpoint] = checkpoint1.id
+//        }
+//        RouteCheckpointsTable.insert {
+//            it[this.route] = route.id
+//            it[checkpoint] = checkpoint2.id
+//        }
+//        Team.new {
+//            name = "Samara"
+//        }
+//        Group.new {
+//            name = "M10"
+//            routeID = Route.all().first().id
+//        }
+    }
+
+    val toss = Toss()
 
     val participant = transaction {
         Participant.new {
@@ -28,30 +59,12 @@ fun main(args: Array<String>): Unit = mainBody {
             team = Team.find { TeamTable.name eq "Samara" }.first()
             group = Group.find { GroupTable.name eq "M10" }.first()
             birthdayYear = 2020
+            tossID = toss.id
         }
     }
     println("${participant.name}, ${participant.surname}")
-
-    transaction {
-        // print sql to std-out
-        addLogger(StdOutSqlLogger)
-        SchemaUtils.create(ParticipantTable, GroupTable, TeamTable)
-        TeamTable.insert {
-            it[name] = "Samara"
-        }
-        GroupTable.insert {
-            it[name] = "M10"
-        }
-        val participantId = ParticipantTable.insertAndGetId {
-            it[name] = "Petia"
-            it[surname] = "Pupkin"
-            it[teamID] = Team.find { TeamTable.name eq "Samara" }.first().id
-            it[groupID] = Group.find { GroupTable.name eq "M10" }.first().id
-            it[birthdayYear] = 2021
-        }
-        println(Participant.all().toList().size)
-    }
-    return@mainBody
+    participant.name = "kek"
+    println("${participant.name}, ${participant.surname}")
 
 //    val path = Path("competitions/competition-1")
 //    CompetitionController.announceFromPath(

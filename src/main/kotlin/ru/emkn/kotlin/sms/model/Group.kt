@@ -5,7 +5,6 @@ import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.Column
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.select
 import ru.emkn.kotlin.sms.MAX_TEXT_FIELD_SIZE
 import ru.emkn.kotlin.sms.io.MultilineWritable
@@ -22,8 +21,6 @@ class Group(id: EntityID<Int>): IntEntity(id), MultilineWritable {
 
     companion object : IntEntityClass<Group>(GroupTable)
 
-//    TODO()
-//    Route.byName[routeName] ?: throw IllegalArgumentException("There is no appropriate route for $routeName")
     var name by GroupTable.name
     val members by Participant referrersOn ParticipantTable.groupID
     var routeID by GroupTable.routeID
@@ -36,10 +33,6 @@ class Group(id: EntityID<Int>): IntEntity(id), MultilineWritable {
 //    TODO()
 //    constructor(name: String, routeName: String, participants: List<Participant>) : this(name, routeName) {
 //        members.addAll(participants)
-//    }
-//
-//    companion object {
-//        val byName: MutableMap<String, Group> = mutableMapOf()
 //    }
 
     override fun toString() = this.name

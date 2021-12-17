@@ -32,7 +32,7 @@ class Team(id: EntityID<Int>) : IntEntity(id), MultilineWritable, SingleLineWrit
         )
     }
 
-    val name: String by TeamTable.name
+    var name: String by TeamTable.name
     val members by Participant referrersOn ParticipantTable.teamID
 
     val score
