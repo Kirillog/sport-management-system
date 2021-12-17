@@ -7,8 +7,6 @@ package ru.emkn.kotlin.sms
 import com.xenomachina.argparser.mainBody
 import mu.KotlinLogging
 import ru.emkn.kotlin.sms.controller.CompetitionController
-import ru.emkn.kotlin.sms.io.Writer
-import java.io.File
 import kotlin.io.path.Path
 
 //import com.xenomachina.argparser.ArgParser
@@ -24,16 +22,28 @@ fun main(args: Array<String>): Unit = mainBody {
 
     val path = Path("competitions/competition-1")
     CompetitionController.announceFromPath(
-        path.resolve("input/event.csv"),
-        path.resolve("input/courses.csv")
+        event = path.resolve("input/event.csv"),
+        routes = path.resolve("input/courses.csv")
     )
 
-    CompetitionController.registerFromPath(
-        path.resolve("input/classes.csv"),
-        path.resolve("applications")
-    )
+//    CompetitionController.registerFromPath(
+//        group = path.resolve("input/classes.csv"),
+//        team = path.resolve("applications")
+//    )
 
-    CompetitionController.toss()
-    val writer = Writer(File("test.csv"), FileType.CSV)
-    CompetitionController.saveToss(writer)
+
+//    CompetitionController.toss()
+//    val writer = Writer(path.resolve("protocols/toss.csv").toFile(), FileType.CSV)
+//    CompetitionController.saveToss(writer)
+
+    CompetitionController.groupsAndTossFromPath(
+        group = path.resolve("input/classes.csv"),
+        toss = path.resolve("protocols/toss.csv")
+    )
+    CompetitionController.registerResultsFromPath(
+        checkPoints = path.resolve("checkpoints")
+    )
+    CompetitionController.calculatePersonalResults()
+    CompetitionController.saveResultsToPath(results = path.resolve("protocols/results.csv"))
+    CompetitionController.saveTeamResultsToPath(results = path.resolve("protocols/teamResults.csv"))
 }
