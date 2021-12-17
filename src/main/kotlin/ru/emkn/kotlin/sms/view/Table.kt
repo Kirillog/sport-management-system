@@ -18,6 +18,9 @@ abstract class Table<T> {
 
         abstract val cells: Map<String, TableCell>
 
+        open val changes
+            get() = cells.map { it.key to it.value.newText.value }.toMap()
+
         @Composable
         open fun draw() {
             var rowSize by remember { mutableStateOf(IntSize.Zero) }
