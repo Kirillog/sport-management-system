@@ -1,8 +1,10 @@
+
 import mu.KotlinLogging
 import ru.emkn.kotlin.sms.FileType
 import ru.emkn.kotlin.sms.io.Writer
 import ru.emkn.kotlin.sms.model.Participant
 import ru.emkn.kotlin.sms.model.Team
+import ru.emkn.kotlin.sms.model.formatterForApplications
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.random.Random
@@ -38,20 +40,7 @@ fun generateApplication(applicationPath: Path, id: Int, applicationSize: Int, ra
     val file = applicationPath.toFile()
     val team = generateTeam(id, applicationSize, random)
     val writer = Writer(file, FileType.CSV)
-    writer.add(team) {
-        listOf(listOf(it.name)) +
-                listOf(listOf("Имя", "Фамилия", "Г.р.", "Группа", "Разр.")) +
-                it.members.map { participant ->
-                    val result = mutableListOf(
-                        participant.name,
-                        participant.surname,
-                        participant.birthdayYear.toString(),
-                        participant.group,
-                        participant.grade ?: ""
-                    )
-                    result
-                }
-    }
+    writer.addAll(formatterForApplications(team))
     writer.write()
     return team
 }
@@ -78,8 +67,7 @@ fun generateApplications(
 fun main() {
     try {
         generateApplications(Path("test_generator"))
-    }
-    catch (error: Exception) {
+    } catch (error: Exception) {
         logger.error { error.message }
     }
 }

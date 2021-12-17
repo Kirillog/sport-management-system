@@ -53,10 +53,10 @@ fun generateCoursesForGroups(
 
 fun generateGroups(currentPath: Path, generatedTeams: List<Team>): List<Group> {
     val generatedGroups = generatedTeams.flatMap { it.members }.groupBy(Participant::group)
-    val courses = generateCoursesForGroups(currentPath, generatedGroups.keys.toList())
+    val courses = generateCoursesForGroups(currentPath, generatedGroups.keys.map { it.name })
     return generatedGroups.map {
-        val course = courses[it.key] ?: throw IllegalStateException("course has to be found")
-        Group(it.key, course, it.value)
+        val course = courses[it.key.name] ?: throw IllegalStateException("course has to be found")
+        Group(it.key.name, course.name, it.value)
     }
 }
 
