@@ -8,7 +8,7 @@ import org.jetbrains.exposed.sql.Column
 import ru.emkn.kotlin.sms.MAX_TEXT_FIELD_SIZE
 import ru.emkn.kotlin.sms.io.MultilineWritable
 
-object Groups : IntIdTable("groups") {
+object GroupTable : IntIdTable("groups") {
     val name: Column<String> = varchar("name", MAX_TEXT_FIELD_SIZE)
 }
 
@@ -17,14 +17,13 @@ object Groups : IntIdTable("groups") {
  */
 class Group(id: EntityID<Int>): IntEntity(id), MultilineWritable {
 
-    companion object : IntEntityClass<Group>(Groups)
+    companion object : IntEntityClass<Group>(GroupTable)
 
 //    TODO()
 //    val route =
 //        Route.byName[routeName] ?: throw IllegalArgumentException("There is no appropriate route for $routeName")
-
-    val name by Groups.name
-    val members by Participant referrersOn Participants.groupID
+    val name by GroupTable.name
+    val members by Participant referrersOn ParticipantTable.groupID
 
 //    TODO()
 //    constructor(name: String, routeName: String, participants: List<Participant>) : this(name, routeName) {

@@ -1,6 +1,5 @@
 package ru.emkn.kotlin.sms.model
 
-import org.jetbrains.exposed.dao.EntityClass
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
@@ -13,14 +12,16 @@ import java.time.Duration
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
-object Participants : IntIdTable("participants") {
+object ParticipantTable : IntIdTable("participants") {
     val name: Column<String> = varchar("name", MAX_TEXT_FIELD_SIZE)
     val surname: Column<String> = varchar("surname", MAX_TEXT_FIELD_SIZE)
     val birthdayYear: Column<Int> = integer("birthdayYear")
     val grade: Column<String?> = varchar("grade", MAX_TEXT_FIELD_SIZE).nullable()
 
-    val groupID: Column<EntityID<Int>> = reference("groups", Groups)
-    val teamID: Column<EntityID<Int>> = reference("teams", Teams)
+    val groupID: Column<EntityID<Int>> = reference("groups", GroupTable)
+    val teamID: Column<EntityID<Int>> = reference("teams", TeamTable)
+
+    val tossID: Column<EntityID<Int>> = reference("toss", TossTable)
 }
 
 /**
@@ -28,15 +29,16 @@ object Participants : IntIdTable("participants") {
  * Contain meta information from application lists and run result, if participant finished.
  */
 class Participant(id: EntityID<Int>) : IntEntity(id), SingleLineWritable {
-//    companion object : EntityClass<Int, Participant>(Participants)
-    companion object : IntEntityClass<Participant>(Participants)
+    companion object : IntEntityClass<Participant>(ParticipantTable)
 
-    var name by Participants.name
-    var surname by Participants.surname
-    var birthdayYear by Participants.birthdayYear
-    var grade: String? by Participants.grade
-    var groupID by Participants.groupID
-    var teamID by Participants.teamID
+    var name by ParticipantTable.name
+    var surname by ParticipantTable.surname
+    var birthdayYear by ParticipantTable.birthdayYear
+    var grade: String? by ParticipantTable.grade
+    var groupID by ParticipantTable.groupID
+    var teamID by ParticipantTable.teamID
+
+    var startID by ParticipantTable.tossID
 
     var startTime: LocalTime
         get() = Competition.toss.getParticipantStartTime(this)

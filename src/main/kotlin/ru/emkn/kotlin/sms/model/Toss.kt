@@ -1,8 +1,18 @@
 package ru.emkn.kotlin.sms.model
 
+import org.jetbrains.exposed.dao.id.IntIdTable
+import org.jetbrains.exposed.sql.Column
+import ru.emkn.kotlin.sms.MAX_TEXT_FIELD_SIZE
 import ru.emkn.kotlin.sms.io.Loader
 import java.time.LocalTime
 import kotlin.random.Random
+
+object TossTable : IntIdTable("toss") {
+    val name: Column<String> = varchar("name", MAX_TEXT_FIELD_SIZE)
+    val surname: Column<String> = varchar("surname", MAX_TEXT_FIELD_SIZE)
+    val birthdayYear: Column<Int> = integer("birthdayYear")
+    val grade: Column<String?> = varchar("grade", MAX_TEXT_FIELD_SIZE).nullable()
+}
 
 open class Toss {
 

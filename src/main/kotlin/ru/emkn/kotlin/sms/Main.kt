@@ -28,8 +28,8 @@ fun main(args: Array<String>): Unit = mainBody {
         Participant.new {
             name = "Petia"
             surname = "Pupkin"
-            teamID = Team.find { Teams.name eq "Samara" }.first().id
-            groupID = Group.find { Groups.name eq "M10" }.first().id
+            teamID = Team.find { TeamTable.name eq "Samara" }.first().id
+            groupID = Group.find { GroupTable.name eq "M10" }.first().id
             birthdayYear = 2020
         }
     }
@@ -38,18 +38,18 @@ fun main(args: Array<String>): Unit = mainBody {
     transaction {
         // print sql to std-out
         addLogger(StdOutSqlLogger)
-        SchemaUtils.create(Participants, Groups, Teams)
-        Teams.insert {
+        SchemaUtils.create(ParticipantTable, GroupTable, TeamTable)
+        TeamTable.insert {
             it[name] = "Samara"
         }
-        Groups.insert {
+        GroupTable.insert {
             it[name] = "M10"
         }
-        val participantId = Participants.insertAndGetId {
+        val participantId = ParticipantTable.insertAndGetId {
             it[name] = "Petia"
             it[surname] = "Pupkin"
-            it[teamID] = Team.find { Teams.name eq "Samara" }.first().id
-            it[groupID] = Group.find { Groups.name eq "M10" }.first().id
+            it[teamID] = Team.find { TeamTable.name eq "Samara" }.first().id
+            it[groupID] = Group.find { GroupTable.name eq "M10" }.first().id
             it[birthdayYear] = 2021
         }
         println(Participant.all().toList().size)

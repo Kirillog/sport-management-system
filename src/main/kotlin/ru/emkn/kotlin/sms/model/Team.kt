@@ -10,7 +10,7 @@ import org.jetbrains.exposed.sql.Column
 import ru.emkn.kotlin.sms.MAX_TEXT_FIELD_SIZE
 
 
-object Teams : IntIdTable("teams") {
+object TeamTable : IntIdTable("teams") {
     val name: Column<String> = varchar("name", MAX_TEXT_FIELD_SIZE)
 }
 
@@ -18,17 +18,18 @@ object Teams : IntIdTable("teams") {
  * Class for representing all information about one team, with read from single application file
  */
 class Team(id: EntityID<Int>) : IntEntity(id), MultilineWritable, SingleLineWritable {
-    companion object : IntEntityClass<Team>(Teams)
+    companion object : IntEntityClass<Team>(TeamTable)
 
-    val name: String by Teams.name
-    val members by Participant referrersOn Participants.teamID
+    val name: String by TeamTable.name
+    val members by Participant referrersOn ParticipantTable.teamID
 
     val score
         get() = Competition.teamResult.getScore(this)
 
-    constructor(name: String, members: List<Participant>) : this(name) {
-        this.members.addAll(members)
-    }
+//    TODO()
+//    constructor(name: String, members: List<Participant>) : this(name) {
+//        this.members.addAll(members)
+//    }
 
     override fun toMultiline(): List<List<Any?>> = listOf(
         listOf(name) + listOf(
