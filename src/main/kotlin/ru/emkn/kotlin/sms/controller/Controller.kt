@@ -1,11 +1,11 @@
 package ru.emkn.kotlin.sms.controller
 
 import ru.emkn.kotlin.sms.io.FileLoader
+import ru.emkn.kotlin.sms.io.FileSaver
 import ru.emkn.kotlin.sms.io.Loader
-import ru.emkn.kotlin.sms.io.Writer
+import ru.emkn.kotlin.sms.io.Saver
 import ru.emkn.kotlin.sms.model.Competition
-import ru.emkn.kotlin.sms.model.Group
-import ru.emkn.kotlin.sms.model.RuntimeDump
+import ru.emkn.kotlin.sms.model.Team
 import java.nio.file.Path
 import kotlin.io.path.extension
 
@@ -27,10 +27,10 @@ object CompetitionController {
         announce(eventLoader, routesLoader)
     }
 
-    fun announce(eventLoader: Loader, routesLoader: Loader) {
+    private fun announce(eventLoader: Loader, routesLoader: Loader) {
         require(state == State.CREATED)
-        loadEvent(eventLoader)
-        loadRoutes(routesLoader)
+        Competition.loadEvent(eventLoader)
+        Competition.loadRoutes(routesLoader)
         state = State.ANNOUNCED
     }
 
@@ -40,52 +40,64 @@ object CompetitionController {
         register(groupLoader, teamLoader)
     }
 
-    fun register(groupLoader: Loader, teamLoader: Loader) {
+    private fun register(groupLoader: Loader, teamLoader: Loader) {
         require(state == State.ANNOUNCED)
-        loadGroups(groupLoader)
-        loadTeams(teamLoader)
+        Competition.loadGroups(groupLoader)
+        Competition.loadTeams(teamLoader)
         state = State.REGISTER_OUT
     }
 
     fun toss() {
         require(state == State.REGISTER_OUT)
-        Competition.toss.addAllParticipant()
-        Competition.toss.build()
+        Competition.toss()
         state = State.TOSSED
     }
 
+    fun groupsAndTossFromPath(group: Path, toss: Path) {
+        require(state == State.ANNOUNCED)
+        val groupLoader = getLoader(group)
+        val tossLoader = getLoader(toss)
+        Competition.loadGroups(groupLoader)
+        Competition.toss(tossLoader)
+        Competition.teams.addAll(Team.byName.values.toSet())
+        state = State.TOSSED
+    }
+
+    fun registerResultsFromPath(checkPoints: Path) {
+        require(state == State.TOSSED)
+        val checkPointLoader = getLoader(checkPoints)
+        Competition.loadDump(checkPointLoader)
+        state = State.FINISHED
+    }
+
+    fun calculatePersonalResults() {
+        require(state == State.FINISHED)
+        Competition.calculateResult()
+    }
+
     private fun getLoader(path: Path): Loader {
-        return when(path.extension) {
+        return when (path.extension) {
             "csv" -> FileLoader(path)
             "" -> FileLoader(path)
             else -> throw IllegalStateException("Unsupported file format for $path")
         }
     }
 
-    fun loadGroups(loader: Loader) {
-        Competition.groups.addAll(loader.loadGroups())
+    private fun getSaver(path: Path): Saver {
+        return when (path.extension) {
+            "csv" -> FileSaver(path.toFile())
+            else -> throw IllegalStateException("Unsupported file format for $path")
+        }
     }
 
-    fun loadTeams(loader: Loader) {
-        Competition.teams.addAll(loader.loadTeams())
-    }
+    fun saveResultsToPath(results: Path) =
+        getSaver(results).saveResults()
 
-    fun loadRoutes(loader: Loader) {
-        Competition.routes.addAll(loader.loadRoutes())
-    }
+    fun saveTossToPath(toss: Path) =
+        getSaver(toss).saveToss()
 
-    fun loadDump(loader: Loader) {
-        RuntimeDump.addAllTimestamps(loader.loadTimestamps())
-    }
-
-    fun loadEvent(loader: Loader) {
-        Competition.event = loader.loadEvent()
-    }
-
-    fun saveToss(writer: Writer) {
-        writer.add(listOf("Номер", "Имя", "Фамилия", "Г.р.", "Команда", "Разр.", "Время старта"))
-        writer.addAll(Group.byName.values.toList())
-        writer.write()
-    }
+    fun saveTeamResultsToPath(results: Path) =
+        getSaver(results).saveTeamResults()
 
 }
+

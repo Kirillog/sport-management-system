@@ -1,9 +1,8 @@
 package ru.emkn.kotlin.sms.model
 
-import mu.KotlinLogging
+import ru.emkn.kotlin.sms.io.Loader
 import java.time.LocalDate
 
-private val logger = KotlinLogging.logger {}
 
 /**
  * The widest class that stores all the information about the competition
@@ -17,5 +16,41 @@ object Competition {
     val teams: MutableSet<Team> = mutableSetOf()
     val groups: MutableSet<Group> = mutableSetOf()
 
+    var teamResult: TeamResult = TeamResultByAverageScore()
     var result: Result = ResultByTime()
+
+    fun loadGroups(loader: Loader) {
+        groups.addAll(loader.loadGroups())
+    }
+
+    fun loadTeams(loader: Loader) {
+        teams.addAll(loader.loadTeams())
+    }
+
+    fun loadRoutes(loader: Loader) {
+        routes.addAll(loader.loadRoutes())
+    }
+
+    fun calculateResult() {
+        result.calculate()
+        teamResult.calculate()
+    }
+
+    fun loadEvent(loader: Loader) {
+        event = loader.loadEvent()
+    }
+
+    fun loadDump(loader: Loader) {
+        RuntimeDump.addAllTimestamps(loader.loadTimestamps())
+        checkPoints.addAll(RuntimeDump.timeStampDump.map { it.checkPoint })
+    }
+
+    fun toss() {
+        toss.addAllParticipant()
+        toss.build()
+    }
+
+    fun toss(loader: Loader) {
+        toss.build(loader)
+    }
 }
