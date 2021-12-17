@@ -6,7 +6,7 @@ import ru.emkn.kotlin.sms.io.SingleLineWritable
 /**
  * Class for representing all information about one team, with read from single application file
  */
-data class Team(val name: String) : MultilineWritable, SingleLineWritable {
+data class Team(var name: String) : MultilineWritable, SingleLineWritable {
 
     val members: MutableSet<Participant> = mutableSetOf()
 
@@ -23,6 +23,14 @@ data class Team(val name: String) : MultilineWritable, SingleLineWritable {
 
     constructor(name: String, members: List<Participant>) : this(name) {
         this.members.addAll(members)
+    }
+
+    fun change(name: String) {
+        if (this.name != name) {
+            byName.remove(this.name)
+            this.name = name
+            byName[name] = this
+        }
     }
 
     override fun toMultiline(): List<List<Any?>> = listOf(

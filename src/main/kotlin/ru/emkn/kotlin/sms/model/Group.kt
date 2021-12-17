@@ -5,9 +5,9 @@ import ru.emkn.kotlin.sms.io.MultilineWritable
 /**
  *  Class for saving data about one sports group whose members follow the same route
  */
-class Group(val name: String, routeName: String) : MultilineWritable {
+class Group(var name: String, routeName: String) : MultilineWritable {
 
-    val route =
+    var route =
         Route.byName[routeName] ?: throw IllegalArgumentException("There is no appropriate route for $routeName")
 
     val members: MutableSet<Participant> = mutableSetOf()
@@ -25,6 +25,15 @@ class Group(val name: String, routeName: String) : MultilineWritable {
         val byName: MutableMap<String, Group> = mutableMapOf()
     }
 
+    fun change(name: String, routeName: String) {
+        if (this.name != name) {
+            byName.remove(this.name)
+            this.name = name
+            byName[name] = this
+        }
+        val route = Route.byName[routeName] ?: throw IllegalStateException("There is no such route")
+        this.route = route
+    }
 
     override fun toString() = this.name
 
