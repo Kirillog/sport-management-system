@@ -24,25 +24,37 @@ fun main(args: Array<String>): Unit = mainBody {
     Database.connect("jdbc:h2:./data/testDB;AUTO_SERVER=TRUE", driver = "org.h2.Driver",
     user = "scott", password = "tiger")
 
-//    transaction {
-//        // print sql to std-out
-//        addLogger(StdOutSqlLogger)
-//        SchemaUtils.create(Participants, Groups, Teams)
-//        Teams.insert {
-//            it[name] = "Samara"
-//        }
-//        Groups.insert {
-//            it[name] = "M10"
-//        }
-//        Participants.insert {
-//            it[name] = "Vasya"
-//            it[surname] = "Pupkin"
-//            it[teamID] = Team.find { Teams.name eq "Samara" }.first().id
-//            it[groupID] = Group.find { Groups.name eq "M10" }.first().id
-//            it[birthdayYear] = 2021
-//        }
-//    }
-//    return@mainBody
+    val participant = transaction {
+        Participant.new {
+            name = "Petia"
+            surname = "Pupkin"
+            teamID = Team.find { Teams.name eq "Samara" }.first().id
+            groupID = Group.find { Groups.name eq "M10" }.first().id
+            birthdayYear = 2020
+        }
+    }
+    println("${participant.name}, ${participant.surname}")
+
+    transaction {
+        // print sql to std-out
+        addLogger(StdOutSqlLogger)
+        SchemaUtils.create(Participants, Groups, Teams)
+        Teams.insert {
+            it[name] = "Samara"
+        }
+        Groups.insert {
+            it[name] = "M10"
+        }
+        val participantId = Participants.insertAndGetId {
+            it[name] = "Petia"
+            it[surname] = "Pupkin"
+            it[teamID] = Team.find { Teams.name eq "Samara" }.first().id
+            it[groupID] = Group.find { Groups.name eq "M10" }.first().id
+            it[birthdayYear] = 2021
+        }
+        println(Participant.all().toList().size)
+    }
+    return@mainBody
 
 //    val path = Path("competitions/competition-1")
 //    CompetitionController.announceFromPath(

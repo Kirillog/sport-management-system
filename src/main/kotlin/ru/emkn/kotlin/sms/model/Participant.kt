@@ -1,5 +1,6 @@
 package ru.emkn.kotlin.sms.model
 
+import org.jetbrains.exposed.dao.EntityClass
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
@@ -27,14 +28,15 @@ object Participants : IntIdTable("participants") {
  * Contain meta information from application lists and run result, if participant finished.
  */
 class Participant(id: EntityID<Int>) : IntEntity(id), SingleLineWritable {
+//    companion object : EntityClass<Int, Participant>(Participants)
     companion object : IntEntityClass<Participant>(Participants)
 
-    val name by Participants.name
-    val surname by Participants.surname
-    val birthdayYear by Participants.birthdayYear
-    val grade: String? by Participants.grade
-    val groupID by Participants.groupID
-    val teamID by Participants.teamID
+    var name by Participants.name
+    var surname by Participants.surname
+    var birthdayYear by Participants.birthdayYear
+    var grade: String? by Participants.grade
+    var groupID by Participants.groupID
+    var teamID by Participants.teamID
 
     var startTime: LocalTime
         get() = Competition.toss.getParticipantStartTime(this)
