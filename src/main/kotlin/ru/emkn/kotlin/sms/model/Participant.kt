@@ -5,6 +5,8 @@ import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.Column
+import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.select
 import ru.emkn.kotlin.sms.MAX_TEXT_FIELD_SIZE
 
 import ru.emkn.kotlin.sms.io.SingleLineWritable
@@ -21,7 +23,7 @@ object ParticipantTable : IntIdTable("participants") {
     val groupID: Column<EntityID<Int>> = reference("groups", GroupTable)
     val teamID: Column<EntityID<Int>> = reference("teams", TeamTable)
 
-    val tossID: Column<EntityID<Int>> = reference("toss", TossTable)
+    val tossID: Column<Int> = integer("toss")
 }
 
 /**
@@ -29,21 +31,61 @@ object ParticipantTable : IntIdTable("participants") {
  * Contain meta information from application lists and run result, if participant finished.
  */
 class Participant(id: EntityID<Int>) : IntEntity(id), SingleLineWritable {
-    companion object : IntEntityClass<Participant>(ParticipantTable)
+    companion object : IntEntityClass<Participant>(ParticipantTable) {
+        /**
+         * Declare output format for participant used by [ru.emkn.kotlin.sms.io.Writer]
+         */
+
+        private fun Duration.toIntervalString(): String =
+            "${this.toHoursPart()}h ${this.toMinutesPart()}m ${this.toSecondsPart()}s"
+
+        fun formatterParticipantForApplications(participant: Participant) = listOf(
+            participant.name,
+            participant.surname,
+            participant.teamID,
+            participant.birthdayYear,
+            participant.grade,
+        )
+
+        fun formatterForPersonalResults(participant: Participant) = listOf(
+            participant.positionInGroup.place,
+            participant.id,
+            participant.name,
+            participant.surname,
+            participant.birthdayYear,
+            participant.grade,
+            participant.startTime.format(DateTimeFormatter.ISO_LOCAL_TIME),
+            participant.finishTime?.format(DateTimeFormatter.ISO_LOCAL_TIME),
+            participant.positionInGroup.laggingFromLeader.toIntervalString()
+        )
+    }
+
 
     var name by ParticipantTable.name
     var surname by ParticipantTable.surname
     var birthdayYear by ParticipantTable.birthdayYear
     var grade: String? by ParticipantTable.grade
-    var groupID by ParticipantTable.groupID
-    var teamID by ParticipantTable.teamID
+    private var groupID by ParticipantTable.groupID
+    private var teamID by ParticipantTable.teamID
+    private var tossID by ParticipantTable.tossID
 
-    var startID by ParticipantTable.tossID
+    var team: Team
+        get() = Team[teamID]
+        set(team) {
+            teamID = TeamTable.select { TeamTable.id eq team.id }.first()[TeamTable.id]
+        }
+    var group: Group
+        get() = Group[groupID]
+        set(group) {
+            groupID = GroupTable.select { GroupTable.id eq group.id }.first()[GroupTable.id]
+        }
 
     var startTime: LocalTime
-        get() = Competition.toss.getParticipantStartTime(this)
+        get() = TossTable.select { (TossTable.tossID eq tossID) and (TossTable.participantID eq id) }
+            .first()[TossTable.startTime]
         set(time) {
-            Competition.toss.startTimeByParticipant[this] = time
+            TossTable.select { (TossTable.tossID eq tossID) and (TossTable.participantID eq id) }
+                .first()[TossTable.startTime] = time
         }
 
     val runTime: Duration
@@ -99,29 +141,3 @@ class Participant(id: EntityID<Int>) : IntEntity(id), SingleLineWritable {
     override fun toLine() =
         listOf(id, name, surname, birthdayYear, team, grade, startTime.format(DateTimeFormatter.ISO_LOCAL_TIME))
 }
-
-fun Duration.toIntervalString(): String = "${this.toHoursPart()}h ${this.toMinutesPart()}m ${this.toSecondsPart()}s"
-
-/**
- * Declare output format for participant used by [ru.emkn.kotlin.sms.io.Writer]
- */
-
-fun formatterParticipantForApplications(participant: Participant) = listOf(
-    participant.name,
-    participant.surname,
-    participant.team,
-    participant.birthdayYear,
-    participant.grade,
-)
-
-fun formatterForPersonalResults(participant: Participant) = listOf(
-    participant.positionInGroup.place,
-    participant.id,
-    participant.name,
-    participant.surname,
-    participant.birthdayYear,
-    participant.grade,
-    participant.startTime.format(DateTimeFormatter.ISO_LOCAL_TIME),
-    participant.finishTime?.format(DateTimeFormatter.ISO_LOCAL_TIME),
-    participant.positionInGroup.laggingFromLeader.toIntervalString()
-)

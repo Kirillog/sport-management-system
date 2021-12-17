@@ -2,11 +2,8 @@ package ru.emkn.kotlin.sms
 
 import com.xenomachina.argparser.mainBody
 import mu.KotlinLogging
-<<<<<<< HEAD
 import ru.emkn.kotlin.sms.controller.CompetitionController
-=======
 import org.jetbrains.exposed.sql.*
->>>>>>> a132659 (db skeleton implementation)
 import kotlin.io.path.Path
 
 import ru.emkn.kotlin.sms.controller.*
@@ -28,8 +25,8 @@ fun main(args: Array<String>): Unit = mainBody {
         Participant.new {
             name = "Petia"
             surname = "Pupkin"
-            teamID = Team.find { TeamTable.name eq "Samara" }.first().id
-            groupID = Group.find { GroupTable.name eq "M10" }.first().id
+            team = Team.find { TeamTable.name eq "Samara" }.first()
+            group = Group.find { GroupTable.name eq "M10" }.first()
             birthdayYear = 2020
         }
     }

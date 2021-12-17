@@ -1,12 +1,11 @@
 package ru.emkn.kotlin.sms.model
 
-import org.jetbrains.exposed.dao.id.EntityID
 import java.time.LocalTime
 
 /**
  * Class for storing information about participant has checked by checkpoint at some time
  */
-data class TimeStamp(val time: LocalTime, val checkPoint: CheckPoint, val participant: Participant) {
+data class TimeStamp(val time: LocalTime, val checkPoint: Checkpoint, val participant: Participant) {
 //    TODO()
 //    constructor(time: LocalTime, checkPointId: Int, participantId: Int) :
 //            this(

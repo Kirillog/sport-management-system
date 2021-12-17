@@ -1,20 +1,27 @@
 package ru.emkn.kotlin.sms.model
 
-import org.jetbrains.exposed.dao.id.IntIdTable
+import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.Column
-import ru.emkn.kotlin.sms.MAX_TEXT_FIELD_SIZE
+import org.jetbrains.exposed.sql.Table
+import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.javatime.time
 import ru.emkn.kotlin.sms.io.Loader
 import java.time.LocalTime
 import kotlin.random.Random
 
-object TossTable : IntIdTable("toss") {
-    val name: Column<String> = varchar("name", MAX_TEXT_FIELD_SIZE)
-    val surname: Column<String> = varchar("surname", MAX_TEXT_FIELD_SIZE)
-    val birthdayYear: Column<Int> = integer("birthdayYear")
-    val grade: Column<String?> = varchar("grade", MAX_TEXT_FIELD_SIZE).nullable()
+object TossTable : Table("toss") {
+    val tossID: Column<Int> = integer("toss")
+    val participantID: Column<EntityID<Int>> = reference("participant", ParticipantTable)
+    val startTime: Column<LocalTime> = time("startTime")
 }
 
 open class Toss {
+
+    companion object {
+        protected var lastId: Int = 0
+    }
+
+    val id = lastId++
 
     enum class State {
         PREPARING, TOSSED
@@ -37,22 +44,19 @@ open class Toss {
 
     fun addAllParticipant() {
         require(state == State.PREPARING)
-//        Participant.byId.values.forEach { this.addParticipant(it) } TODO()
-    }
-
-    fun getParticipantStartTime(participant: Participant): LocalTime {
-        require(state == State.TOSSED)
-        return startTimeByParticipant.getOrElse(participant) {
-            throw IllegalStateException("This participant ${participant.id} has not been tossed")
-        }
+        Participant.all().forEach { this.addParticipant(it) }
     }
 
     open fun build() {
         var currentTime = LocalTime.NOON
         val deltaMinutes = 5L
-        participants.groupBy { it.groupID }.forEach { (groupID, members) ->
+        participants.groupBy { it.group }.forEach { (groupID, members) ->
             members.shuffled(Random(0)).forEach { participant ->
-                startTimeByParticipant[participant] = currentTime
+                TossTable.insert {
+                    it[tossID] = id
+                    it[participantID] = participant.id
+                    it[startTime] = currentTime
+                }
                 currentTime = currentTime.plusMinutes(deltaMinutes)
             }
         }

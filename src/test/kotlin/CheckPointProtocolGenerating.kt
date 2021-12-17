@@ -2,7 +2,7 @@ import ru.emkn.kotlin.sms.FileType
 import ru.emkn.kotlin.sms.controller.CompetitionController
 import ru.emkn.kotlin.sms.io.MultilineWritable
 import ru.emkn.kotlin.sms.io.Writer
-import ru.emkn.kotlin.sms.model.CheckPoint
+import ru.emkn.kotlin.sms.model.Checkpoint
 import ru.emkn.kotlin.sms.model.Participant
 import ru.emkn.kotlin.sms.model.Route
 import ru.emkn.kotlin.sms.model.TimeStamp
@@ -14,7 +14,7 @@ import kotlin.io.path.Path
 import kotlin.random.Random
 
 
-data class CheckPointsProtocol(val checkPoint: CheckPoint, val protocol: List<TimeStamp>) :
+data class CheckPointsProtocol(val checkPoint: Checkpoint, val protocol: List<TimeStamp>) :
     MultilineWritable {
     override fun toMultiline(): List<List<String>> {
         return listOf(listOf(checkPoint.id.toString())) + listOf(listOf("Номер", "Время")) +
@@ -53,7 +53,7 @@ fun generateParticipantsProtocol(
 fun convertParticipantProtocolsIntoCheckPointProtocols(participantProtocols: List<ParticipantsProtocol>): List<CheckPointsProtocol> {
     return participantProtocols.flatMap { it.protocol }
         .groupBy { it.checkPoint.id }
-        .map { CheckPointsProtocol(CheckPoint(it.key), it.value) }
+        .map { CheckPointsProtocol(Checkpoint(it.key), it.value) }
 }
 
 fun generateCheckPointProtocols(

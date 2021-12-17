@@ -101,13 +101,9 @@ object CompetitionController {
 
 }
 
-<<<<<<< HEAD
-=======
     fun saveToss(writer: Writer) {
         writer.add(listOf("Номер", "Имя", "Фамилия", "Г.р.", "Команда", "Разр.", "Время старта"))
 //        writer.addAll(Group.byName.values.toList()) TODO()
         writer.write()
     }
-
 }
->>>>>>> 2247991 (start model refactoring for database)

@@ -44,7 +44,7 @@ class CSVReader(file: File) : Reader(file) {
                     convert(element, lineNumber, it)
                 }
             }
-            CheckPoint::class -> CheckPoint(convert(field, lineNumber, Int::class.starProjectedType) as Int)
+            Checkpoint::class -> Checkpoint(convert(field, lineNumber, Int::class.starProjectedType) as Int)
             LocalDate::class ->
                 try {
                     val (date, month, year) = field.split(".").map(String::toInt)
@@ -290,7 +290,7 @@ class CSVReader(file: File) : Reader(file) {
                     convert(element, lineNumber, it)
                 }
             }
-            CheckPoint::class -> CheckPoint(convert(field, lineNumber, Int::class.starProjectedType) as Int)
+            Checkpoint::class -> Checkpoint(convert(field, lineNumber, Int::class.starProjectedType) as Int)
             LocalDate::class ->
                 try {
                     val (date, month, year) = field.split(".").map(String::toInt)

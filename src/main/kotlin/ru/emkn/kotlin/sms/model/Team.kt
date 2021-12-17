@@ -18,7 +18,19 @@ object TeamTable : IntIdTable("teams") {
  * Class for representing all information about one team, with read from single application file
  */
 class Team(id: EntityID<Int>) : IntEntity(id), MultilineWritable, SingleLineWritable {
-    companion object : IntEntityClass<Team>(TeamTable)
+    companion object : IntEntityClass<Team>(TeamTable) {
+        fun formatterForApplications(team: Team) = listOf(
+            listOf(team.name) + listOf(
+                listOf(
+                    "Имя",
+                    "Фамилия",
+                    "Г.р.",
+                    "Группа",
+                    "Разр."
+                )
+            ) + team.members.map(Participant::formatterParticipantForApplications)
+        )
+    }
 
     val name: String by TeamTable.name
     val members by Participant referrersOn ParticipantTable.teamID
@@ -50,16 +62,3 @@ class Team(id: EntityID<Int>) : IntEntity(id), MultilineWritable, SingleLineWrit
 
     override fun toString() = this.name
 }
-
-fun formatterForApplications(team: Team) = listOf(
-    listOf(team.name) + listOf(
-        listOf(
-            "Имя",
-            "Фамилия",
-            "Г.р.",
-            "Группа",
-            "Разр."
-        )
-    ) + team.members.map(::formatterParticipantForApplications)
-)
-

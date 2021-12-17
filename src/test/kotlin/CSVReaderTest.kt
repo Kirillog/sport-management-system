@@ -3,7 +3,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import ru.emkn.kotlin.sms.io.CSVReader
 import ru.emkn.kotlin.sms.model.*
 import java.io.File
 import java.io.IOException
@@ -109,8 +108,8 @@ internal class CSVReaderTest {
             val coursesFile = resources.resolve("courses/incorrectTypeOfField.csv").toFile()
             assertEquals(
                 listOf(
-                    Route("М18 21 40 50", listOf(CheckPoint(31), CheckPoint(32))),
-                    Route("Ж14", listOf(CheckPoint(47), CheckPoint(46), CheckPoint(45), CheckPoint(34)))
+                    Route("М18 21 40 50", listOf(Checkpoint(31), Checkpoint(32))),
+                    Route("Ж14", listOf(Checkpoint(47), Checkpoint(46), Checkpoint(45), Checkpoint(34)))
                 ),
                 readCourses(coursesFile)
             )
@@ -123,20 +122,20 @@ internal class CSVReaderTest {
                 listOf(
                     Route(
                         "МЖ9 10",
-                        listOf(CheckPoint(32), CheckPoint(46), CheckPoint(34), CheckPoint(33), CheckPoint(53))
+                        listOf(Checkpoint(32), Checkpoint(46), Checkpoint(34), Checkpoint(33), Checkpoint(53))
                     ),
                     Route(
                         "Ж14",
                         listOf(
-                            CheckPoint(47),
-                            CheckPoint(46),
-                            CheckPoint(45),
-                            CheckPoint(34),
-                            CheckPoint(33),
-                            CheckPoint(32)
+                            Checkpoint(47),
+                            Checkpoint(46),
+                            Checkpoint(45),
+                            Checkpoint(34),
+                            Checkpoint(33),
+                            Checkpoint(32)
                         )
                     ),
-                    Route("Ж12", listOf(CheckPoint(32), CheckPoint(46)))
+                    Route("Ж12", listOf(Checkpoint(32), Checkpoint(46)))
                 ),
                 readCourses(coursesFile)
             )
@@ -180,9 +179,9 @@ internal class CSVReaderTest {
             val file = resources.resolve("checkPoints/simple.csv").toFile()
             assertEquals(
                 setOf(
-                    TimeStamp(LocalTime.of(21, 22, 30), CheckPoint(12), 100),
-                    TimeStamp(LocalTime.of(19, 15, 30), CheckPoint(12), 102),
-                    TimeStamp(LocalTime.of(17, 15, 56), CheckPoint(12), 105)
+                    TimeStamp(LocalTime.of(21, 22, 30), Checkpoint(12), 100),
+                    TimeStamp(LocalTime.of(19, 15, 30), Checkpoint(12), 102),
+                    TimeStamp(LocalTime.of(17, 15, 56), Checkpoint(12), 105)
                 ), readTimeStamps(file)
             )
         }
@@ -192,7 +191,7 @@ internal class CSVReaderTest {
             val file = resources.resolve("checkPoints/incorrectTypeOfField.csv").toFile()
             assertEquals(
                 setOf(
-                    TimeStamp(LocalTime.of(17, 15, 56), CheckPoint(2), 105)
+                    TimeStamp(LocalTime.of(17, 15, 56), Checkpoint(2), 105)
                 ),
                 readTimeStamps(file)
             )

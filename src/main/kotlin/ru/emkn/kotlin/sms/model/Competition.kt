@@ -11,7 +11,7 @@ object Competition {
 
     var event = Event("", LocalDate.of(2020, 1, 1))
     var toss = Toss()
-    val checkPoints: MutableSet<CheckPoint> = mutableSetOf()
+    val checkpoints: MutableSet<Checkpoint> = mutableSetOf()
     val routes: MutableSet<Route> = mutableSetOf()
     val teams: MutableSet<Team> = mutableSetOf()
     val groups: MutableSet<Group> = mutableSetOf()
@@ -42,7 +42,7 @@ object Competition {
 
     fun loadDump(loader: Loader) {
         RuntimeDump.addAllTimestamps(loader.loadTimestamps())
-        checkPoints.addAll(RuntimeDump.timeStampDump.map { it.checkPoint })
+        checkpoints.addAll(RuntimeDump.timeStampDump.map { it.checkPoint })
     }
 
     fun toss() {

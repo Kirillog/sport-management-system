@@ -8,6 +8,10 @@ class TeamResultByAverageScore : TeamResult {
 
     override var score: Map<Team, Long> = mapOf()
 
+    operator private fun Duration.div(other: Duration): Double {
+        return this.seconds.toDouble() / other.seconds
+    }
+
     override fun calculate() {
         val tempScore: MutableMap<Team, Long> = mutableMapOf()
         Competition.teams.forEach { team ->
@@ -27,6 +31,3 @@ class TeamResultByAverageScore : TeamResult {
     }
 }
 
-operator fun Duration.div(other: Duration): Double {
-    return this.seconds.toDouble() / other.seconds
-}
