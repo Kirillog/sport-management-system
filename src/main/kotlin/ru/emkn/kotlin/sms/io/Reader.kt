@@ -1,7 +1,8 @@
 package ru.emkn.kotlin.sms.io
 
-import ru.emkn.kotlin.sms.objects.*
+import ru.emkn.kotlin.sms.model.*
 import java.io.File
+import java.time.LocalTime
 
 /**
  * Provides methods for reading main structures from [file].
@@ -17,37 +18,37 @@ abstract class Reader(protected val file: File) {
     abstract fun team(): Team?
 
     /**
-     * Map from name of [Group] to name of [Course] located in [file].
+     * [Group] located in [file].
      *
      * Returns `null` if data has incorrect format.
      */
-    abstract fun groupsToCourses(): Map<String, String>?
+    abstract fun groups(): Set<Group>?
 
     /**
-     * [Course] list located in [file].
+     * [Route] list located in [file].
      *
      * Returns `null` if data has incorrect format.
      */
-    abstract fun courses(): List<Course>?
+    abstract fun courses(): Set<Route>?
 
     /**
      * [Event] list located in [file].
      *
      * Returns `null` if data has incorrect format.
      */
-    abstract fun events(): List<Event>?
+    abstract fun event(): Event?
 
     /**
      * [TimeStamp] list located in [file].
      *
      * Returns `null` if data has incorrect format.
      */
-    abstract fun timestamps(): List<TimeStamp>?
+    abstract fun timestamps(): Set<TimeStamp>?
 
     /**
-     * [Participant] list located in [file].
+     * Map from [Participant] to [LocalTime] list located in [file].
      *
      * Returns `null` if data has incorrect format.
      */
-    abstract fun participants(): List<Participant>?
+    abstract fun toss(): Unit?
 }

@@ -1,13 +1,13 @@
+
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import org.junit.jupiter.api.Test
 import ru.emkn.kotlin.sms.FileType
 import ru.emkn.kotlin.sms.io.Writer
-import ru.emkn.kotlin.sms.objects.Course
-import ru.emkn.kotlin.sms.objects.Group
-import ru.emkn.kotlin.sms.objects.Participant
-import ru.emkn.kotlin.sms.objects.Team
+import ru.emkn.kotlin.sms.model.Group
+import ru.emkn.kotlin.sms.model.Participant
+import ru.emkn.kotlin.sms.model.Route
+import ru.emkn.kotlin.sms.model.Team
 import java.io.File
-import java.time.Duration
 import java.time.LocalTime
 import kotlin.test.assertEquals
 
@@ -18,17 +18,17 @@ class WriterTest {
     private val writer = Writer(file, FileType.CSV)
 
     private val participant = listOf(
-        Participant("Vasya", "Pupkin", 1998, "Human", "Team A", "I"),
-        Participant("Petya", "Loopkin", 2189, "Human", "Team B"),
+        Participant("Vasya", "Pupkin", 1998, "Human", "Team A", 100, LocalTime.of(10, 10, 10), "I"),
+        Participant("Petya", "Loopkin", 2189, "Human", "Team B", 500, LocalTime.of(0, 0, 0)),
         Participant("Picathu", "Yellow", 201, "Pokemon", "Team A", "IV"),
         Participant("Squirtle", "Blue", 211, "Pokemon", "Team B")
     )
 
-    private fun formatter(it: Participant): List<String?> = listOf(
-        it.id?.toString(),
+    private fun formatter(it: Participant): List<Any?> = listOf(
+        it.id,
         it.name,
         it.surname,
-        it.birthdayYear.toString(),
+        it.birthdayYear,
         it.group,
         it.team,
         it.grade
@@ -45,16 +45,12 @@ class WriterTest {
     fun testWriteFilledParticipant() {
         val appA = participant[0]
         val appB = participant[1]
-        appA.id = 100
-        appB.id = 500
-        appA.startTime = LocalTime.of(10, 10, 10)
-        appA.finishTime = LocalTime.of(23, 59, 59)
-        appA.positionInGroup = Participant.PositionInGroup(1, Duration.ofSeconds(0))
-        appB.startTime = LocalTime.of(0, 0, 0)
-        appB.finishTime = LocalTime.of(11, 12, 13)
-        appB.positionInGroup = Participant.PositionInGroup(2, Duration.ofSeconds(4))
+//        appA.finishTime = LocalTime.of(23, 59, 59)
+//        appA.positionInGroup = Result.PositionInGroup(1, Duration.ofSeconds(0))
+//        appB.finishTime = LocalTime.of(11, 12, 13)
+//        appB.positionInGroup = Result.PositionInGroup(2, Duration.ofSeconds(4))
         val filledParticipantDump = listOf(
-            listOf("1","100", "Vasya", "Pupkin", "1998", "Human", "Team A", "I", "10:10:10", "23:59:59", "0h 0m 0s"),
+            listOf("1", "100", "Vasya", "Pupkin", "1998", "Human", "Team A", "I", "10:10:10", "23:59:59", "0h 0m 0s"),
             listOf("2", "500", "Petya", "Loopkin", "2189", "Human", "Team B", "", "00:00:00", "11:12:13", "0h 0m 4s")
         )
 
@@ -133,12 +129,14 @@ class WriterTest {
 
     @Test
     fun testWriteGroup() {
+        val routeA = Route("Course for 'Human'", listOf())
         val groupA = Group(
-            name = "Human", course = Course("Course for 'Human'", listOf()),
+            name = "Human", routeName = routeA.name,
             listOf(participant[0], participant[1])
         )
+        val routeB = Route("Course for 'Pokemon'", listOf())
         val groupB = Group(
-            name = "Pokemon", course = Course("Course for 'Pokemon'", listOf()),
+            name = "Pokemon", routeName = routeB.name,
             listOf(participant[2], participant[3])
         )
 
