@@ -34,7 +34,7 @@ interface Result {
 
     fun sortMembersIn(group: Group): List<Participant>
 
-    fun disqualifyCheaters(participantResult: Map<Participant, List<TimeStamp>>): Map<Participant, List<TimeStamp>>
+    fun disqualifyCheaters(participantResult: Map<Participant, List<Timestamp>>): Map<Participant, List<Timestamp>>
 
     fun getParticipantFinishTime(participant: Participant): LocalTime? {
         require(state >= State.FILLEDTIME)

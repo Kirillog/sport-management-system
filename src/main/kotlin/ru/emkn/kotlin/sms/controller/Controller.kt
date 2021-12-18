@@ -80,7 +80,7 @@ object CompetitionController {
         state = State.FINISHED
     }
 
-    fun calculatePersonalResults() {
+    fun calculateResult() {
         require(state == State.FINISHED)
         Competition.calculateResult()
     }

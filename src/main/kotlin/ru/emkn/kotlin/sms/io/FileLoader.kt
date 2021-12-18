@@ -28,7 +28,7 @@ class FileLoader(path: Path) : Loader {
             CSVReader(file).team()
         }.filterNotNull().toSet()
 
-    override fun loadTimestamps(): Set<TimeStamp> =
+    override fun loadTimestamps(): Set<Timestamp> =
         file.walk().filter { it.isFile && it.extension == "csv" }.map { file ->
             logger.debug { "Processing ${file.name}" }
             CSVReader(file).timestamps()

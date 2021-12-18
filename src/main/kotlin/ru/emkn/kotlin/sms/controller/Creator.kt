@@ -146,7 +146,7 @@ object Creator {
         }
     }
 
-    fun createTimeStampFrom(values: Map<String, String>): TimeStamp {
+    fun createTimeStampFrom(values: Map<String, String>): Timestamp {
         return TODO()
     }
 }

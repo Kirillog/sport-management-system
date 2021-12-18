@@ -143,7 +143,7 @@ class CSVReader(file: File) : Reader(file) {
     }
 
 
-    override fun timestamps(): Set<TimeStamp>? {
+    override fun timestamps(): Set<Timestamp>? {
         val name = name()?.toIntOrNull() ?: throw IOException("Wrong type of checkPoint id")
         val table = tableWithHeader()?.map { record ->
             record + ("checkPointId" to name.toString())

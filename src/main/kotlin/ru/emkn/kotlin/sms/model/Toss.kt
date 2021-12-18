@@ -18,10 +18,10 @@ object TossTable : Table("toss") {
 open class Toss {
 
     companion object {
-        protected var lastId: Int = 1
+        protected var lastID: Int = 1
     }
 
-    val id = lastId++
+    val id = lastID++
 
     enum class State {
         PREPARING, TOSSED

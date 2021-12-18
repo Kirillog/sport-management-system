@@ -25,7 +25,7 @@ internal class CSVReaderTest {
     private fun readGroups(file: File): Set<Group>? =
         CSVReader(file).groups()
 
-    private fun readTimeStamps(file: File): Set<TimeStamp>? =
+    private fun readTimeStamps(file: File): Set<Timestamp>? =
         CSVReader(file).timestamps()
 
     private fun readToss(file: File): Unit? =
@@ -179,9 +179,9 @@ internal class CSVReaderTest {
             val file = resources.resolve("checkPoints/simple.csv").toFile()
             assertEquals(
                 setOf(
-                    TimeStamp(LocalTime.of(21, 22, 30), Checkpoint(12), 100),
-                    TimeStamp(LocalTime.of(19, 15, 30), Checkpoint(12), 102),
-                    TimeStamp(LocalTime.of(17, 15, 56), Checkpoint(12), 105)
+                    Timestamp(LocalTime.of(21, 22, 30), Checkpoint(12), 100),
+                    Timestamp(LocalTime.of(19, 15, 30), Checkpoint(12), 102),
+                    Timestamp(LocalTime.of(17, 15, 56), Checkpoint(12), 105)
                 ), readTimeStamps(file)
             )
         }
@@ -191,7 +191,7 @@ internal class CSVReaderTest {
             val file = resources.resolve("checkPoints/incorrectTypeOfField.csv").toFile()
             assertEquals(
                 setOf(
-                    TimeStamp(LocalTime.of(17, 15, 56), Checkpoint(2), 105)
+                    Timestamp(LocalTime.of(17, 15, 56), Checkpoint(2), 105)
                 ),
                 readTimeStamps(file)
             )

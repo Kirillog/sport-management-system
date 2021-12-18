@@ -5,7 +5,7 @@ import ru.emkn.kotlin.sms.io.Writer
 import ru.emkn.kotlin.sms.model.Checkpoint
 import ru.emkn.kotlin.sms.model.Participant
 import ru.emkn.kotlin.sms.model.Route
-import ru.emkn.kotlin.sms.model.TimeStamp
+import ru.emkn.kotlin.sms.model.Timestamp
 import java.io.File
 import java.nio.file.Path
 import java.time.LocalTime
@@ -14,7 +14,7 @@ import kotlin.io.path.Path
 import kotlin.random.Random
 
 
-data class CheckPointsProtocol(val checkPoint: Checkpoint, val protocol: List<TimeStamp>) :
+data class CheckPointsProtocol(val checkPoint: Checkpoint, val protocol: List<Timestamp>) :
     MultilineWritable {
     override fun toMultiline(): List<List<String>> {
         return listOf(listOf(checkPoint.id.toString())) + listOf(listOf("Номер", "Время")) +
@@ -22,7 +22,7 @@ data class CheckPointsProtocol(val checkPoint: Checkpoint, val protocol: List<Ti
     }
 }
 
-data class ParticipantsProtocol(val participant: Participant, val protocol: List<TimeStamp>) :
+data class ParticipantsProtocol(val participant: Participant, val protocol: List<Timestamp>) :
     MultilineWritable {
     override fun toMultiline(): List<List<String>> {
         return listOf(listOf(participant.id.toString())) + listOf(listOf("Номер пункта", "Время")) +
@@ -46,7 +46,7 @@ fun generateParticipantsProtocol(
 
     return ParticipantsProtocol(
         participant,
-        route.checkPoints.zip(times) { checkpoint, time -> TimeStamp(time, checkpoint, participant.id) }
+        route.checkPoints.zip(times) { checkpoint, time -> Timestamp(time, checkpoint, participant.id) }
     )
 }
 

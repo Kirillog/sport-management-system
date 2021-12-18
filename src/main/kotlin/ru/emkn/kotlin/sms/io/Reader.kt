@@ -39,11 +39,11 @@ abstract class Reader(protected val file: File) {
     abstract fun event(): Event?
 
     /**
-     * [TimeStamp] list located in [file].
+     * [Timestamp] list located in [file].
      *
      * Returns `null` if data has incorrect format.
      */
-    abstract fun timestamps(): Set<TimeStamp>?
+    abstract fun timestamps(): Set<Timestamp>?
 
     /**
      * Map from [Participant] to [LocalTime] list located in [file].

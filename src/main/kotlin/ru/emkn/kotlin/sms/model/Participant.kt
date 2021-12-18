@@ -30,6 +30,7 @@ object ParticipantTable : IntIdTable("participants") {
  * Contain meta information from application lists and run result, if participant finished.
  */
 class Participant(id: EntityID<Int>) : IntEntity(id), SingleLineWritable {
+
     companion object : IntEntityClass<Participant>(ParticipantTable) {
 
         fun create(
@@ -100,7 +101,6 @@ class Participant(id: EntityID<Int>) : IntEntity(id), SingleLineWritable {
         )
     }
 
-
     var name by ParticipantTable.name
     var surname by ParticipantTable.surname
     var birthdayYear by ParticipantTable.birthdayYear
@@ -146,7 +146,6 @@ class Participant(id: EntityID<Int>) : IntEntity(id), SingleLineWritable {
         teamName: String,
         grade: String?
     ) {
-
         this.name = name
         this.surname = surname
         this.birthdayYear = birthdayYear

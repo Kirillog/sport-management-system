@@ -29,26 +29,6 @@ fun main(args: Array<String>): Unit = mainBody {
             RouteCheckpointsTable,
             TossTable
         )
-//        val checkpoint1 = Checkpoint.create("first check", 1)
-//        val checkpoint2 = Checkpoint.create("second check", 2)
-//        val route = Route.new {
-//            name = "Main route"
-//        }
-//        RouteCheckpointsTable.insert {
-//            it[this.route] = route.id
-//            it[checkpoint] = checkpoint1.id
-//        }
-//        RouteCheckpointsTable.insert {
-//            it[this.route] = route.id
-//            it[checkpoint] = checkpoint2.id
-//        }
-//        Team.new {
-//            name = "Samara"
-//        }
-//        Group.new {
-//            name = "M10"
-//            routeID = Route.all().first().id
-//        }
     }
 
     val path = Path("competitions/competition-1")
@@ -67,4 +47,8 @@ fun main(args: Array<String>): Unit = mainBody {
     CompetitionController.saveTossToPath(
         toss = path.resolve("protocols/toss.csv")
     )
+
+    CompetitionController.calculateResult()
+//    CompetitionController.saveResultsToPath(path.resolve("protocols/results.csv"))
+//    CompetitionController.saveTeamResultsToPath(path.resolve("protocols/team_results.csv"))
 }

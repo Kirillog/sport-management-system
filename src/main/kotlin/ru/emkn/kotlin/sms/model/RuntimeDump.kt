@@ -2,18 +2,18 @@ package ru.emkn.kotlin.sms.model
 
 object RuntimeDump {
 
-    var timeStampDump: MutableSet<TimeStamp> = mutableSetOf()
-    val participantDump: Map<Participant, List<TimeStamp>> = mapOf()
+    var timestampDump: MutableSet<Timestamp> = mutableSetOf()
+    val participantDump: Map<Participant, List<Timestamp>> = mapOf()
 
-    fun addTimestamp(timeStamp: TimeStamp) {
-        timeStampDump.add(timeStamp)
+    fun addTimestamp(timeStamp: Timestamp) {
+        timestampDump.add(timeStamp)
     }
 
-    fun addAllTimestamps(timeStamps: Set<TimeStamp>) {
-        timeStampDump.addAll(timeStamps)
+    fun addAllTimestamps(timestamps: Set<Timestamp>) {
+        timestampDump.addAll(timestamps)
     }
 
-    fun resultsByParticipant() = timeStampDump.groupBy { it.participant }
-        .mapValues { it.value.sortedBy(ru.emkn.kotlin.sms.model.TimeStamp::time) }
+    fun resultsByParticipant() = timestampDump.groupBy { it.participant }
+        .mapValues { it.value.sortedBy(ru.emkn.kotlin.sms.model.Timestamp::time) }
 
 }
