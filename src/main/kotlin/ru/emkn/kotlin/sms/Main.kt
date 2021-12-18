@@ -63,7 +63,9 @@ fun main(args: Array<String>): Unit = mainBody {
         }
     }
     println("${participant.name}, ${participant.surname}")
-    participant.name = "kek"
+    transaction {
+        participant.name = "kek"
+    }
     println("${participant.name}, ${participant.surname}")
 
 //    val path = Path("competitions/competition-1")

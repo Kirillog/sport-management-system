@@ -6,6 +6,7 @@ import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.Column
 import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.transactions.transaction
 import ru.emkn.kotlin.sms.MAX_TEXT_FIELD_SIZE
 import ru.emkn.kotlin.sms.io.MultilineWritable
 
@@ -19,7 +20,31 @@ object GroupTable : IntIdTable("groups") {
  */
 class Group(id: EntityID<Int>): IntEntity(id), MultilineWritable {
 
-    companion object : IntEntityClass<Group>(GroupTable)
+    companion object : IntEntityClass<Group>(GroupTable) {
+
+        fun findByName(name: String): Group {
+            return Group.find { GroupTable.name eq name}.first()
+        }
+
+        fun create(name: String, route: Route): Group {
+            return transaction {
+                Group.new {
+                    this.name = name
+                    this.route = route
+                }
+            }
+        }
+
+        fun create(name: String, routeName: String): Group {
+            return transaction {
+                Group.new {
+                    this.name = name
+//                    this.route = Route.findByName(routeName)
+                    this.routeID = RouteTable.select { RouteTable.name eq routeName }.first()[RouteTable.id]
+                }
+            }
+        }
+    }
 
     var name by GroupTable.name
     val members by Participant referrersOn ParticipantTable.groupID
@@ -30,6 +55,7 @@ class Group(id: EntityID<Int>): IntEntity(id), MultilineWritable {
         set(route) {
             routeID = RouteTable.select { RouteTable.id eq route.id }.first()[GroupTable.id]
         }
+
 //    TODO()
 //    constructor(name: String, routeName: String, participants: List<Participant>) : this(name, routeName) {
 //        members.addAll(participants)

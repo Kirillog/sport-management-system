@@ -7,6 +7,7 @@ import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.Column
+import org.jetbrains.exposed.sql.transactions.transaction
 import ru.emkn.kotlin.sms.MAX_TEXT_FIELD_SIZE
 
 
@@ -30,6 +31,18 @@ class Team(id: EntityID<Int>) : IntEntity(id), MultilineWritable, SingleLineWrit
                 )
             ) + team.members.map(Participant::formatterParticipantForApplications)
         )
+
+        fun findByName(name: String): Team {
+            return Team.find { TeamTable.name eq name}.first()
+        }
+
+        fun create(name: String): Team {
+            return transaction {
+                Team.new {
+                    this.name = name
+                }
+            }
+        }
     }
 
     var name: String by TeamTable.name
@@ -37,11 +50,6 @@ class Team(id: EntityID<Int>) : IntEntity(id), MultilineWritable, SingleLineWrit
 
     val score
         get() = Competition.teamResult.getScore(this)
-
-//    TODO()
-//    constructor(name: String, members: List<Participant>) : this(name) {
-//        this.members.addAll(members)
-//    }
 
     override fun toMultiline(): List<List<Any?>> = listOf(
         listOf(name) + listOf(

@@ -5,6 +5,7 @@ import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.Column
+import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.emkn.kotlin.sms.MAX_TEXT_FIELD_SIZE
 import ru.emkn.kotlin.sms.io.SingleLineWritable
@@ -17,7 +18,19 @@ object RouteTable : IntIdTable("routes") {
  * A class for storing a route along which one group of participants runs.
  */
 class Route(id: EntityID<Int>) : IntEntity(id), SingleLineWritable {
-    companion object : IntEntityClass<Route>(RouteTable)
+    companion object : IntEntityClass<Route>(RouteTable) {
+        fun findByName(name: String): Route {
+            return Route.find { RouteTable.name eq name }.first()
+        }
+
+        fun create(name: String): Route {
+            return transaction {
+                Route.new {
+                    this.name = name
+                }
+            }
+        }
+    }
 
     var name by RouteTable.name
     var checkPoints by Checkpoint via RouteCheckpointsTable
@@ -28,6 +41,7 @@ class Route(id: EntityID<Int>) : IntEntity(id), SingleLineWritable {
 object RouteCheckpointsTable : IntIdTable("route_checkpoints") {
     val route: Column<EntityID<Int>> = reference("routes", RouteTable)
     val checkpoint: Column<EntityID<Int>> = reference("checkpoints", CheckpointTable)
+    val positionInRoute = integer("position")
 }
 
 object CheckpointTable : IntIdTable("checkpoints") {
@@ -37,11 +51,11 @@ object CheckpointTable : IntIdTable("checkpoints") {
 
 class Checkpoint(id: EntityID<Int>): IntEntity(id) {
     companion object : IntEntityClass<Checkpoint>(CheckpointTable) {
-        fun create(new_name: String, new_weight: Int): Checkpoint {
+        fun create(name: String, weight: Int): Checkpoint {
             return transaction {
                 Checkpoint.new {
-                    name = new_name
-                    weigth = new_weight
+                    this.name = name
+                    this.weigth = weight
                 }
             }
         }
@@ -51,4 +65,12 @@ class Checkpoint(id: EntityID<Int>): IntEntity(id) {
     var name by CheckpointTable.name
     var routes by Route via RouteCheckpointsTable
 
+    fun addToRoute(route: Route) {
+        val positionInRoute = route.checkPoints.toList().size
+        RouteCheckpointsTable.insert {
+            it[this.checkpoint] = this@Checkpoint.id
+            it[this.route] = route.id
+            it[this.positionInRoute] = positionInRoute
+        }
+    }
 }

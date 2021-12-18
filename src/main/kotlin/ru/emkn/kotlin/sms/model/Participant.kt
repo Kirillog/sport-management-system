@@ -7,6 +7,7 @@ import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.Column
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.transactions.transaction
 import ru.emkn.kotlin.sms.MAX_TEXT_FIELD_SIZE
 
 import ru.emkn.kotlin.sms.io.SingleLineWritable
@@ -32,9 +33,23 @@ object ParticipantTable : IntIdTable("participants") {
  */
 class Participant(id: EntityID<Int>) : IntEntity(id), SingleLineWritable {
     companion object : IntEntityClass<Participant>(ParticipantTable) {
-        /**
-         * Declare output format for participant used by [ru.emkn.kotlin.sms.io.Writer]
-         */
+
+        fun create(name: String, surname: String, birthdayYear: Int, group: Group, team: Team, grade: String?): Participant {
+            return transaction {
+                Participant.new {
+                    this.name = name
+                    this.surname = surname
+                    this.birthdayYear = birthdayYear
+                    this.group = group
+                    this.team = team
+                    this.grade = grade
+                }
+            }
+        }
+
+        fun create(name: String, surname: String, birthdayYear: Int, groupName: String, teamName: String, grade: String?): Participant {
+            return create(name, surname, birthdayYear, Group.findByName(groupName), Team.findByName(teamName), grade)
+        }
 
         private fun Duration.toIntervalString(): String =
             "${this.toHoursPart()}h ${this.toMinutesPart()}m ${this.toSecondsPart()}s"
@@ -96,47 +111,6 @@ class Participant(id: EntityID<Int>) : IntEntity(id), SingleLineWritable {
 
     val positionInGroup: Result.PositionInGroup
         get() = Competition.result.getPositionInGroup(this)
-
-//    constructor(
-//        name: String,
-//        surname: String,
-//        birthdayYear: Int,
-//        group: String,
-//        team: String,
-//        grade: String? = null
-//    ) {
-//        this.name = name
-//        this.surname = surname
-//        this.birthdayYear = birthdayYear
-//        this.grade = grade
-//        this.group = Group.byName[group] ?: throw IllegalArgumentException("Can not find group $group")
-//        this.group.members.add(this)
-//        this.team = Team.byName[team] ?: throw IllegalArgumentException("Can not find team $team")
-//        this.team.members.add(this)
-//        id = nextFreeId++.also { byId[it] = this }
-//    }
-
-//    constructor(
-//        name: String,
-//        surname: String,
-//        birthdayYear: Int,
-//        group: String,
-//        team: String,
-//        participantId: Int,
-//        startTime: LocalTime,
-//        grade: String? = null
-//    ) {
-//        this.name = name
-//        this.surname = surname
-//        this.birthdayYear = birthdayYear
-//        this.grade = grade
-//        this.id = participantId.also { byId[it] = this }
-//        this.group = Group.byName[group] ?: throw IllegalArgumentException("Can not find group $group")
-//        this.group.members.add(this)
-//        this.team = Team.byName[team] ?: Team(team)
-//        this.team.members.add(this)
-//        this.startTime = startTime
-//    }
 
     override fun toLine() =
         listOf(id, name, surname, birthdayYear, team, grade, startTime.format(DateTimeFormatter.ISO_LOCAL_TIME))
