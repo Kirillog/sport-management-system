@@ -38,6 +38,13 @@ class Team(id: EntityID<Int>) : IntEntity(id), MultilineWritable, SingleLineWrit
             }
         }
 
+        fun checkByName(name: String): Boolean {
+            return transaction {
+                val query = Team.find { TeamTable.name eq name}.toList()
+                return@transaction query.isNotEmpty()
+            }
+        }
+
         fun create(name: String): Team {
             return transaction {
                 Team.new {

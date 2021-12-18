@@ -50,6 +50,11 @@ fun main(args: Array<String>): Unit = mainBody {
 
     val toss = Toss()
 
+    println(Group.checkByName("kek)"))
+    println(Group.checkByName("M10"))
+    println(Team.checkByName("kek)"))
+    println(Team.checkByName("Samara"))
+
     val participant = transaction {
         Participant.new {
             name = "Petia"

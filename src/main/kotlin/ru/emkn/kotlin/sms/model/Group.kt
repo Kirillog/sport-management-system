@@ -26,6 +26,14 @@ class Group(id: EntityID<Int>): IntEntity(id), MultilineWritable {
             return Group.find { GroupTable.name eq name}.first()
         }
 
+        fun checkByName(name: String): Boolean {
+            return transaction {
+                val query = Group.find { GroupTable.name eq name}.toList()
+                return@transaction query.isNotEmpty()
+            }
+        }
+
+
         fun create(name: String, route: Route): Group {
             return transaction {
                 Group.new {

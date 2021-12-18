@@ -25,9 +25,12 @@ class Route(id: EntityID<Int>) : IntEntity(id), SingleLineWritable {
             }
         }
 
-//        fun checkByName(name: String): Boolean {
-//            return
-//        }
+        fun checkByName(name: String): Boolean {
+            return transaction {
+                val query = Route.find { RouteTable.name eq name }.toList()
+                return@transaction query.isNotEmpty()
+            }
+        }
 
         fun create(name: String): Route {
             return transaction {
@@ -75,6 +78,13 @@ class Checkpoint(id: EntityID<Int>): IntEntity(id) {
         fun findByName(name: String): Checkpoint {
             return transaction {
                 Checkpoint.find { CheckpointTable.name eq name}.first()
+            }
+        }
+
+        fun checkByName(name: String): Boolean {
+            return transaction {
+                val query = Checkpoint.find { CheckpointTable.name eq name}.toList()
+                return@transaction query.isNotEmpty()
             }
         }
     }
