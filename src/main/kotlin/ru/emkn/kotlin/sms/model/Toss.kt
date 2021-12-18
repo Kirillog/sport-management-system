@@ -10,18 +10,11 @@ import java.time.LocalTime
 import kotlin.random.Random
 
 object TossTable : Table("toss") {
-    val tossID: Column<Int> = integer("toss")
     val participantID: Column<EntityID<Int>> = reference("participant", ParticipantTable)
     val startTime: Column<LocalTime> = time("startTime")
 }
 
 open class Toss {
-
-    companion object {
-        protected var lastID: Int = 1
-    }
-
-    val id = lastID++
 
     enum class State {
         PREPARING, TOSSED
@@ -30,7 +23,6 @@ open class Toss {
     var state = State.PREPARING
         protected set
     protected val participants = mutableSetOf<Participant>()
-    val startTimeByParticipant = mutableMapOf<Participant, LocalTime>()
 
     fun addParticipant(participant: Participant) {
         require(state == State.PREPARING)
@@ -53,7 +45,6 @@ open class Toss {
         participants.groupBy { it.group }.forEach { (groupID, members) ->
             members.shuffled(Random(0)).forEach { participant ->
                 TossTable.insert {
-                    it[tossID] = id
                     it[participantID] = participant.id
                     it[startTime] = currentTime
                 }

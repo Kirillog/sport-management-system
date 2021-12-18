@@ -10,14 +10,21 @@ import org.jetbrains.exposed.sql.insert
 import ru.emkn.kotlin.sms.MAX_TEXT_FIELD_SIZE
 import ru.emkn.kotlin.sms.io.SingleLineWritable
 
+enum class RouteType {
+    FULL,
+    CHOOSABLE
+}
+
 object RouteTable : IntIdTable("routes") {
     val name: Column<String> = varchar("name", MAX_TEXT_FIELD_SIZE)
+    val checkpointAmount: Column<Int> = integer("checkpoint_amount")
+    val type: Column<RouteType> = enumerationByName("type", MAX_TEXT_FIELD_SIZE, RouteType::class)
 }
 
 /**
  * A class for storing a route along which one group of participants runs.
  */
-class Route(id: EntityID<Int>) : IntEntity(id), SingleLineWritable {
+abstract class Route(id: EntityID<Int>) : IntEntity(id), SingleLineWritable {
     companion object : IntEntityClass<Route>(RouteTable) {
         fun findByName(name: String): Route =
             Route.find { RouteTable.name eq name }.first()
@@ -25,13 +32,17 @@ class Route(id: EntityID<Int>) : IntEntity(id), SingleLineWritable {
         fun checkByName(name: String): Boolean =
             !Route.find { RouteTable.name eq name }.empty()
 
-        fun create(name: String): Route =
-            Route.new {
+        fun create(name: String, type: RouteType, checkpointAmount: Int): Route {
+            return Route.new {
                 this.name = name
+                this.type = type
+                this.amountOfCheckpoint = checkpointAmount
             }
+        }
 
-        fun create(name: String, checkpoints: List<Checkpoint>): Route {
-            val res = create(name)
+
+        fun create(name: String, checkpoints: List<Checkpoint>, type: RouteType, checkpointAmount: Int): Route {
+            val res = create(name, type, checkpointAmount)
             checkpoints.forEach { it.addToRoute(res) }
             return res
         }
@@ -39,6 +50,8 @@ class Route(id: EntityID<Int>) : IntEntity(id), SingleLineWritable {
 
     var name by RouteTable.name
     var checkPoints by Checkpoint via RouteCheckpointsTable
+    var amountOfCheckpoint by RouteTable.checkpointAmount
+    var type by RouteTable.type
 
     fun change(name: String, checkpoints: List<Checkpoint>) {
         this.name = name
@@ -51,6 +64,14 @@ class Route(id: EntityID<Int>) : IntEntity(id), SingleLineWritable {
             }
         }
     }
+
+    fun checkCorrectness(timestamps: List<Timestamp>): Boolean =
+        when (type) {
+            RouteType.FULL ->
+                checkPoints == timestamps.map { it.checkpoint }
+            RouteType.CHOOSABLE ->
+                checkPoints.toSet() == timestamps.map { it.checkpoint }.toSet()
+        }
 
     override fun toLine(): List<String?> = listOf(name) + checkPoints.map { it.id.toString() }
 }

@@ -7,7 +7,7 @@ import ru.emkn.kotlin.sms.model.Participant
 import java.io.File
 
 class FileSaver(file: File) : Saver {
-    val writer: Writer = Writer(file, FileType.CSV)
+    private val writer: Writer = Writer(file, FileType.CSV)
     override fun saveResults() {
         writer.add(
             listOf(
@@ -17,7 +17,7 @@ class FileSaver(file: File) : Saver {
 
         Competition.groups.forEach { group ->
             writer.add(group.name)
-            val sortedGroup = Competition.result.sortMembersIn(group)
+            val sortedGroup = group.result.sort()
             sortedGroup.forEach { participant ->
                 writer.add(participant) { Participant.formatterForPersonalResults(it) }
             }

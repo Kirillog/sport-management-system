@@ -17,7 +17,6 @@ object Competition {
     val groups: MutableSet<Group> = mutableSetOf()
 
     var teamResult: TeamResult = TeamResultByAverageScore()
-    var result: Result = PersonalResultByTime()
 
     fun loadGroups(loader: Loader) {
         groups.addAll(loader.loadGroups())
@@ -50,7 +49,9 @@ object Competition {
     }
 
     fun calculateResult() {
-        result.calculate()
+        groups.forEach {
+            it.result.calculate()
+        }
         teamResult.calculate()
     }
 

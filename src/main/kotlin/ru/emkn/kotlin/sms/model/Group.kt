@@ -8,16 +8,29 @@ import org.jetbrains.exposed.sql.Column
 import org.jetbrains.exposed.sql.select
 import ru.emkn.kotlin.sms.MAX_TEXT_FIELD_SIZE
 import ru.emkn.kotlin.sms.io.MultilineWritable
+import kotlin.reflect.KFunction1
+
+enum class ResultType {
+    WEIGHT {
+        override val implementation = ::ResultByWeight
+    },
+    TIME {
+        override val implementation = ::ResultByTime
+    };
+
+    abstract val implementation: KFunction1<Group, Result>
+}
 
 object GroupTable : IntIdTable("groups") {
     val name: Column<String> = varchar("name", MAX_TEXT_FIELD_SIZE)
     val routeID: Column<EntityID<Int>> = reference("routes", RouteTable)
+    // val resultType: Column<ResultType> = enumerationByName("resultType", MAX_TEXT_FIELD_SIZE, ResultType::class)
 }
 
 /**
  *  Class for saving data about one sports group whose members follow the same route
  */
-class Group(id: EntityID<Int>): IntEntity(id), MultilineWritable {
+class Group(id: EntityID<Int>) : IntEntity(id), MultilineWritable {
 
     companion object : IntEntityClass<Group>(GroupTable) {
 
@@ -34,9 +47,10 @@ class Group(id: EntityID<Int>): IntEntity(id), MultilineWritable {
             }
         }
 
-        fun create(name: String, routeName: String): Group {
+        fun create(name: String, resultType: ResultType, routeName: String): Group {
             return Group.new {
                 this.name = name
+                this.result = resultType.implementation(this)
                 this.routeID = RouteTable.select { RouteTable.name eq routeName }.first()[RouteTable.id]
             }
         }
@@ -45,6 +59,9 @@ class Group(id: EntityID<Int>): IntEntity(id), MultilineWritable {
     var name by GroupTable.name
     val members by Participant referrersOn ParticipantTable.groupID
     var routeID by GroupTable.routeID
+
+    // var resultType by GroupTable.resultType
+    var result: Result = ResultByTime(this)
 
     var route: Route
         get() = Route[routeID]

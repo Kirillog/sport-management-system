@@ -49,6 +49,10 @@ object Creator {
                 } catch (e: Exception) {
                     throw IllegalArgumentException("Cannot parse $field as Time")
                 }
+            ResultType::class ->
+                ResultType.valueOf(field)
+            RouteType::class ->
+                RouteType.valueOf(field)
             else -> {
                 val message = "Cannot convert essential field for ${kType.simpleName}"
                 throw IllegalStateException(message)
@@ -65,8 +69,10 @@ object Creator {
     fun createRouteFrom(values: Map<String, String>): Route {
         try {
             val routeName = convert<String>(values["name"])
+            val routeType = convert<RouteType>(values["type"])
+            val amountOfCheckpoint = convert<Int?>(values["amount"])
             val checkPoints = convert(values["checkPoints"] ?: "", typeOf<List<Checkpoint>>()) as List<Checkpoint>
-            val route = Route.create(routeName, checkPoints)
+            val route = Route.create(routeName, checkPoints, routeType, amountOfCheckpoint ?: checkPoints.size)
             Competition.add(route)
             logger.info { "Route was successfully created" }
             return route
@@ -106,10 +112,11 @@ object Creator {
     fun createGroupFrom(values: Map<String, String>): Group {
         try {
             val name = convert<String>(values["name"])
+            val resultType = convert<ResultType>(values["resultType"])
             val routeName = convert<String>(values["routeName"])
             if (!Route.checkByName(routeName))
                 throw IllegalArgumentException("Cannot find route $routeName")
-            val group = Group.create(name, routeName)
+            val group = Group.create(name, resultType, routeName)
             Competition.add(group)
             logger.info { "Group was successfully created" }
             return group

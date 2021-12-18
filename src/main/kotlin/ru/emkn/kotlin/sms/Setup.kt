@@ -18,6 +18,9 @@ val headers = mapOf(
     "Группа" to "group",
     "Фамилия" to "surname",
     "Имя" to "name",
+    "Результат" to "resultType",
+    "Тип" to "type",
+    "Количество необходимых К/П" to "amount",
     "Название" to "name",
     "Г.р." to "birthdayYear",
     "Разр." to "grade",
@@ -51,10 +54,25 @@ class ArgumentsFormat(parser: ArgParser) {
             According to the starting protocols and protocols of passing checkpoints, form protocols of results.
         --team
             According to the protocols of results, form a protocol of results for teams.
-    """.replace("\n", "\r"))
+    """.replace("\n", "\r")
+    )
 
-    val competitionsRoot by parser.positional("DIR", """
+    val competitionsRoot by parser.positional(
+        "DIR", """
         sets path for directory, which storing all competitions
-    """.trimIndent()).default<String>("competitions")
+    """.trimIndent()
+    ).default<String>("competitions")
+}
+
+enum class ObjectFields {
+    ID,
+    Name,
+    Surname,
+    Group,
+    Team,
+    BirthdayYear,
+    Grade,
+    StartTime,
+    Date
 }
 

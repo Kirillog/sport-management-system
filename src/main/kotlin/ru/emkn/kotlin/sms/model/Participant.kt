@@ -5,7 +5,6 @@ import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.Column
-import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.select
 import ru.emkn.kotlin.sms.MAX_TEXT_FIELD_SIZE
 import ru.emkn.kotlin.sms.io.SingleLineWritable
@@ -21,8 +20,8 @@ object ParticipantTable : IntIdTable("participants") {
 
     val groupID: Column<EntityID<Int>> = reference("groups", GroupTable)
     val teamID: Column<EntityID<Int>> = reference("teams", TeamTable)
-
-    val tossID: Column<Int> = integer("toss")
+//    val tossID: Column<Int> = integer("toss")
+//    val resultID: Column<Int> = integer("result")
 }
 
 /**
@@ -48,7 +47,6 @@ class Participant(id: EntityID<Int>) : IntEntity(id), SingleLineWritable {
                 this.group = group
                 this.team = team
                 this.grade = grade
-                this.tossID = Competition.toss.id
             }
         }
 
@@ -89,7 +87,7 @@ class Participant(id: EntityID<Int>) : IntEntity(id), SingleLineWritable {
         )
 
         fun formatterForPersonalResults(participant: Participant) = listOf(
-            participant.positionInGroup.place,
+            participant.positionInGroup?.place,
             participant.id,
             participant.name,
             participant.surname,
@@ -97,7 +95,7 @@ class Participant(id: EntityID<Int>) : IntEntity(id), SingleLineWritable {
             participant.grade,
             participant.startTime.format(DateTimeFormatter.ISO_LOCAL_TIME),
             participant.finishTime?.format(DateTimeFormatter.ISO_LOCAL_TIME),
-            participant.positionInGroup.laggingFromLeader.toIntervalString()
+            participant.positionInGroup?.deltaFromLeader
         )
     }
 
@@ -105,9 +103,9 @@ class Participant(id: EntityID<Int>) : IntEntity(id), SingleLineWritable {
     var surname by ParticipantTable.surname
     var birthdayYear by ParticipantTable.birthdayYear
     var grade: String? by ParticipantTable.grade
+    val way: List<TimeStamp> = TODO() // by Checkpoint referrersOn ParticipantTable.participantID
     private var groupID by ParticipantTable.groupID
     private var teamID by ParticipantTable.teamID
-    var tossID by ParticipantTable.tossID
 
     var team: Team
         get() = Team[teamID]
@@ -122,21 +120,31 @@ class Participant(id: EntityID<Int>) : IntEntity(id), SingleLineWritable {
 
     var startTime: LocalTime
         get() =
-            TossTable.select { (TossTable.tossID eq tossID) and (TossTable.participantID eq this@Participant.id) }
+            TossTable.select { TossTable.participantID eq this@Participant.id }
                 .first()[TossTable.startTime]
         set(time) {
-            TossTable.select { (TossTable.tossID eq tossID) and (TossTable.participantID eq this@Participant.id) }
+            TossTable.select { TossTable.participantID eq this@Participant.id }
                 .first()[TossTable.startTime] = time
         }
+
+    val finishTime: LocalTime?
+        get() = ResultTable.select { (ResultTable.participantID eq this@Participant.id) }
+            .first()[ResultTable.finishTime]
 
     val runTime: Duration
         get() = Duration.between(startTime, finishTime)
 
-    val finishTime: LocalTime?
-        get() = Competition.result.getParticipantFinishTime(this)
+    val positionInGroup: Result.PositionInGroup?
+        get() {
+            val result = ResultTable.select { (ResultTable.participantID eq this@Participant.id) }.first()
+            val deltaFromLeader = result[ResultTable.deltaFromLeader]
+            val placeInGroup = result[ResultTable.placeInGroup]
+            return if (deltaFromLeader == null || placeInGroup == null) null
+            else Result.PositionInGroup(placeInGroup, deltaFromLeader)
+        }
 
-    val positionInGroup: Result.PositionInGroup
-        get() = Competition.result.getPositionInGroup(this)
+    val penalty: Int?
+        get() = ResultTable.select { (ResultTable.participantID eq this@Participant.id) }.first()[ResultTable.penalty]
 
     fun change(
         name: String,
