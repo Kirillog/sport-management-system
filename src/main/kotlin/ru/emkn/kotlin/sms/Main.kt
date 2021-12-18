@@ -17,8 +17,6 @@ fun main(args: Array<String>): Unit = mainBody {
     )
 
     transaction {
-//        // print sql to std-out
-        addLogger(StdOutSqlLogger)
         SchemaUtils.create(
             ParticipantTable,
             GroupTable,
@@ -52,6 +50,19 @@ fun main(args: Array<String>): Unit = mainBody {
 
     val toss = Toss()
 
+    println(Group.checkByName("kek)"))
+    println(Group.checkByName("M10"))
+
+    println(Team.checkByName("Samara"))
+    println(Team.checkByName("Moscow"))
+    val kek = Team.findByName("Samara")
+    kek.change("Moscow")
+    println(Team.checkByName("Samara"))
+    println(Team.checkByName("Moscow"))
+    kek.change("Samara")
+
+    val test = Group.findByName("M10").route
+
     val participant = transaction {
         Participant.new {
             name = "Petia"
@@ -62,6 +73,7 @@ fun main(args: Array<String>): Unit = mainBody {
             tossID = toss.id
         }
     }
+
     println("${participant.name}, ${participant.surname}")
     transaction {
         participant.name = "kek"

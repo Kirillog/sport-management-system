@@ -113,22 +113,30 @@ class Participant(id: EntityID<Int>) : IntEntity(id), SingleLineWritable {
     var tossID by ParticipantTable.tossID
 
     var team: Team
-        get() = Team[teamID]
+        get() = transaction { Team[teamID] }
         set(team) {
-            teamID = TeamTable.select { TeamTable.id eq team.id }.first()[TeamTable.id]
+            transaction {
+                teamID = TeamTable.select { TeamTable.id eq team.id }.first()[TeamTable.id]
+            }
         }
     var group: Group
-        get() = Group[groupID]
+        get() = transaction { Group[groupID] }
         set(group) {
-            groupID = GroupTable.select { GroupTable.id eq group.id }.first()[GroupTable.id]
+            transaction {
+                groupID = GroupTable.select { GroupTable.id eq group.id }.first()[GroupTable.id]
+            }
         }
 
     var startTime: LocalTime
-        get() = TossTable.select { (TossTable.tossID eq tossID) and (TossTable.participantID eq id) }
-            .first()[TossTable.startTime]
+        get() = transaction {
+            TossTable.select { (TossTable.tossID eq tossID) and (TossTable.participantID eq this@Participant.id) }
+                .first()[TossTable.startTime]
+        }
         set(time) {
-            TossTable.select { (TossTable.tossID eq tossID) and (TossTable.participantID eq id) }
-                .first()[TossTable.startTime] = time
+            transaction {
+                TossTable.select { (TossTable.tossID eq tossID) and (TossTable.participantID eq this@Participant.id) }
+                    .first()[TossTable.startTime] = time
+            }
         }
 
     val runTime: Duration
@@ -144,23 +152,18 @@ class Participant(id: EntityID<Int>) : IntEntity(id), SingleLineWritable {
         name: String,
         surname: String,
         birthdayYear: Int,
-        group: String,
-        team: String,
+        groupName: String,
+        teamName: String,
         grade: String?
     ) {
-        // TODO()
-//        this.name = name
-//        this.surname = surname
-//        this.birthdayYear = birthdayYear
-//        this.grade = grade
-//        if (group != this.group.name) {
-//            this.group.members.remove(this)
-//            this.group = Group.byName[group] ?: throw IllegalArgumentException("Can not find group $group")
-//        }
-//        if (team != this.team.name) {
-//            this.team.members.remove(this)
-//            this.team = Team.byName[team] ?: throw IllegalArgumentException("Can not find team $team")
-//        }
+        transaction {
+            this@Participant.name = name
+            this@Participant.surname = surname
+            this@Participant.birthdayYear = birthdayYear
+            this@Participant.grade = grade
+        }
+        this.team = Team.findByName(teamName)
+        this.group = Group.findByName(groupName)
     }
 
     override fun toLine() =

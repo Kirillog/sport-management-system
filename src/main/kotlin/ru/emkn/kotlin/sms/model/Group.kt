@@ -23,8 +23,18 @@ class Group(id: EntityID<Int>): IntEntity(id), MultilineWritable {
     companion object : IntEntityClass<Group>(GroupTable) {
 
         fun findByName(name: String): Group {
-            return Group.find { GroupTable.name eq name}.first()
+            return transaction {
+                Group.find { GroupTable.name eq name}.first()
+            }
         }
+
+        fun checkByName(name: String): Boolean {
+            return transaction {
+                val query = Group.find { GroupTable.name eq name}.toList()
+                return@transaction query.isNotEmpty()
+            }
+        }
+
 
         fun create(name: String, route: Route): Group {
             return transaction {
@@ -39,7 +49,6 @@ class Group(id: EntityID<Int>): IntEntity(id), MultilineWritable {
             return transaction {
                 Group.new {
                     this.name = name
-//                    this.route = Route.findByName(routeName)
                     this.routeID = RouteTable.select { RouteTable.name eq routeName }.first()[RouteTable.id]
                 }
             }
@@ -51,20 +60,16 @@ class Group(id: EntityID<Int>): IntEntity(id), MultilineWritable {
     var routeID by GroupTable.routeID
 
     var route: Route
-        get() = Route[routeID]
+        get() = transaction { Route[routeID] }
         set(route) {
-            routeID = RouteTable.select { RouteTable.id eq route.id }.first()[GroupTable.id]
+            transaction {
+                routeID = RouteTable.select { RouteTable.id eq route.id }.first()[GroupTable.id]
+            }
         }
 
     fun change(name: String, routeName: String) {
-//        TODO()
-//        if (this.name != name) {
-//            byName.remove(this.name)
-//            this.name = name
-//            byName[name] = this
-//        }
-//        val route = Route.byName[routeName] ?: throw IllegalStateException("There is no such route")
-//        this.route = route
+        this.name = name
+        this.route = Route.findByName(routeName)
     }
 
     override fun toString() = this.name

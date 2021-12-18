@@ -33,7 +33,16 @@ class Team(id: EntityID<Int>) : IntEntity(id), MultilineWritable, SingleLineWrit
         )
 
         fun findByName(name: String): Team {
-            return Team.find { TeamTable.name eq name}.first()
+            return transaction {
+                Team.find { TeamTable.name eq name}.first()
+            }
+        }
+
+        fun checkByName(name: String): Boolean {
+            return transaction {
+                val query = Team.find { TeamTable.name eq name}.toList()
+                return@transaction query.isNotEmpty()
+            }
         }
 
         fun create(name: String): Team {
@@ -53,12 +62,9 @@ class Team(id: EntityID<Int>) : IntEntity(id), MultilineWritable, SingleLineWrit
 
 
     fun change(name: String) {
-        // TODO()
-//        if (this.name != name) {
-//            byName.remove(this.name)
-//            this.name = name
-//            byName[name] = this
-//        }
+        transaction {
+            this@Team.name = name
+        }
     }
 
     override fun toMultiline(): List<List<Any?>> = listOf(
