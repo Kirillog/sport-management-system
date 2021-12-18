@@ -26,7 +26,9 @@ val headers = mapOf(
     "Дата" to "date",
     "Номер" to "participantId",
     "Время старта" to "startTime",
-    "Время" to "time"
+    "Время" to "time",
+    "Стоимость" to "weight",
+    "Номер К/П" to "name"
 )
 
 /**

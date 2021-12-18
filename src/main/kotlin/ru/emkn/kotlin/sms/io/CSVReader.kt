@@ -1,19 +1,12 @@
 package ru.emkn.kotlin.sms.io
 
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
-import com.sksamuel.hoplite.simpleName
 import mu.KotlinLogging
+import ru.emkn.kotlin.sms.controller.Creator
 import ru.emkn.kotlin.sms.headers
 import ru.emkn.kotlin.sms.model.*
 import java.io.File
 import java.io.IOException
-import java.time.LocalDate
-import java.time.LocalTime
-import kotlin.reflect.KClass
-import kotlin.reflect.KFunction
-import kotlin.reflect.KType
-import kotlin.reflect.full.starProjectedType
-import kotlin.reflect.jvm.jvmErasure
 
 private val logger = KotlinLogging.logger { }
 
@@ -24,88 +17,6 @@ private val logger = KotlinLogging.logger { }
 class CSVReader(file: File) : Reader(file) {
     private val csvReader = csvReader()
     private var buffer: List<List<String>> = csvReader.readAll(file)
-
-    /**
-     * Converts [field] in [lineNumber] to [kType].
-     *
-     * Throws [IllegalArgumentException] if [field] cannot be converted to [kType].
-     */
-    private fun convert(field: String, lineNumber: Int, kType: KType): Any? {
-        return when (kType.jvmErasure) {
-            Int::class -> field.toIntOrNull()
-                ?: throw IllegalArgumentException("Cannot parse $field as Int at ${lineNumber}th position")
-            String::class -> {
-                require(kType.isMarkedNullable || field.isNotEmpty()) { "Cannot parse empty field as String at ${lineNumber}th position" }
-                field.ifEmpty { null }
-            }
-            List::class -> field.split(",").dropLastWhile(String::isEmpty).map { element ->
-                kType.arguments.first().type?.let {
-                    convert(element, lineNumber, it)
-                }
-            }
-//            TODO()
-//            Checkpoint::class -> (convert(field, lineNumber, Int::class.starProjectedType) as Int)
-            LocalDate::class ->
-                try {
-                    val (date, month, year) = field.split(".").map(String::toInt)
-                    LocalDate.of(year, month, date)
-                } catch (e: Exception) {
-                    throw IllegalArgumentException("Cannot parse $field as Date at ${lineNumber}th position")
-                }
-            LocalTime::class ->
-                try {
-                    val (hours, minutes, seconds) = field.split(":").map(String::toInt)
-                    LocalTime.of(hours, minutes, seconds)
-                } catch (e: Exception) {
-                    throw IllegalArgumentException("Cannot parse $field as Time at ${lineNumber}th position")
-                }
-            else -> {
-                val message = "Cannot convert essential field for ${kType.simpleName}"
-                throw IllegalStateException(message)
-            }
-        }
-    }
-
-    private fun <T> item(values: Map<String, String>, lineNumber: Int, constructor: KFunction<T>): T {
-        val parametersWithValues = constructor.parameters.associateWith {
-            val field = values[it.name]
-            requireNotNull(field) { "Error in checking header" }
-            convert(field, lineNumber, it.type)
-        }
-        return constructor.callBy(parametersWithValues)
-    }
-
-    /**
-     * Converts [table] to [Readable] objects using their [constructor]
-     */
-    private fun <T> objectList(
-        table: List<Map<String, String>>,
-        constructor: KFunction<T>
-    ): Set<T> {
-        return table.mapIndexed { lineNumber, recordWithHeader ->
-            try {
-                item(recordWithHeader, lineNumber, constructor)
-            } catch (e: IllegalArgumentException) {
-                logger.warn { e.message }
-                null
-            }
-        }.filterNotNull().toSet()
-    }
-
-    /**
-     * Converts [parameters] to [Readable] [KClass] constructor
-     */
-    private fun <T : Any> constructorByHeader(parameters: Set<String>, kClass: KClass<T>): KFunction<T>? {
-        logger.debug { "Header: $parameters" }
-        val constructors = kClass.constructors
-        require(constructors.isNotEmpty()) { "Try to get instance of class without constructors" }
-        val correctHeader = constructors.find { constructor ->
-            parameters.size == constructor.parameters.size && constructor.parameters.all {
-                parameters.contains(it.name)
-            }
-        }
-        return correctHeader
-    }
 
     /**
      * Returns list of map, each of which transform header name to field
@@ -176,42 +87,54 @@ class CSVReader(file: File) : Reader(file) {
         val table = tableWithHeader()?.map { record ->
             record + ("team" to name)
         } ?: return null
-        val constructor = constructorByHeader(table.first().keys, Participant::class)
-        requireNotNull(constructor) { "Team doesn't have appropriate constructors" }
-//        val team = Team(name)
-//        team.members.addAll(objectList(table, constructor))
-//        if (team.members.isEmpty())
-//            logger.warn { "Team $name is empty" }
-//        return team
-//        TODO()
-        return null
+        val team = Team.create(name)
+        table.mapNotNull {
+            try {
+                Creator.createParticipantFrom(it)
+            } catch (err: IllegalArgumentException) {
+                null
+            }
+        }
+        return team
     }
 
     override fun groups(): Set<Group>? {
         val table = tableWithHeader() ?: return null
-        val constructor = constructorByHeader(table.first().keys, Group::class)
-        requireNotNull(constructor) { "Groups to courses doesn't have appropriate constructors" }
-        return objectList(table, constructor)
+        return table.mapNotNull {
+            try {
+                Creator.createGroupFrom(it)
+            } catch (err: IllegalArgumentException) {
+                null
+            }
+        }.toSet()
     }
 
     override fun courses(): Set<Route>? {
-        val table = tableWithHeader()?.map { record ->
-            val checkPoints = "checkPoints" to record.filterKeys { it.toIntOrNull() != null }.values.joinToString(",")
-            record.filterKeys { it.toIntOrNull() == null } + checkPoints
-        } ?: return null
-        val constructor = constructorByHeader(table.first().keys, Route::class)
-        requireNotNull(constructor) { "Courses doesn't have appropriate constructors" }
-        val checkPoints = objectList(table, constructor)
-        if (checkPoints.isEmpty())
+        val table = tableWithHeader() ?: return null
+        val routes = table.mapNotNull { record ->
+            try {
+                val checkPoints = "checkPoints" to record.filterKeys { it.toIntOrNull() != null }
+                    .toSortedMap().values.joinToString(",")
+                val entry = record.filterKeys { it.toIntOrNull() == null } + checkPoints
+                Creator.createRouteFrom(entry)
+            } catch (err: IllegalArgumentException) {
+                null
+            }
+        }.toSet()
+        if (routes.isEmpty())
             logger.warn { "List of courses is empty" }
-        return checkPoints
+        return routes
     }
 
     override fun event(): Event? {
         val table = tableWithHeader() ?: return null
-        val constructor = constructorByHeader(table.first().keys, Event::class)
-        requireNotNull(constructor) { "Events doesn't have appropriate constructors" }
-        val events = objectList(table, constructor)
+        val events = table.mapNotNull {
+            try {
+                Creator.createEventFrom(it)
+            } catch (err: IllegalArgumentException) {
+                null
+            }
+        }
         if (events.isEmpty())
             logger.warn { "List of events is empty" }
         else if (events.size > 1)
@@ -225,9 +148,13 @@ class CSVReader(file: File) : Reader(file) {
         val table = tableWithHeader()?.map { record ->
             record + ("checkPointId" to name.toString())
         } ?: return null
-        val constructor = constructorByHeader(table.first().keys, TimeStamp::class)
-        requireNotNull(constructor) { "Timestamps doesn't have appropriate constructors" }
-        val timeStamps = objectList(table, constructor)
+        val timeStamps = table.mapNotNull {
+            try {
+                Creator.createTimeStampFrom(it)
+            } catch (err: IllegalArgumentException) {
+                null
+            }
+        }.toSet()
         if (timeStamps.isEmpty())
             logger.warn { "List of timestamps is empty" }
         return timeStamps
@@ -236,12 +163,27 @@ class CSVReader(file: File) : Reader(file) {
     override fun toss(): Unit? {
         val table = tableWithHeader() ?: return null
         val correctedTable = preprocess(table)
-        val constructor = constructorByHeader(correctedTable.first().keys, Participant::class)
-        requireNotNull(constructor) { "Participant doesn't have appropriate constructors" }
-        val participants = objectList(correctedTable, constructor).toList()
+        val participants = correctedTable.mapNotNull {
+            try {
+                Creator.createParticipantFrom(it)
+            } catch (err: IllegalArgumentException) {
+                null
+            }
+        }
         if (participants.isEmpty())
             logger.warn { "List of participants is empty" }
         return Unit
+    }
+
+    override fun checkPoints(): Set<Checkpoint>? {
+        val table = tableWithHeader() ?: return null
+        return table.mapNotNull {
+            try {
+                Creator.createCheckPointFrom(it)
+            } catch (err: IllegalArgumentException) {
+                null
+            }
+        }.toSet()
     }
 
 }

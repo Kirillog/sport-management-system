@@ -51,4 +51,6 @@ abstract class Reader(protected val file: File) {
      * Returns `null` if data has incorrect format.
      */
     abstract fun toss(): Unit?
+
+    abstract fun checkPoints(): Set<Checkpoint>?
 }

@@ -34,7 +34,14 @@ object ParticipantTable : IntIdTable("participants") {
 class Participant(id: EntityID<Int>) : IntEntity(id), SingleLineWritable {
     companion object : IntEntityClass<Participant>(ParticipantTable) {
 
-        fun create(name: String, surname: String, birthdayYear: Int, group: Group, team: Team, grade: String?): Participant {
+        fun create(
+            name: String,
+            surname: String,
+            birthdayYear: Int,
+            group: Group,
+            team: Team,
+            grade: String?
+        ): Participant {
             return transaction {
                 Participant.new {
                     this.name = name
@@ -47,8 +54,29 @@ class Participant(id: EntityID<Int>) : IntEntity(id), SingleLineWritable {
             }
         }
 
-        fun create(name: String, surname: String, birthdayYear: Int, groupName: String, teamName: String, grade: String?): Participant {
+        fun create(
+            name: String,
+            surname: String,
+            birthdayYear: Int,
+            groupName: String,
+            teamName: String,
+            grade: String?
+        ): Participant {
             return create(name, surname, birthdayYear, Group.findByName(groupName), Team.findByName(teamName), grade)
+        }
+
+        fun create(
+            name: String,
+            surname: String,
+            birthdayYear: Int,
+            groupName: String,
+            teamName: String,
+            startTime: LocalTime,
+            grade: String?
+        ): Participant {
+            val participant = create(name, surname, birthdayYear, groupName, teamName, grade)
+            participant.startTime = startTime
+            return participant
         }
 
         private fun Duration.toIntervalString(): String =
