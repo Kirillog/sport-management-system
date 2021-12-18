@@ -8,7 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 
-class ButtonsChooser(private val question: String, private val buttons: List<ActionButton>) {
+class ButtonsChooser(private val question: String, private val buttons: List<Button>) {
 
     @Composable
     fun draw() {
