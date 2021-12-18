@@ -1,7 +1,5 @@
 package ru.emkn.kotlin.sms.model
 
-import ru.emkn.kotlin.sms.io.MultilineWritable
-import ru.emkn.kotlin.sms.io.SingleLineWritable
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
@@ -9,6 +7,8 @@ import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.Column
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.emkn.kotlin.sms.MAX_TEXT_FIELD_SIZE
+import ru.emkn.kotlin.sms.io.MultilineWritable
+import ru.emkn.kotlin.sms.io.SingleLineWritable
 
 
 object TeamTable : IntIdTable("teams") {

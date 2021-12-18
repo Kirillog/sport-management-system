@@ -54,64 +54,93 @@ object Creator {
             }
         }
 
-    fun createEventFrom(values: Map<String, String>) {
+    fun createEventFrom(values: Map<String, String>): Event {
         Editor.editEvent(Competition.event, values)
         logger.info { "Event was successfully created" }
+        return Competition.event
     }
 
-    fun createRouteFrom(values: Map<String, String>) {
+    fun createRouteFrom(values: Map<String, String>): Route {
         try {
             val routeName = convert<String>(values["name"])
             val checkPoints = convert<List<Checkpoint>>(values["checkPoints"])
-            Competition.add(Route.create(routeName, checkPoints))
+            val route = Route.create(routeName, checkPoints)
+            Competition.add(route)
             logger.info { "Route was successfully created" }
+            return route
         } catch (err: IllegalArgumentException) {
             logger.info { "Cannot create new route" }
             throw err
         }
     }
 
-    fun createParticipantFrom(values: Map<String, String>) {
+    fun createParticipantFrom(values: Map<String, String>): Participant {
         try {
             val name = convert<String>(values["name"])
             val surname = convert<String>(values["surname"])
             val birthdayYear = convert<Int>(values["birthdayYear"])
             val grade = convert<String?>(values["grade"])
-            val groupName = convert<String>(values["groupName"])
-            val teamName = convert<String>(values["teamName"])
+            val groupName = convert<String>(values["group"])
+            val teamName = convert<String>(values["team"])
             if (!Group.checkByName(groupName))
                 throw IllegalArgumentException("Cannot find group $groupName")
             if (!Team.checkByName(teamName))
                 throw IllegalArgumentException("Cannot find team $teamName")
-            Competition.add(Participant.create(name, surname, birthdayYear, groupName, teamName, grade))
+            val startTime = convert<LocalTime>(values["startTime"])
+            val participant = Participant.create(name, surname, birthdayYear, groupName, teamName, startTime, grade)
+            Competition.add(participant)
+            logger.info { "Participant was successfully created" }
+            return participant
         } catch (err: IllegalArgumentException) {
             logger.info { "Cannot create new participant" }
             throw err
         }
     }
 
-    fun createGroupFrom(values: Map<String, String>) {
+    fun createGroupFrom(values: Map<String, String>): Group {
         try {
             val name = convert<String>(values["name"])
             val routeName = convert<String>(values["routeName"])
-            if (Route.checkByName(routeName) == null)
+            if (!Route.checkByName(routeName))
                 throw IllegalArgumentException("Cannot find route $routeName")
-            Competition.add(Group.create(name, routeName))
+            val group = Group.create(name, routeName)
+            Competition.add(group)
             logger.info { "Group was successfully created" }
+            return group
         } catch (err: IllegalArgumentException) {
             logger.info { "Cannot create new group" }
             throw err
         }
     }
 
-    fun createTeamFrom(values: Map<String, String>) {
+    fun createTeamFrom(values: Map<String, String>): Team {
         try {
             val teamName = convert<String>(values["name"])
-            Competition.add(Team.create(teamName))
+            val team = Team.create(teamName)
+            Competition.add(team)
             logger.info { "Team was successfully created" }
+            return team
         } catch (err: IllegalArgumentException) {
             logger.info { "Cannot create team" }
             throw err
         }
+    }
+
+    fun createCheckPointFrom(values: Map<String, String>): Checkpoint {
+        try {
+            val name = convert<String>(values["name"])
+            val weight = convert<Int>(values["weight"])
+            val checkpoint = Checkpoint.create(name, weight)
+            Competition.add(checkpoint)
+            logger.info { "Checkpoint was successfully created" }
+            return checkpoint
+        } catch (err: IllegalArgumentException) {
+            logger.info { "Cannot create checkpoint" }
+            throw err
+        }
+    }
+
+    fun createTimeStampFrom(values: Map<String, String>): TimeStamp {
+        return TODO()
     }
 }

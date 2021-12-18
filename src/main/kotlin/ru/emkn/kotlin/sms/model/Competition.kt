@@ -45,6 +45,10 @@ object Competition {
 
     fun add(participant: Participant) {}
 
+    fun add(checkpoint: Checkpoint) {
+        checkpoints.add(checkpoint)
+    }
+
     fun calculateResult() {
         result.calculate()
         teamResult.calculate()
