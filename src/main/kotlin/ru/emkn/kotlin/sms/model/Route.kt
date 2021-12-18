@@ -30,6 +30,12 @@ class Route(id: EntityID<Int>) : IntEntity(id), SingleLineWritable {
                 }
             }
         }
+
+        fun create(name: String, checkpoints: List<Checkpoint>): Route {
+            val res = create(name)
+            checkpoints.forEach { it.addToRoute(res) }
+            return res
+        }
     }
 
     var name by RouteTable.name
@@ -58,6 +64,10 @@ class Checkpoint(id: EntityID<Int>): IntEntity(id) {
                     this.weigth = weight
                 }
             }
+        }
+
+        fun findByName(name: String): Checkpoint {
+            return Checkpoint.find { CheckpointTable.name eq name}.first()
         }
     }
 
