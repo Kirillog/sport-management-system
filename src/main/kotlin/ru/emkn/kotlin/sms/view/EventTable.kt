@@ -7,8 +7,17 @@ class EventTable(event: Event) : Table<Event>() {
 
     override val header = TableHeader(
         listOf(
-            TableColumn<Event>("Название", ObjectFields.Name, true) { { it.name } },
-            TableColumn<Event>("Дата", ObjectFields.Date, true) { { it.date.toString() } }
+            TableColumn<Event>(
+                "Название",
+                ObjectFields.Name, visible = true, readOnly = false,
+                getterGenerator = { { it.name } }
+            ),
+            TableColumn<Event>(
+                "Дата",
+                ObjectFields.Date,
+                visible = true, readOnly = false,
+                getterGenerator = { { it.date.toString() } }
+            )
         )
     )
 

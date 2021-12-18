@@ -40,7 +40,7 @@ abstract class Table<T> {
                 val elementsInRow = header.columns.count { it.visible }
                 for (columnHeader in header.columns) {
                     if (columnHeader.visible)
-                        cells[columnHeader.field]?.draw((rowSize.width / elementsInRow).dp)
+                        cells[columnHeader.field]?.draw((rowSize.width / elementsInRow).dp, columnHeader.readOnly)
                             ?: throw IllegalStateException("Cell of ${columnHeader.field} not exists")
                 }
             }

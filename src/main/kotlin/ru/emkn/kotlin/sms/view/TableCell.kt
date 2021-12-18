@@ -27,7 +27,7 @@ class TableCell(private val getText: () -> String, private val saveText: () -> U
 
     @Composable
     @OptIn(ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class)
-    fun draw(width: Dp) {
+    fun draw(width: Dp, readOnly: Boolean) {
         if (!this::shownText.isInitialized)
             shownText = mutableStateOf(getText())
 
@@ -55,6 +55,8 @@ class TableCell(private val getText: () -> String, private val saveText: () -> U
                     shownText.value = newText
                     backgroundColor.value = Color.LightGray
                 }
-            })
+            },
+            readOnly = readOnly
+        )
     }
 }

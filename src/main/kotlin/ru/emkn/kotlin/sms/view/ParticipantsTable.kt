@@ -9,18 +9,55 @@ private val logger = KotlinLogging.logger {}
 
 class ParticipantsTable(participants: List<Participant>) : Table<Participant>() {
 
-    override val header = TableHeader(
-        listOf(
-            TableColumn<Participant>("ID", ObjectFields.ID, true) { { it.id.toString() } },
-            TableColumn<Participant>("Name", ObjectFields.Name, true) { { it.name } },
-            TableColumn<Participant>("Surname", ObjectFields.Surname, true) { { it.surname } },
-            TableColumn<Participant>("Group", ObjectFields.Group, true) { { it.group.name } },
-            TableColumn<Participant>("Birthday Year", ObjectFields.BirthdayYear, true) { { it.birthdayYear.toString() } },
-            TableColumn<Participant>("Grade", ObjectFields.Grade, true) { { it.grade ?: "" } },
-            TableColumn<Participant>("Team", ObjectFields.Team, true) { { it.team.name } },
-            TableColumn<Participant>("Start time", ObjectFields.StartTime, false) { { it.startTime.toString() } }
+    override val header = TableHeader(listOf(
+        TableColumn<Participant>(
+            "ID",
+            ObjectFields.ID,
+            visible = true, readOnly = true,
+            getterGenerator = { { it.id.toString() } }
+        ),
+        TableColumn(
+            "Name",
+            ObjectFields.Name,
+            visible = true, readOnly = false,
+            getterGenerator = { { it.name } }
+        ),
+        TableColumn(
+            "Surname",
+            ObjectFields.Surname,
+            visible = true, readOnly = false,
+            getterGenerator = { { it.surname } }
+        ),
+        TableColumn(
+            "Group",
+            ObjectFields.Group,
+            visible = true, readOnly = false,
+            getterGenerator = { { it.group.name } }
+        ),
+        TableColumn(
+            "Birthday Year",
+            ObjectFields.BirthdayYear,
+            visible = true, readOnly = false,
+            getterGenerator = { { it.birthdayYear.toString() } }
+        ),
+        TableColumn(
+            "Grade",
+            ObjectFields.Grade, visible = true, readOnly = false,
+            getterGenerator = { { it.grade ?: "" } }
+        ),
+        TableColumn(
+            "Team",
+            ObjectFields.Team,
+            visible = true, readOnly = false,
+            getterGenerator = { { it.team.name } }
+        ),
+        TableColumn(
+            "Start time",
+            ObjectFields.StartTime,
+            visible = false, readOnly = false,
+            getterGenerator = { { it.startTime.toString() } }
         )
-    )
+    ))
 
     inner class ParticipantTableRow(private var participant: Participant) : TableRow() {
 

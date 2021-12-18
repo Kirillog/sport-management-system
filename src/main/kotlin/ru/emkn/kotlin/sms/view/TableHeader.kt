@@ -20,7 +20,8 @@ data class TableColumn<T>(
     val title: String,
     val field: ObjectFields,
     val visible: Boolean,
-    val dataGetter: (T) -> (() -> String)
+    val readOnly: Boolean,
+    val getterGenerator: (T) -> (() -> String)
 )
 
 data class TableHeader<T>(val columns: List<TableColumn<T>>) {
@@ -52,7 +53,7 @@ data class TableHeader<T>(val columns: List<TableColumn<T>>) {
     }
 
     fun makeTableCells(item: T, saveFunction: () -> Unit): Map<ObjectFields, TableCell> {
-        return columns.associate { it.field to TableCell(it.dataGetter(item), saveFunction) }
+        return columns.associate { it.field to TableCell(it.getterGenerator(item), saveFunction) }
     }
 
 }
