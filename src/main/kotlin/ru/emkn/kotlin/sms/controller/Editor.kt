@@ -2,6 +2,7 @@ package ru.emkn.kotlin.sms.controller
 
 import com.sksamuel.hoplite.simpleName
 import mu.KotlinLogging
+import ru.emkn.kotlin.sms.ObjectFields
 import ru.emkn.kotlin.sms.model.*
 import java.time.LocalDate
 import java.time.LocalTime
@@ -54,20 +55,20 @@ object Editor {
             }
         }
 
-    fun editParticipant(participant: Participant, values: Map<String, String>) {
+    fun editParticipant(participant: Participant, values: Map<ObjectFields, String>) {
         try {
-            val name = convert<String>(values["name"])
-            val surname = convert<String>(values["surname"])
-            val birthdayYear = convert<Int>(values["birthdayYear"])
-            val grade = convert<String?>(values["grade"])
-            val groupName = convert<String>(values["groupName"])
-            val teamName = convert<String>(values["teamName"])
+            val name = convert<String>(values[ObjectFields.Name])
+            val surname = convert<String>(values[ObjectFields.Surname])
+            val birthdayYear = convert<Int>(values[ObjectFields.BirthdayYear])
+            val grade = convert<String?>(values[ObjectFields.Grade])
+            val groupName = convert<String>(values[ObjectFields.Group])
+            val teamName = convert<String>(values[ObjectFields.Team])
             if (Group.byName[groupName] == null)
                 throw IllegalArgumentException("Cannot find group $groupName")
             if (Team.byName[teamName] == null)
                 throw IllegalArgumentException("Cannot find team $teamName")
             if (CompetitionController.state >= State.TOSSED) {
-                val startTime = convert<LocalTime>(values["startTime"])
+                val startTime = convert<LocalTime>(values[ObjectFields.StartTime])
                 participant.startTime = startTime
             }
             participant.change(name, surname, birthdayYear, groupName, teamName, grade)

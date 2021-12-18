@@ -56,3 +56,15 @@ class ArgumentsFormat(parser: ArgParser) {
 
 const val maxTextLength = 127
 
+enum class ObjectFields {
+    ID,
+    Name,
+    Surname,
+    Group,
+    Team,
+    BirthdayYear,
+    Grade,
+    StartTime,
+    Date
+}
+

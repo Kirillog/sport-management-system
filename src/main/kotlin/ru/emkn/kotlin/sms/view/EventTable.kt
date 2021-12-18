@@ -1,13 +1,14 @@
 package ru.emkn.kotlin.sms.view
 
+import ru.emkn.kotlin.sms.ObjectFields
 import ru.emkn.kotlin.sms.model.Event
 
 class EventTable(event: Event) : Table<Event>() {
 
     override val header = TableHeader(
         listOf(
-            TableColumn<Event>("Название", "name") { { it.name } },
-            TableColumn<Event>("Дата", "date") { { it.date.toString() } }
+            TableColumn<Event>("Название", ObjectFields.Name, true) { { it.name } },
+            TableColumn<Event>("Дата", ObjectFields.Date, true) { { it.date.toString() } }
         )
     )
 

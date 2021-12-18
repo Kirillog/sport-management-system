@@ -13,9 +13,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import ru.emkn.kotlin.sms.ObjectFields
 
 
-data class TableColumn<T>(val title: String, val name: String, val dataGetter: (T) -> (() -> String))
+data class TableColumn<T>(
+    val title: String,
+    val field: ObjectFields,
+    val visible: Boolean,
+    val dataGetter: (T) -> (() -> String)
+)
 
 data class TableHeader<T>(val columns: List<TableColumn<T>>) {
 
@@ -31,19 +37,22 @@ data class TableHeader<T>(val columns: List<TableColumn<T>>) {
             horizontalArrangement = Arrangement.SpaceAround,
         ) {
 
+            val columnsCount = columns.count { it.visible }
             for (column in columns) {
+                if (!column.visible)
+                    continue
                 Text(
                     column.title,
                     modifier = Modifier
                         .border(BorderStroke(1.dp, Color.Black))
-                        .width((rowSize.width / columns.size).dp)
+                        .width((rowSize.width / columnsCount).dp)
                 )
             }
         }
     }
 
-    fun makeTableCells(item: T, saveFunction: () -> Unit): Map<String, TableCell> {
-        return columns.associate { it.name to TableCell(it.dataGetter(item), saveFunction) }
+    fun makeTableCells(item: T, saveFunction: () -> Unit): Map<ObjectFields, TableCell> {
+        return columns.associate { it.field to TableCell(it.dataGetter(item), saveFunction) }
     }
 
 }

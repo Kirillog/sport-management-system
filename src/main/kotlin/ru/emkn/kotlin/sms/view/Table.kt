@@ -11,15 +11,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import ru.emkn.kotlin.sms.ObjectFields
 
 abstract class Table<T> {
 
     abstract inner class TableRow {
 
-        abstract val cells: Map<String, TableCell>
+        abstract val cells: Map<ObjectFields, TableCell>
 
-        open val changes
-            get() = cells.map { it.key to it.value.newText.value }.toMap()
+        open val changes: Map<ObjectFields, String>
+            get() = header.columns.filter { it.visible }.associate {
+                val cell = cells[it.field] ?: throw IllegalStateException("Cell of ${it.field} not exists")
+                it.field to cell.shownText.value
+            }
 
         @Composable
         open fun draw() {
@@ -33,8 +37,11 @@ abstract class Table<T> {
                     },
                 horizontalArrangement = Arrangement.SpaceAround,
             ) {
-                for ((_, cell) in cells) {
-                    cell.draw((rowSize.width / cells.size).dp)
+                val elementsInRow = header.columns.count { it.visible }
+                for (columnHeader in header.columns) {
+                    if (columnHeader.visible)
+                        cells[columnHeader.field]?.draw((rowSize.width / elementsInRow).dp)
+                            ?: throw IllegalStateException("Cell of ${columnHeader.field} not exists")
                 }
             }
         }
