@@ -146,6 +146,11 @@ object Editor {
         }
     }
 
+    fun deleteParticipant(id: Int) {
+        Participant.byId.remove(id)
+        logger.info { "participant deleted" }
+    }
+
     fun createParticipantFrom(values: Map<ObjectFields, String>): Participant {
         try {
             val name = convert<String>(values[ObjectFields.Name])

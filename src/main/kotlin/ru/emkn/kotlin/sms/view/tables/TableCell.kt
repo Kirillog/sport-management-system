@@ -20,7 +20,7 @@ import ru.emkn.kotlin.sms.maxTextLength
 import ru.emkn.kotlin.sms.view.TopAppBar
 
 
-class TableCell(private val getText: () -> String, private val saveText: () -> Unit = {}) {
+class TableCell(val getText: () -> String, private val saveText: () -> Unit = {}) {
 
     lateinit var shownText: MutableState<String>
         private set

@@ -3,6 +3,7 @@ package ru.emkn.kotlin.sms.view.tables
 import ru.emkn.kotlin.sms.ObjectFields
 import ru.emkn.kotlin.sms.controller.Editor
 import ru.emkn.kotlin.sms.model.Participant
+import ru.emkn.kotlin.sms.view.GUI
 import ru.emkn.kotlin.sms.view.TableColumn
 import ru.emkn.kotlin.sms.view.TableHeader
 import ru.emkn.kotlin.sms.view.creators.ParticipantCreator
@@ -65,6 +66,10 @@ class ParticipantsTable(participants: List<Participant>) : Table<Participant>() 
 
         override fun saveChanges() {
             Editor.editParticipant(participant, changes)
+        }
+
+        override fun deleteAction(id: Int) {
+            Editor.deleteParticipant(id)
         }
     }
 

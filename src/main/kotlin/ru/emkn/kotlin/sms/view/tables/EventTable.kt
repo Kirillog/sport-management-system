@@ -31,6 +31,10 @@ class EventTable(event: Event) : Table<Event>() {
         override fun saveChanges() {
             TODO()
         }
+
+        override fun deleteAction(id: Int) {
+            TODO()
+        }
     }
 
     override val rows: List<TableRow> = listOf(EventTableRow(event))

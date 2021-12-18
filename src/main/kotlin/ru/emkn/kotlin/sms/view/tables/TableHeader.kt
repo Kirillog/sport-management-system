@@ -3,10 +3,7 @@ package ru.emkn.kotlin.sms.view
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -15,7 +12,9 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import ru.emkn.kotlin.sms.ObjectFields
+import ru.emkn.kotlin.sms.view.tables.Table
 import ru.emkn.kotlin.sms.view.tables.TableCell
+import ru.emkn.kotlin.sms.view.tables.tableDeleteButtonWidth
 
 
 data class TableColumn<T>(
@@ -37,10 +36,12 @@ data class TableHeader<T>(val columns: List<TableColumn<T>>) {
                 .onSizeChanged {
                     rowSize = it
                 },
-            horizontalArrangement = Arrangement.SpaceAround,
+            horizontalArrangement = Arrangement.SpaceAround
         ) {
 
             val columnsCount = columns.count { it.visible }
+            val columnWidth = ((rowSize.width - tableDeleteButtonWidth) / columnsCount).dp
+            Box(modifier = Modifier.width(tableDeleteButtonWidth.dp))
             for (column in columns) {
                 if (!column.visible)
                     continue
@@ -48,7 +49,7 @@ data class TableHeader<T>(val columns: List<TableColumn<T>>) {
                     column.title,
                     modifier = Modifier
                         .border(BorderStroke(1.dp, Color.Black))
-                        .width((rowSize.width / columnsCount).dp)
+                        .width(columnWidth)
                         .background(Color.LightGray)
                 )
             }

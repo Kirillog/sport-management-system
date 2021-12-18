@@ -1,23 +1,28 @@
 package ru.emkn.kotlin.sms.view.tables
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
-import androidx.compose.material.Text
+import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import ru.emkn.kotlin.sms.ObjectFields
+import ru.emkn.kotlin.sms.controller.Editor
 import ru.emkn.kotlin.sms.view.ActionButton
 import ru.emkn.kotlin.sms.view.GUI
 import ru.emkn.kotlin.sms.view.ItemCreator
 import ru.emkn.kotlin.sms.view.TableHeader
+
+const val tableDeleteButtonWidth = 10
 
 abstract class Table<T> {
 
@@ -42,17 +47,35 @@ abstract class Table<T> {
                         rowSize = it
                     },
                 horizontalArrangement = Arrangement.SpaceAround,
+                verticalAlignment = Alignment.CenterVertically
             ) {
+                Box(modifier = Modifier.border(BorderStroke(1.dp, Color.Black))) {
+                    IconButton(
+                        onClick = { delete() },
+                        modifier = Modifier.size(tableDeleteButtonWidth.dp)
+                    ) {
+                        Icon(imageVector = Icons.Filled.Close, contentDescription = "Delete", tint = Color.Black)
+                    }
+                }
                 val elementsInRow = header.columns.count { it.visible }
+                val cellWidth = ((rowSize.width - tableDeleteButtonWidth) / elementsInRow).dp
                 for (columnHeader in header.columns) {
                     if (columnHeader.visible)
-                        cells[columnHeader.field]?.draw((rowSize.width / elementsInRow).dp, columnHeader.readOnly)
+                        cells[columnHeader.field]?.draw(cellWidth, columnHeader.readOnly)
                             ?: throw IllegalStateException("Cell of ${columnHeader.field} not exists")
                 }
             }
         }
 
+        private fun delete() {
+            val cell = cells[ObjectFields.ID] ?: throw IllegalStateException("Cell has no ID")
+            val id = cell.getText().toIntOrNull() ?: throw IllegalStateException("ID is not a number")
+            deleteAction(id)
+            GUI.reload()
+        }
+
         abstract fun saveChanges()
+        abstract fun deleteAction(id: Int)
     }
 
     abstract val header: TableHeader<T>

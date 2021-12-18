@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
+import com.sun.nio.sctp.IllegalReceiveException
 import ru.emkn.kotlin.sms.ObjectFields
 import ru.emkn.kotlin.sms.controller.Editor
 import ru.emkn.kotlin.sms.model.*
@@ -82,21 +83,6 @@ fun prepare() {
         )
     }
 }
-//
-//private val participants = listOf(
-//    Participant("Vsevolod", "Vaskin", 2003, "М18", "divAn", "КМС"),
-//    Participant("Nikolay", "Chuhin", 2003, "М18", "divAn", "КМС"),
-//    Participant("Dmitry", "Terenichev", 2003, "М18", "divAn", "КМС"),
-//    Participant("Vsevolod", "Vaskin", 2003, "М18", "divAn", "КМС"),
-//    Participant("Nikolay", "Chuhin", 2003, "М18", "divAn", "КМС"),
-//    Participant("Dmitry", "Terenichev", 2003, "М18", "divAn", "КМС"),
-//    Participant("Vsevolod", "Vaskin", 2003, "М18", "divAn", "КМС"),
-//    Participant("Nikolay", "Chuhin", 2003, "М18", "divAn", "КМС"),
-//    Participant("Dmitry", "Terenichev", 2003, "М18", "divAn", "КМС"),
-//    Participant("Vsevolod", "Vaskin", 2003, "М18", "divAn", "КМС"),
-//    Participant("Nikolay", "Chuhin", 2003, "М18", "divAn", "КМС"),
-//    Participant("Dmitry", "Terenichev", 2003, "М18", "divAn", "КМС"),
-//)
 
 object GUI {
     fun run() = application {
@@ -108,15 +94,21 @@ object GUI {
 
     enum class State {
         ShowParticipants,
-        CreateParticipant
+        CreateParticipant,
+        Reload
     }
 
     private var state = mutableStateOf(State.ShowParticipants)
     private val statesStack = mutableListOf(state.value)
+    private var needReload = mutableStateOf(false)
 
     fun pushState(newState: State) {
         state.value = newState
         statesStack.add(newState)
+    }
+
+    fun reload() {
+        pushState(State.Reload)
     }
 
     fun popState() {
@@ -127,6 +119,8 @@ object GUI {
     @Preview
     @Composable
     private fun app() {
+        while (state.value == State.Reload)
+            popState()
         val participants = Participant.byId.values.toList()
         Column {
             TopAppBar.draw()
@@ -135,6 +129,7 @@ object GUI {
                 State.CreateParticipant -> {
                     ParticipantCreator().draw()
                 }
+                else -> throw IllegalReceiveException("Forbidden state of GUI")
             }
         }
     }
