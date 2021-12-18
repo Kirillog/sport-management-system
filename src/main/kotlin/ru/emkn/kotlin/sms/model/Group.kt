@@ -39,7 +39,6 @@ class Group(id: EntityID<Int>): IntEntity(id), MultilineWritable {
             return transaction {
                 Group.new {
                     this.name = name
-//                    this.route = Route.findByName(routeName)
                     this.routeID = RouteTable.select { RouteTable.name eq routeName }.first()[RouteTable.id]
                 }
             }
@@ -53,7 +52,9 @@ class Group(id: EntityID<Int>): IntEntity(id), MultilineWritable {
     var route: Route
         get() = Route[routeID]
         set(route) {
-            routeID = RouteTable.select { RouteTable.id eq route.id }.first()[GroupTable.id]
+            transaction {
+                routeID = RouteTable.select { RouteTable.id eq route.id }.first()[GroupTable.id]
+            }
         }
 
 //    TODO()

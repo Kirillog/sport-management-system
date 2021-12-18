@@ -33,7 +33,9 @@ class Team(id: EntityID<Int>) : IntEntity(id), MultilineWritable, SingleLineWrit
         )
 
         fun findByName(name: String): Team {
-            return Team.find { TeamTable.name eq name}.first()
+            return transaction {
+                Team.find { TeamTable.name eq name}.first()
+            }
         }
 
         fun create(name: String): Team {

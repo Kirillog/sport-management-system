@@ -17,8 +17,6 @@ fun main(args: Array<String>): Unit = mainBody {
     )
 
     transaction {
-//        // print sql to std-out
-        addLogger(StdOutSqlLogger)
         SchemaUtils.create(
             ParticipantTable,
             GroupTable,
@@ -62,6 +60,7 @@ fun main(args: Array<String>): Unit = mainBody {
             tossID = toss.id
         }
     }
+
     println("${participant.name}, ${participant.surname}")
     transaction {
         participant.name = "kek"

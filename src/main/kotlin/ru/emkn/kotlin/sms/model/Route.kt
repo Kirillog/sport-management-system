@@ -20,8 +20,14 @@ object RouteTable : IntIdTable("routes") {
 class Route(id: EntityID<Int>) : IntEntity(id), SingleLineWritable {
     companion object : IntEntityClass<Route>(RouteTable) {
         fun findByName(name: String): Route {
-            return Route.find { RouteTable.name eq name }.first()
+            return transaction {
+                Route.find { RouteTable.name eq name }.first()
+            }
         }
+
+//        fun checkByName(name: String): Boolean {
+//            return
+//        }
 
         fun create(name: String): Route {
             return transaction {
@@ -67,7 +73,9 @@ class Checkpoint(id: EntityID<Int>): IntEntity(id) {
         }
 
         fun findByName(name: String): Checkpoint {
-            return Checkpoint.find { CheckpointTable.name eq name}.first()
+            return transaction {
+                Checkpoint.find { CheckpointTable.name eq name}.first()
+            }
         }
     }
 
