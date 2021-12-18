@@ -1,11 +1,11 @@
-package ru.emkn.kotlin.sms.view
+package ru.emkn.kotlin.sms.view.tables
 
-import mu.KotlinLogging
 import ru.emkn.kotlin.sms.ObjectFields
 import ru.emkn.kotlin.sms.controller.Editor
 import ru.emkn.kotlin.sms.model.Participant
-
-private val logger = KotlinLogging.logger {}
+import ru.emkn.kotlin.sms.view.TableColumn
+import ru.emkn.kotlin.sms.view.TableHeader
+import ru.emkn.kotlin.sms.view.creators.ParticipantCreator
 
 class ParticipantsTable(participants: List<Participant>) : Table<Participant>() {
 
@@ -69,4 +69,6 @@ class ParticipantsTable(participants: List<Participant>) : Table<Participant>() 
     }
 
     override val rows = participants.map { ParticipantTableRow(it) }
+
+    override val itemCreator = ParticipantCreator()
 }

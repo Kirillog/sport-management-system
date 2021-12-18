@@ -2,7 +2,6 @@ package ru.emkn.kotlin.sms.view
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.runtime.*
@@ -12,9 +11,14 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import ru.emkn.kotlin.sms.ObjectFields
 import ru.emkn.kotlin.sms.maxTextLength
 
-data class ItemCreatorField(val title: String, val name: String, var data: MutableState<String> = mutableStateOf("")) {
+data class ItemCreatorInputField(
+    val title: String,
+    val field: ObjectFields,
+    var data: MutableState<String> = mutableStateOf("")
+) {
     @Composable
     fun draw(width: Dp) {
 
@@ -25,16 +29,31 @@ data class ItemCreatorField(val title: String, val name: String, var data: Mutab
             onValueChange = {
                 data.value = it.replace("\n", "").take(maxTextLength)
             },
-            label = { Text(title) })
+            label = { Text(title) }
+        )
     }
 }
 
 abstract class ItemCreator<T> {
-    abstract val fields: List<ItemCreatorField>
-    abstract fun create()
+    abstract val fields: List<ItemCreatorInputField>
 
-    open val changes: Map<String, String>
-        get() = fields.associate { it.name to it.data.value }
+    private fun create() {
+        try {
+            createAction(input)
+            GUI.popState()
+        } catch (e: Exception) {
+            TopAppBar.setMessage(e.message ?: "Undefined error");
+        }
+    }
+
+    private fun cancel() {
+        GUI.popState()
+    }
+
+    abstract fun createAction(input: Map<ObjectFields, String>)
+
+    open val input: Map<ObjectFields, String>
+        get() = fields.associate { it.field to it.data.value }
 
     @Composable
     open fun draw() {
@@ -45,17 +64,13 @@ abstract class ItemCreator<T> {
             .onSizeChanged {
                 columnSize = it
             }
-            .verticalScroll(rememberScrollState())
+//            .verticalScroll(rememberScrollState())
         ) {
             for (field in fields) {
                 field.draw(columnSize.width.dp)
             }
-
-            Button(onClick = {
-                create()
-            }) {
-                Text("Создать")
-            }
+            ActionButton("Create", ::create).draw()
+            ActionButton("Cancel", ::cancel).draw()
         }
     }
 }

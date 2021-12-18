@@ -1,4 +1,4 @@
-package ru.emkn.kotlin.sms.view
+package ru.emkn.kotlin.sms.view.tables
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -17,6 +17,7 @@ import androidx.compose.ui.input.key.*
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import ru.emkn.kotlin.sms.maxTextLength
+import ru.emkn.kotlin.sms.view.TopAppBar
 
 
 class TableCell(private val getText: () -> String, private val saveText: () -> Unit = {}) {

@@ -1,7 +1,9 @@
 package ru.emkn.kotlin.sms.view
 
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
+import androidx.compose.material.primarySurface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 
@@ -25,7 +27,7 @@ object TopAppBar {
 
     @Composable
     fun draw() {
-        TopAppBar {
+        TopAppBar(backgroundColor = MaterialTheme.colors.primarySurface) {
             when (barState.value) {
                 State.ShowMessage -> showMessage()
             }

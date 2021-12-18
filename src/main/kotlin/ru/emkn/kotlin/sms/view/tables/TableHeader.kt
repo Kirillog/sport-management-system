@@ -1,6 +1,7 @@
 package ru.emkn.kotlin.sms.view
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -14,6 +15,7 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import ru.emkn.kotlin.sms.ObjectFields
+import ru.emkn.kotlin.sms.view.tables.TableCell
 
 
 data class TableColumn<T>(
@@ -47,6 +49,7 @@ data class TableHeader<T>(val columns: List<TableColumn<T>>) {
                     modifier = Modifier
                         .border(BorderStroke(1.dp, Color.Black))
                         .width((rowSize.width / columnsCount).dp)
+                        .background(Color.LightGray)
                 )
             }
         }

@@ -94,10 +94,10 @@ object Editor {
     }
 
 
-    fun editEvent(event: Event, values: Map<String, String>) {
+    fun editEvent(event: Event, values: Map<ObjectFields, String>) {
         try {
-            val eventName = convert<String>(values["name"])
-            val data = convert<LocalDate>(values["date"])
+            val eventName = convert<String>(values[ObjectFields.Name])
+            val data = convert<LocalDate>(values[ObjectFields.Date])
             event.change(eventName, data)
             logger.info { "Event was successfully edited" }
         } catch (err: IllegalArgumentException) {
@@ -129,7 +129,7 @@ object Editor {
         }
     }
 
-    fun createEventFrom(values: Map<String, String>) {
+    fun createEventFrom(values: Map<ObjectFields, String>) {
         editEvent(Competition.event, values)
         logger.info { "Event was successfully created" }
     }
@@ -146,19 +146,21 @@ object Editor {
         }
     }
 
-    fun createParticipantFrom(values: Map<String, String>) {
+    fun createParticipantFrom(values: Map<ObjectFields, String>): Participant {
         try {
-            val name = convert<String>(values["name"])
-            val surname = convert<String>(values["surname"])
-            val birthdayYear = convert<Int>(values["birthdayYear"])
-            val grade = convert<String?>(values["grade"])
-            val groupName = convert<String>(values["groupName"])
-            val teamName = convert<String>(values["teamName"])
+            val name = convert<String>(values[ObjectFields.Name])
+            val surname = convert<String>(values[ObjectFields.Surname])
+            val birthdayYear = convert<Int>(values[ObjectFields.BirthdayYear])
+            val grade = convert<String?>(values[ObjectFields.Grade])
+            val groupName = convert<String>(values[ObjectFields.Group])
+            val teamName = convert<String>(values[ObjectFields.Team])
             if (Group.byName[groupName] == null)
                 throw IllegalArgumentException("Cannot find group $groupName")
             if (Team.byName[teamName] == null)
                 throw IllegalArgumentException("Cannot find team $teamName")
-            Competition.add(Participant(name, surname, birthdayYear, groupName, teamName, grade))
+            val participant = Participant(name, surname, birthdayYear, groupName, teamName, grade)
+            Competition.add(participant)
+            return participant
         } catch (err: IllegalArgumentException) {
             logger.info { "Cannot create new participant" }
             throw err

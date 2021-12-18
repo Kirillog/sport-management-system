@@ -1,4 +1,4 @@
-package ru.emkn.kotlin.sms.view
+package ru.emkn.kotlin.sms.view.tables
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -6,12 +6,18 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.Button
+import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import ru.emkn.kotlin.sms.ObjectFields
+import ru.emkn.kotlin.sms.view.ActionButton
+import ru.emkn.kotlin.sms.view.GUI
+import ru.emkn.kotlin.sms.view.ItemCreator
+import ru.emkn.kotlin.sms.view.TableHeader
 
 abstract class Table<T> {
 
@@ -50,8 +56,8 @@ abstract class Table<T> {
     }
 
     abstract val header: TableHeader<T>
-
     abstract val rows: List<TableRow>
+    abstract val itemCreator: ItemCreator<T>
 
     @Composable
     open fun draw() {
@@ -63,6 +69,9 @@ abstract class Table<T> {
                 rows.forEach {
                     it.draw()
                 }
+                ActionButton("Add") {
+                    GUI.pushState(GUI.State.CreateParticipant)
+                }.draw()
             }
         }
     }
