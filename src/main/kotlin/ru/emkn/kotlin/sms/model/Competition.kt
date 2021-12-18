@@ -9,7 +9,7 @@ import java.time.LocalDate
  */
 object Competition {
 
-    var event = Event("", LocalDate.of(2020, 1, 1))
+    var event = Event("Standard", LocalDate.of(2020, 1, 1))
     var toss = Toss()
     val checkPoints: MutableSet<CheckPoint> = mutableSetOf()
     val routes: MutableSet<Route> = mutableSetOf()
@@ -30,6 +30,20 @@ object Competition {
     fun loadRoutes(loader: Loader) {
         routes.addAll(loader.loadRoutes())
     }
+
+    fun add(route: Route) {
+        routes.add(route)
+    }
+
+    fun add(team: Team) {
+        teams.add(team)
+    }
+
+    fun add(group: Group) {
+        groups.add(group)
+    }
+
+    fun add(participant: Participant) {}
 
     fun calculateResult() {
         result.calculate()

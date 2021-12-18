@@ -10,12 +10,12 @@ import java.time.format.DateTimeFormatter
  * Contain meta information from application lists and run result, if participant finished.
  */
 class Participant : SingleLineWritable {
-    val name: String
-    val surname: String
-    val birthdayYear: Int
-    val grade: String?
-    val group: Group
-    val team: Team
+    var name: String
+    var surname: String
+    var birthdayYear: Int
+    var grade: String?
+    var group: Group
+    var team: Team
     val id: Int
 
     var startTime: LocalTime
@@ -77,6 +77,28 @@ class Participant : SingleLineWritable {
     companion object {
         private var nextFreeId = 100
         val byId: MutableMap<Int, Participant> = mutableMapOf()
+    }
+
+    fun change(
+        name: String,
+        surname: String,
+        birthdayYear: Int,
+        group: String,
+        team: String,
+        grade: String?
+    ) {
+        this.name = name
+        this.surname = surname
+        this.birthdayYear = birthdayYear
+        this.grade = grade
+        if (group != this.group.name) {
+            this.group.members.remove(this)
+            this.group = Group.byName[group] ?: throw IllegalArgumentException("Can not find group $group")
+        }
+        if (team != this.team.name) {
+            this.team.members.remove(this)
+            this.team = Team.byName[team] ?: throw IllegalArgumentException("Can not find team $team")
+        }
     }
 
     override fun toLine() =
