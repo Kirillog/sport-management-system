@@ -23,7 +23,9 @@ class Group(id: EntityID<Int>): IntEntity(id), MultilineWritable {
     companion object : IntEntityClass<Group>(GroupTable) {
 
         fun findByName(name: String): Group {
-            return Group.find { GroupTable.name eq name}.first()
+            return transaction {
+                Group.find { GroupTable.name eq name}.first()
+            }
         }
 
         fun checkByName(name: String): Boolean {
@@ -58,7 +60,7 @@ class Group(id: EntityID<Int>): IntEntity(id), MultilineWritable {
     var routeID by GroupTable.routeID
 
     var route: Route
-        get() = Route[routeID]
+        get() = transaction { Route[routeID] }
         set(route) {
             transaction {
                 routeID = RouteTable.select { RouteTable.id eq route.id }.first()[GroupTable.id]
@@ -66,14 +68,8 @@ class Group(id: EntityID<Int>): IntEntity(id), MultilineWritable {
         }
 
     fun change(name: String, routeName: String) {
-//        TODO()
-//        if (this.name != name) {
-//            byName.remove(this.name)
-//            this.name = name
-//            byName[name] = this
-//        }
-//        val route = Route.byName[routeName] ?: throw IllegalStateException("There is no such route")
-//        this.route = route
+        this.name = name
+        this.route = Route.findByName(routeName)
     }
 
     override fun toString() = this.name

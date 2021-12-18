@@ -5,6 +5,7 @@ import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.Column
+import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.emkn.kotlin.sms.MAX_TEXT_FIELD_SIZE
@@ -50,14 +51,18 @@ class Route(id: EntityID<Int>) : IntEntity(id), SingleLineWritable {
     var name by RouteTable.name
     var checkPoints by Checkpoint via RouteCheckpointsTable
 
-    fun change(name: String, checkPoints: List<Checkpoint>) {
-        // TODO()
-//        if (name != this.name) {
-//            byName.remove(this.name)
-//            this.name = name
-//            byName[name] = this
-//        }
-//        this.checkPoints = checkPoints
+    fun change(name: String, checkpoints: List<Checkpoint>) {
+        transaction {
+            this@Route.name = name
+            RouteCheckpointsTable.deleteWhere { RouteCheckpointsTable.route eq this@Route.id }
+            checkpoints.forEachIndexed { index, checkpoint ->
+                RouteCheckpointsTable.insert {
+                    it[this.route] = this@Route.id
+                    it[this.positionInRoute] = index
+                    it[this.checkpoint] = checkpoint.id
+                }
+            }
+        }
     }
 
     override fun toLine(): List<String?> = listOf(name) + checkPoints.map { it.id.toString() }

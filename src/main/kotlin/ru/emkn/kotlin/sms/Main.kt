@@ -52,8 +52,16 @@ fun main(args: Array<String>): Unit = mainBody {
 
     println(Group.checkByName("kek)"))
     println(Group.checkByName("M10"))
-    println(Team.checkByName("kek)"))
+
     println(Team.checkByName("Samara"))
+    println(Team.checkByName("Moscow"))
+    val kek = Team.findByName("Samara")
+    kek.change("Moscow")
+    println(Team.checkByName("Samara"))
+    println(Team.checkByName("Moscow"))
+    kek.change("Samara")
+
+    val test = Group.findByName("M10").route
 
     val participant = transaction {
         Participant.new {
