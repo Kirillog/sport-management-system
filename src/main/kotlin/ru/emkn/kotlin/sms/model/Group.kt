@@ -6,7 +6,6 @@ import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.Column
 import org.jetbrains.exposed.sql.select
-import org.jetbrains.exposed.sql.transactions.transaction
 import ru.emkn.kotlin.sms.MAX_TEXT_FIELD_SIZE
 import ru.emkn.kotlin.sms.io.MultilineWritable
 
@@ -23,34 +22,22 @@ class Group(id: EntityID<Int>): IntEntity(id), MultilineWritable {
     companion object : IntEntityClass<Group>(GroupTable) {
 
         fun findByName(name: String): Group {
-            return transaction {
-                Group.find { GroupTable.name eq name}.first()
-            }
+            return Group.find { GroupTable.name eq name }.first()
         }
 
-        fun checkByName(name: String): Boolean {
-            return transaction {
-                val query = Group.find { GroupTable.name eq name}.toList()
-                return@transaction query.isNotEmpty()
-            }
-        }
-
+        fun checkByName(name: String): Boolean = !Group.find { GroupTable.name eq name }.empty()
 
         fun create(name: String, route: Route): Group {
-            return transaction {
-                Group.new {
-                    this.name = name
-                    this.route = route
-                }
+            return Group.new {
+                this.name = name
+                this.route = route
             }
         }
 
         fun create(name: String, routeName: String): Group {
-            return transaction {
-                Group.new {
-                    this.name = name
-                    this.routeID = RouteTable.select { RouteTable.name eq routeName }.first()[RouteTable.id]
-                }
+            return Group.new {
+                this.name = name
+                this.routeID = RouteTable.select { RouteTable.name eq routeName }.first()[RouteTable.id]
             }
         }
     }
@@ -60,11 +47,9 @@ class Group(id: EntityID<Int>): IntEntity(id), MultilineWritable {
     var routeID by GroupTable.routeID
 
     var route: Route
-        get() = transaction { Route[routeID] }
+        get() = Route[routeID]
         set(route) {
-            transaction {
-                routeID = RouteTable.select { RouteTable.id eq route.id }.first()[GroupTable.id]
-            }
+            routeID = RouteTable.select { RouteTable.id eq route.id }.first()[GroupTable.id]
         }
 
     fun change(name: String, routeName: String) {

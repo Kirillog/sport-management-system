@@ -60,7 +60,6 @@ object Competition {
 
     fun loadDump(loader: Loader) {
         RuntimeDump.addAllTimestamps(loader.loadTimestamps())
-        checkpoints.addAll(RuntimeDump.timeStampDump.map { it.checkPoint })
     }
 
     fun toss() {
@@ -70,5 +69,9 @@ object Competition {
 
     fun toss(loader: Loader) {
         toss.build(loader)
+    }
+
+    fun loadCheckpoints(loader: Loader) {
+        checkpoints.addAll(loader.loadCheckpoints())
     }
 }

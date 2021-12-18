@@ -7,9 +7,7 @@ import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.Column
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.select
-import org.jetbrains.exposed.sql.transactions.transaction
 import ru.emkn.kotlin.sms.MAX_TEXT_FIELD_SIZE
-
 import ru.emkn.kotlin.sms.io.SingleLineWritable
 import java.time.Duration
 import java.time.LocalTime
@@ -42,15 +40,14 @@ class Participant(id: EntityID<Int>) : IntEntity(id), SingleLineWritable {
             team: Team,
             grade: String?
         ): Participant {
-            return transaction {
-                Participant.new {
-                    this.name = name
-                    this.surname = surname
-                    this.birthdayYear = birthdayYear
-                    this.group = group
-                    this.team = team
-                    this.grade = grade
-                }
+            return Participant.new {
+                this.name = name
+                this.surname = surname
+                this.birthdayYear = birthdayYear
+                this.group = group
+                this.team = team
+                this.grade = grade
+                this.tossID = Competition.toss.id
             }
         }
 
@@ -113,30 +110,23 @@ class Participant(id: EntityID<Int>) : IntEntity(id), SingleLineWritable {
     var tossID by ParticipantTable.tossID
 
     var team: Team
-        get() = transaction { Team[teamID] }
+        get() = Team[teamID]
         set(team) {
-            transaction {
-                teamID = TeamTable.select { TeamTable.id eq team.id }.first()[TeamTable.id]
-            }
+            teamID = TeamTable.select { TeamTable.id eq team.id }.first()[TeamTable.id]
         }
     var group: Group
-        get() = transaction { Group[groupID] }
+        get() = Group[groupID]
         set(group) {
-            transaction {
-                groupID = GroupTable.select { GroupTable.id eq group.id }.first()[GroupTable.id]
-            }
+            groupID = GroupTable.select { GroupTable.id eq group.id }.first()[GroupTable.id]
         }
 
     var startTime: LocalTime
-        get() = transaction {
+        get() =
             TossTable.select { (TossTable.tossID eq tossID) and (TossTable.participantID eq this@Participant.id) }
                 .first()[TossTable.startTime]
-        }
         set(time) {
-            transaction {
-                TossTable.select { (TossTable.tossID eq tossID) and (TossTable.participantID eq this@Participant.id) }
-                    .first()[TossTable.startTime] = time
-            }
+            TossTable.select { (TossTable.tossID eq tossID) and (TossTable.participantID eq this@Participant.id) }
+                .first()[TossTable.startTime] = time
         }
 
     val runTime: Duration
@@ -156,12 +146,11 @@ class Participant(id: EntityID<Int>) : IntEntity(id), SingleLineWritable {
         teamName: String,
         grade: String?
     ) {
-        transaction {
-            this@Participant.name = name
-            this@Participant.surname = surname
-            this@Participant.birthdayYear = birthdayYear
-            this@Participant.grade = grade
-        }
+
+        this.name = name
+        this.surname = surname
+        this.birthdayYear = birthdayYear
+        this.grade = grade
         this.team = Team.findByName(teamName)
         this.group = Group.findByName(groupName)
     }

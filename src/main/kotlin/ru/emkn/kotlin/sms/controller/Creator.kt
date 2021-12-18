@@ -8,6 +8,7 @@ import java.time.LocalTime
 import kotlin.reflect.KType
 import kotlin.reflect.full.starProjectedType
 import kotlin.reflect.jvm.jvmErasure
+import kotlin.reflect.typeOf
 
 private val logger = KotlinLogging.logger { }
 
@@ -25,10 +26,10 @@ object Creator {
             Int::class -> field.toIntOrNull()
                 ?: throw IllegalArgumentException("Cannot parse $field as Int")
             String::class -> {
-                require(kType.isMarkedNullable || field.isNotEmpty()) { "Cannot parse empty field as String" }
                 field.ifEmpty { null }
             }
             List::class -> field.split(",").dropLastWhile(String::isEmpty).map { element ->
+                val type = kType.arguments
                 kType.arguments.first().type?.let {
                     convert(element, it)
                 }
@@ -60,10 +61,11 @@ object Creator {
         return Competition.event
     }
 
+    @OptIn(ExperimentalStdlibApi::class)
     fun createRouteFrom(values: Map<String, String>): Route {
         try {
             val routeName = convert<String>(values["name"])
-            val checkPoints = convert<List<Checkpoint>>(values["checkPoints"])
+            val checkPoints = convert(values["checkPoints"] ?: "", typeOf<List<Checkpoint>>()) as List<Checkpoint>
             val route = Route.create(routeName, checkPoints)
             Competition.add(route)
             logger.info { "Route was successfully created" }
@@ -86,8 +88,12 @@ object Creator {
                 throw IllegalArgumentException("Cannot find group $groupName")
             if (!Team.checkByName(teamName))
                 throw IllegalArgumentException("Cannot find team $teamName")
-            val startTime = convert<LocalTime>(values["startTime"])
-            val participant = Participant.create(name, surname, birthdayYear, groupName, teamName, startTime, grade)
+            val participant = if (CompetitionController.state == State.TOSSED) {
+                val startTime = convert<LocalTime>(values["startTime"])
+                Participant.create(name, surname, birthdayYear, groupName, teamName, startTime, grade)
+            } else {
+                Participant.create(name, surname, birthdayYear, groupName, teamName, grade)
+            }
             Competition.add(participant)
             logger.info { "Participant was successfully created" }
             return participant
@@ -132,7 +138,7 @@ object Creator {
             val weight = convert<Int>(values["weight"])
             val checkpoint = Checkpoint.create(name, weight)
             Competition.add(checkpoint)
-            logger.info { "Checkpoint was successfully created" }
+            logger.info { "Checkpoint $name was successfully created" }
             return checkpoint
         } catch (err: IllegalArgumentException) {
             logger.info { "Cannot create checkpoint" }

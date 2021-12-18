@@ -34,6 +34,9 @@ class FileLoader(path: Path) : Loader {
             CSVReader(file).timestamps()
         }.filterNotNull().flatten().toSet()
 
+    override fun loadCheckpoints(): Set<Checkpoint> =
+        CSVReader(file).checkPoints() ?: error()
+
     override fun loadToss() =
         CSVReader(file).toss() ?: error()
 }

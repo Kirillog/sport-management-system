@@ -1,8 +1,11 @@
 package ru.emkn.kotlin.sms.controller
 
-import ru.emkn.kotlin.sms.io.*
+import org.jetbrains.exposed.sql.transactions.transaction
+import ru.emkn.kotlin.sms.io.FileLoader
+import ru.emkn.kotlin.sms.io.FileSaver
+import ru.emkn.kotlin.sms.io.Loader
+import ru.emkn.kotlin.sms.io.Saver
 import ru.emkn.kotlin.sms.model.Competition
-import ru.emkn.kotlin.sms.model.Group
 import ru.emkn.kotlin.sms.model.Team
 import java.nio.file.Path
 import kotlin.io.path.extension
@@ -14,21 +17,24 @@ enum class State {
     TOSSED,
     FINISHED
 }
-
 object CompetitionController {
     var state: State = State.CREATED
 
 
-    fun announceFromPath(event: Path, routes: Path) {
+    fun announceFromPath(event: Path, checkpoints: Path, routes: Path) {
         val eventLoader = getLoader(event)
+        val checkPoints = getLoader(checkpoints)
         val routesLoader = getLoader(routes)
-        announce(eventLoader, routesLoader)
+        announce(eventLoader, checkPoints, routesLoader)
     }
 
-    private fun announce(eventLoader: Loader, routesLoader: Loader) {
+    private fun announce(eventLoader: Loader, checkpointsLoader: Loader, routesLoader: Loader) {
         require(state == State.CREATED)
-        Competition.loadEvent(eventLoader)
-        Competition.loadRoutes(routesLoader)
+        transaction {
+            Competition.loadEvent(eventLoader)
+            Competition.loadCheckpoints(checkpointsLoader)
+            Competition.loadRoutes(routesLoader)
+        }
         state = State.ANNOUNCED
     }
 
@@ -40,14 +46,18 @@ object CompetitionController {
 
     private fun register(groupLoader: Loader, teamLoader: Loader) {
         require(state == State.ANNOUNCED)
-        Competition.loadGroups(groupLoader)
-        Competition.loadTeams(teamLoader)
+        transaction {
+            Competition.loadGroups(groupLoader)
+            Competition.loadTeams(teamLoader)
+        }
         state = State.REGISTER_OUT
     }
 
     fun toss() {
         require(state == State.REGISTER_OUT)
-        Competition.toss()
+        transaction {
+            Competition.toss()
+        }
         state = State.TOSSED
     }
 
@@ -55,9 +65,11 @@ object CompetitionController {
         require(state == State.ANNOUNCED)
         val groupLoader = getLoader(group)
         val tossLoader = getLoader(toss)
-        Competition.loadGroups(groupLoader)
-        Competition.toss(tossLoader)
-        Competition.teams.addAll(Team.all().toSet())
+        transaction {
+            Competition.loadGroups(groupLoader)
+            Competition.toss(tossLoader)
+            Competition.teams.addAll(Team.all().toSet())
+        }
         state = State.TOSSED
     }
 
@@ -91,15 +103,11 @@ object CompetitionController {
     fun saveResultsToPath(results: Path) =
         getSaver(results).saveResults()
 
-    fun saveTossToPath(toss: Path) =
+    fun saveTossToPath(toss: Path) = transaction {
         getSaver(toss).saveToss()
+    }
 
     fun saveTeamResultsToPath(results: Path) =
         getSaver(results).saveTeamResults()
-
-    fun saveToss(writer: Writer) {
-        writer.add(listOf("Номер", "Имя", "Фамилия", "Г.р.", "Команда", "Разр.", "Время старта"))
-        writer.addAll(Group.all().toList())
-        writer.write()
-    }
 }
+

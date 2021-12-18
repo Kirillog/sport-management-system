@@ -8,5 +8,6 @@ interface Loader {
     fun loadTeams(): Set<Team>
     fun loadRoutes(): Set<Route>
     fun loadTimestamps(): Set<TimeStamp>
+    fun loadCheckpoints(): Set<Checkpoint>
     fun loadToss()
 }

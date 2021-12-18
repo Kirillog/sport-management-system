@@ -2,9 +2,12 @@ package ru.emkn.kotlin.sms
 
 import com.xenomachina.argparser.mainBody
 import mu.KotlinLogging
-import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
+import ru.emkn.kotlin.sms.controller.CompetitionController
 import ru.emkn.kotlin.sms.model.*
+import kotlin.io.path.Path
 
 private val logger = KotlinLogging.logger {}
 
@@ -48,50 +51,20 @@ fun main(args: Array<String>): Unit = mainBody {
 //        }
     }
 
-    val toss = Toss()
+    val path = Path("competitions/competition-1")
+    CompetitionController.announceFromPath(
+        event = path.resolve("input/event.csv"),
+        checkpoints = path.resolve("input/checkpoints.csv"),
+        routes = path.resolve("input/courses.csv")
+    )
 
-    println(Group.checkByName("kek)"))
-    println(Group.checkByName("M10"))
+    CompetitionController.registerFromPath(
+        group = path.resolve("input/classes.csv"),
+        team = path.resolve("applications")
+    )
 
-    println(Team.checkByName("Samara"))
-    println(Team.checkByName("Moscow"))
-    val kek = Team.findByName("Samara")
-    kek.change("Moscow")
-    println(Team.checkByName("Samara"))
-    println(Team.checkByName("Moscow"))
-    kek.change("Samara")
-
-    val test = Group.findByName("M10").route
-
-    val participant = transaction {
-        Participant.new {
-            name = "Petia"
-            surname = "Pupkin"
-            team = Team.find { TeamTable.name eq "Samara" }.first()
-            group = Group.find { GroupTable.name eq "M10" }.first()
-            birthdayYear = 2020
-            tossID = toss.id
-        }
-    }
-
-    println("${participant.name}, ${participant.surname}")
-    transaction {
-        participant.name = "kek"
-    }
-    println("${participant.name}, ${participant.surname}")
-
-//    val path = Path("competitions/competition-1")
-//    CompetitionController.announceFromPath(
-//        path.resolve("input/event.csv"),
-//        path.resolve("input/courses.csv")
-//    )
-//
-//    CompetitionController.registerFromPath(
-//        path.resolve("input/classes.csv"),
-//        path.resolve("applications")
-//    )
-//
-//    CompetitionController.toss()
-//    val writer = Writer(File("test.csv"), FileType.CSV)
-//    CompetitionController.saveToss(writer)
+    CompetitionController.toss()
+    CompetitionController.saveTossToPath(
+        toss = path.resolve("protocols/toss.csv")
+    )
 }

@@ -113,8 +113,8 @@ class CSVReader(file: File) : Reader(file) {
         val table = tableWithHeader() ?: return null
         val routes = table.mapNotNull { record ->
             try {
-                val checkPoints = "checkPoints" to record.filterKeys { it.toIntOrNull() != null }
-                    .toSortedMap().values.joinToString(",")
+                val checkPoints =
+                    "checkPoints" to record.filterKeys { it.toIntOrNull() != null }.values.joinToString(",")
                 val entry = record.filterKeys { it.toIntOrNull() == null } + checkPoints
                 Creator.createRouteFrom(entry)
             } catch (err: IllegalArgumentException) {

@@ -7,7 +7,6 @@ import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.Column
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.transactions.transaction
 import ru.emkn.kotlin.sms.MAX_TEXT_FIELD_SIZE
 import ru.emkn.kotlin.sms.io.SingleLineWritable
 
@@ -20,26 +19,16 @@ object RouteTable : IntIdTable("routes") {
  */
 class Route(id: EntityID<Int>) : IntEntity(id), SingleLineWritable {
     companion object : IntEntityClass<Route>(RouteTable) {
-        fun findByName(name: String): Route {
-            return transaction {
-                Route.find { RouteTable.name eq name }.first()
-            }
-        }
+        fun findByName(name: String): Route =
+            Route.find { RouteTable.name eq name }.first()
 
-        fun checkByName(name: String): Boolean {
-            return transaction {
-                val query = Route.find { RouteTable.name eq name }.toList()
-                return@transaction query.isNotEmpty()
-            }
-        }
+        fun checkByName(name: String): Boolean =
+            !Route.find { RouteTable.name eq name }.empty()
 
-        fun create(name: String): Route {
-            return transaction {
-                Route.new {
-                    this.name = name
-                }
+        fun create(name: String): Route =
+            Route.new {
+                this.name = name
             }
-        }
 
         fun create(name: String, checkpoints: List<Checkpoint>): Route {
             val res = create(name)
@@ -52,15 +41,13 @@ class Route(id: EntityID<Int>) : IntEntity(id), SingleLineWritable {
     var checkPoints by Checkpoint via RouteCheckpointsTable
 
     fun change(name: String, checkpoints: List<Checkpoint>) {
-        transaction {
-            this@Route.name = name
-            RouteCheckpointsTable.deleteWhere { RouteCheckpointsTable.route eq this@Route.id }
-            checkpoints.forEachIndexed { index, checkpoint ->
-                RouteCheckpointsTable.insert {
-                    it[this.route] = this@Route.id
-                    it[this.positionInRoute] = index
-                    it[this.checkpoint] = checkpoint.id
-                }
+        this.name = name
+        RouteCheckpointsTable.deleteWhere { RouteCheckpointsTable.route eq this@Route.id }
+        checkpoints.forEachIndexed { index, checkpoint ->
+            RouteCheckpointsTable.insert {
+                it[this.route] = this@Route.id
+                it[this.positionInRoute] = index
+                it[this.checkpoint] = checkpoint.id
             }
         }
     }
@@ -79,29 +66,20 @@ object CheckpointTable : IntIdTable("checkpoints") {
     val name: Column<String> = varchar("name", MAX_TEXT_FIELD_SIZE)
 }
 
-class Checkpoint(id: EntityID<Int>): IntEntity(id) {
+class Checkpoint(id: EntityID<Int>) : IntEntity(id) {
     companion object : IntEntityClass<Checkpoint>(CheckpointTable) {
-        fun create(name: String, weight: Int): Checkpoint {
-            return transaction {
-                Checkpoint.new {
-                    this.name = name
-                    this.weigth = weight
-                }
+        fun create(name: String, weight: Int): Checkpoint =
+            Checkpoint.new {
+                this.name = name
+                this.weigth = weight
             }
-        }
 
-        fun findByName(name: String): Checkpoint {
-            return transaction {
-                Checkpoint.find { CheckpointTable.name eq name}.first()
-            }
-        }
 
-        fun checkByName(name: String): Boolean {
-            return transaction {
-                val query = Checkpoint.find { CheckpointTable.name eq name}.toList()
-                return@transaction query.isNotEmpty()
-            }
-        }
+        fun findByName(name: String): Checkpoint =
+            Checkpoint.find { CheckpointTable.name eq name }.first()
+
+        fun checkByName(name: String): Boolean =
+            !Checkpoint.find { CheckpointTable.name eq name }.empty()
     }
 
     var weigth by CheckpointTable.weight

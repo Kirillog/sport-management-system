@@ -5,7 +5,6 @@ import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.Column
-import org.jetbrains.exposed.sql.transactions.transaction
 import ru.emkn.kotlin.sms.MAX_TEXT_FIELD_SIZE
 import ru.emkn.kotlin.sms.io.MultilineWritable
 import ru.emkn.kotlin.sms.io.SingleLineWritable
@@ -33,23 +32,14 @@ class Team(id: EntityID<Int>) : IntEntity(id), MultilineWritable, SingleLineWrit
         )
 
         fun findByName(name: String): Team {
-            return transaction {
-                Team.find { TeamTable.name eq name}.first()
-            }
+            return Team.find { TeamTable.name eq name }.first()
         }
 
-        fun checkByName(name: String): Boolean {
-            return transaction {
-                val query = Team.find { TeamTable.name eq name}.toList()
-                return@transaction query.isNotEmpty()
-            }
-        }
+        fun checkByName(name: String): Boolean = !Team.find { TeamTable.name eq name }.empty()
 
         fun create(name: String): Team {
-            return transaction {
-                Team.new {
-                    this.name = name
-                }
+            return Team.new {
+                this.name = name
             }
         }
     }
@@ -62,9 +52,7 @@ class Team(id: EntityID<Int>) : IntEntity(id), MultilineWritable, SingleLineWrit
 
 
     fun change(name: String) {
-        transaction {
-            this@Team.name = name
-        }
+        this.name = name
     }
 
     override fun toMultiline(): List<List<Any?>> = listOf(

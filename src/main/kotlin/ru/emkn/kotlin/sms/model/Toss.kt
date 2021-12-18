@@ -18,7 +18,7 @@ object TossTable : Table("toss") {
 open class Toss {
 
     companion object {
-        protected var lastId: Int = 0
+        protected var lastId: Int = 1
     }
 
     val id = lastId++
