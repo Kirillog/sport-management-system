@@ -60,6 +60,16 @@ class Team(id: EntityID<Int>) : IntEntity(id), MultilineWritable, SingleLineWrit
     val score
         get() = Competition.teamResult.getScore(this)
 
+
+    fun change(name: String) {
+        // TODO()
+//        if (this.name != name) {
+//            byName.remove(this.name)
+//            this.name = name
+//            byName[name] = this
+//        }
+    }
+
     override fun toMultiline(): List<List<Any?>> = listOf(
         listOf(name) + listOf(
             listOf(

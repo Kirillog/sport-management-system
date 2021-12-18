@@ -66,6 +66,15 @@ class CSVReader(file: File) : Reader(file) {
         }
     }
 
+    private fun <T> item(values: Map<String, String>, lineNumber: Int, constructor: KFunction<T>): T {
+        val parametersWithValues = constructor.parameters.associateWith {
+            val field = values[it.name]
+            requireNotNull(field) { "Error in checking header" }
+            convert(field, lineNumber, it.type)
+        }
+        return constructor.callBy(parametersWithValues)
+    }
+
     /**
      * Converts [table] to [Readable] objects using their [constructor]
      */
@@ -75,12 +84,7 @@ class CSVReader(file: File) : Reader(file) {
     ): Set<T> {
         return table.mapIndexed { lineNumber, recordWithHeader ->
             try {
-                val parametersWithValues = constructor.parameters.associateWith {
-                    val field = recordWithHeader[it.name]
-                    requireNotNull(field) { "Error in checking header" }
-                    convert(field, lineNumber + 1, it.type)
-                }
-                constructor.callBy(parametersWithValues)
+                item(recordWithHeader, lineNumber, constructor)
             } catch (e: IllegalArgumentException) {
                 logger.warn { e.message }
                 null
