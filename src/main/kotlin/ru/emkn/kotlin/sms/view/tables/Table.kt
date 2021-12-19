@@ -16,11 +16,9 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import ru.emkn.kotlin.sms.ObjectFields
-import ru.emkn.kotlin.sms.controller.Editor
 import ru.emkn.kotlin.sms.view.ActionButton
 import ru.emkn.kotlin.sms.view.GUI
-import ru.emkn.kotlin.sms.view.ItemCreator
-import ru.emkn.kotlin.sms.view.TableHeader
+import ru.emkn.kotlin.sms.view.creators.ItemCreator
 
 const val tableDeleteButtonWidth = 10
 
@@ -68,14 +66,18 @@ abstract class Table<T> {
         }
 
         private fun delete() {
-            val cell = cells[ObjectFields.ID] ?: throw IllegalStateException("Cell has no ID")
-            val id = cell.getText().toIntOrNull() ?: throw IllegalStateException("ID is not a number")
+            val id = getData(ObjectFields.ID).toIntOrNull() ?: throw IllegalStateException("ID is not a number")
             deleteAction(id)
             GUI.reload()
         }
 
         abstract fun saveChanges()
         abstract fun deleteAction(id: Int)
+
+        fun getData(field: ObjectFields): String {
+            val cell = cells[field] ?: throw NoSuchElementException("No field $field in cell")
+            return cell.getText()
+        }
     }
 
     abstract val header: TableHeader<T>
@@ -89,7 +91,7 @@ abstract class Table<T> {
             Column(
                 modifier = Modifier.verticalScroll(rememberScrollState())
             ) {
-                rows.forEach {
+                rows.sortedWith(header.comparator).forEach {
                     it.draw()
                 }
                 ActionButton("Add") {

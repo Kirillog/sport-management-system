@@ -3,7 +3,9 @@ package ru.emkn.kotlin.sms.view
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import com.sun.nio.sctp.IllegalReceiveException
@@ -86,7 +88,7 @@ fun prepare() {
 
 object GUI {
     fun run() = application {
-        Window(onCloseRequest = ::exitApplication) {
+        Window(onCloseRequest = ::exitApplication, title = "Sport Management System") {
             prepare()
             app()
         }
@@ -100,7 +102,6 @@ object GUI {
 
     private var state = mutableStateOf(State.ShowParticipants)
     private val statesStack = mutableListOf(state.value)
-    private var needReload = mutableStateOf(false)
 
     fun pushState(newState: State) {
         state.value = newState
@@ -121,16 +122,15 @@ object GUI {
     private fun app() {
         while (state.value == State.Reload)
             popState()
-        val participants = Participant.byId.values.toList()
+        val participantsTable = remember {  ParticipantsTable() }
         Column {
             TopAppBar.draw()
             when (state.value) {
-                State.ShowParticipants -> ParticipantsTable(participants).draw()
-                State.CreateParticipant -> {
-                    ParticipantCreator().draw()
-                }
+                State.ShowParticipants -> participantsTable.draw()
+                State.CreateParticipant -> ParticipantCreator().draw()
                 else -> throw IllegalReceiveException("Forbidden state of GUI")
             }
         }
+
     }
 }

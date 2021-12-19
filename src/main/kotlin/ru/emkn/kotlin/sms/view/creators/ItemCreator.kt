@@ -1,4 +1,4 @@
-package ru.emkn.kotlin.sms.view
+package ru.emkn.kotlin.sms.view.creators
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -13,6 +13,9 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import ru.emkn.kotlin.sms.ObjectFields
 import ru.emkn.kotlin.sms.maxTextLength
+import ru.emkn.kotlin.sms.view.ActionButton
+import ru.emkn.kotlin.sms.view.GUI
+import ru.emkn.kotlin.sms.view.TopAppBar
 
 data class ItemCreatorInputField(
     val title: String,
@@ -64,7 +67,6 @@ abstract class ItemCreator<T> {
             .onSizeChanged {
                 columnSize = it
             }
-//            .verticalScroll(rememberScrollState())
         ) {
             for (field in fields) {
                 field.draw(columnSize.width.dp)

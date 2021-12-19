@@ -1,20 +1,22 @@
-package ru.emkn.kotlin.sms.view
+package ru.emkn.kotlin.sms.view.tables
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.Button
 import androidx.compose.material.Text
+import androidx.compose.material.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import mu.KotlinLogging
 import ru.emkn.kotlin.sms.ObjectFields
-import ru.emkn.kotlin.sms.view.tables.Table
-import ru.emkn.kotlin.sms.view.tables.TableCell
-import ru.emkn.kotlin.sms.view.tables.tableDeleteButtonWidth
+import ru.emkn.kotlin.sms.view.GUI
+import kotlin.math.log
 
 
 data class TableColumn<T>(
@@ -22,10 +24,16 @@ data class TableColumn<T>(
     val field: ObjectFields,
     val visible: Boolean,
     val readOnly: Boolean,
+    val comparator: Comparator<Table<T>.TableRow>,
     val getterGenerator: (T) -> (() -> String)
 )
 
+private val logger = KotlinLogging.logger {}
+
 data class TableHeader<T>(val columns: List<TableColumn<T>>) {
+
+    var orderByColumn = 0
+    var reversedOrder = false
 
     @Composable
     fun draw() {
@@ -38,20 +46,26 @@ data class TableHeader<T>(val columns: List<TableColumn<T>>) {
                 },
             horizontalArrangement = Arrangement.SpaceAround
         ) {
-
             val columnsCount = columns.count { it.visible }
             val columnWidth = ((rowSize.width - tableDeleteButtonWidth) / columnsCount).dp
             Box(modifier = Modifier.width(tableDeleteButtonWidth.dp))
-            for (column in columns) {
+            columns.forEachIndexed { index, column ->
                 if (!column.visible)
-                    continue
-                Text(
-                    column.title,
+                    return@forEachIndexed
+                TextButton(
+                    onClick = {
+                        if (orderByColumn == index)
+                            reversedOrder = !reversedOrder
+                        orderByColumn = index
+                        GUI.reload()
+                    },
                     modifier = Modifier
                         .border(BorderStroke(1.dp, Color.Black))
                         .width(columnWidth)
                         .background(Color.LightGray)
-                )
+                ) {
+                    Text(column.title)
+                }
             }
         }
     }
@@ -60,4 +74,9 @@ data class TableHeader<T>(val columns: List<TableColumn<T>>) {
         return columns.associate { it.field to TableCell(it.getterGenerator(item), saveFunction) }
     }
 
+    val comparator: Comparator<Table<T>.TableRow>
+        get() = if (reversedOrder)
+            columns[orderByColumn].comparator.reversed()
+        else
+            columns[orderByColumn].comparator
 }
