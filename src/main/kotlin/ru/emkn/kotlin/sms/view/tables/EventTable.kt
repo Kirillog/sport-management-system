@@ -1,7 +1,9 @@
 package ru.emkn.kotlin.sms.view.tables
 
 import ru.emkn.kotlin.sms.ObjectFields
+import ru.emkn.kotlin.sms.controller.Editor
 import ru.emkn.kotlin.sms.model.Event
+import ru.emkn.kotlin.sms.view.TopAppBar
 import ru.emkn.kotlin.sms.view.creators.EventCreator
 
 class EventTable(event: Event) : Table<Event>() {
@@ -24,15 +26,15 @@ class EventTable(event: Event) : Table<Event>() {
         )
     )
 
-    inner class EventTableRow(event: Event) : TableRow() {
+    inner class EventTableRow(private val event: Event) : TableRow() {
         override val cells = header.makeTableCells(event, ::saveChanges)
 
         override fun saveChanges() {
-            TODO()
+            Editor.editEvent(event, changes)
         }
 
         override fun deleteAction(id: Int) {
-            TODO()
+            TopAppBar.setMessage("You cant delete event metadata. Only change")
         }
     }
 

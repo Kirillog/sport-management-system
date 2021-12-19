@@ -162,6 +162,7 @@ object Creator {
     }
 
     fun createTimeStampFrom(values: Map<ObjectFields, String>): Timestamp {
+        //TODO: решить конфликт имён
         try {
             val participantId = convert<Int>(values[ObjectFields.ID])
             val time = convert<LocalTime>(values[ObjectFields.Time])

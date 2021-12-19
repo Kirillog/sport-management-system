@@ -69,7 +69,7 @@ class ParticipantsTable : Table<Participant>() {
         )
     ))
 
-    inner class ParticipantTableRow(private var participant: Participant) : TableRow() {
+    inner class ParticipantTableRow(private val participant: Participant) : TableRow() {
 
         override val cells = header.makeTableCells(participant, ::saveChanges)
 
