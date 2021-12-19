@@ -4,6 +4,7 @@ import com.xenomachina.argparser.mainBody
 import mu.KotlinLogging
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
+import org.jetbrains.exposed.sql.deleteAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.emkn.kotlin.sms.controller.CompetitionController
 import ru.emkn.kotlin.sms.model.*
@@ -20,21 +21,21 @@ fun main(args: Array<String>): Unit = mainBody {
     )
 
     val dbTables = listOf(
-        ParticipantTable,
-        GroupTable,
-        TeamTable,
-        RouteTable,
-        CheckpointTable,
         RouteCheckpointsTable,
         TossTable,
+        ResultTable,
         TimestampTable,
-        ResultTable
+        CheckpointTable,
+        ParticipantTable,
+        GroupTable,
+        RouteTable,
+        TeamTable,
     )
 
     transaction {
         dbTables.forEach {
             SchemaUtils.create(it)
-//            it.deleteAll()
+            it.deleteAll()
         }
     }
 
@@ -58,6 +59,6 @@ fun main(args: Array<String>): Unit = mainBody {
     CompetitionController.registerResultsFromPath(checkPoints = path.resolve("checkpoints"))
 
     CompetitionController.calculateResult()
-    CompetitionController.saveResultsToPath(path.resolve("protocols/results.csv"))
-    CompetitionController.saveTeamResultsToPath(path.resolve("protocols/team_results.csv"))
+//    CompetitionController.saveResultsToPath(path.resolve("protocols/results.csv"))
+//    CompetitionController.saveTeamResultsToPath(path.resolve("protocols/team_results.csv"))
 }
