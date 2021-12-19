@@ -36,7 +36,7 @@ class ParticipantsTable : Table<Participant>() {
             "Group",
             ObjectFields.Group,
             visible = true, readOnly = false,
-            comparator = TableComparing.compareByString(ObjectFields.Surname),
+            comparator = TableComparing.compareByString(ObjectFields.Group),
             getterGenerator = { { it.group.name } }
         ),
         TableColumn(
@@ -48,7 +48,8 @@ class ParticipantsTable : Table<Participant>() {
         ),
         TableColumn(
             "Grade",
-            ObjectFields.Grade, visible = true, readOnly = false,
+            ObjectFields.Grade,
+            visible = true, readOnly = false,
             comparator = TableComparing.compareByString(ObjectFields.Grade),
             getterGenerator = { { it.grade ?: "" } }
         ),
