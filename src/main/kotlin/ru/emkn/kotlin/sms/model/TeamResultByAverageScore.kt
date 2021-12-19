@@ -8,14 +8,18 @@ class TeamResultByAverageScore : TeamResult {
 
     override var score: Map<Team, Long> = mapOf()
 
+    private operator fun Duration.div(other: Duration): Double {
+        return this.seconds.toDouble() / other.seconds
+    }
+
     override fun calculate() {
         val tempScore: MutableMap<Team, Long> = mutableMapOf()
         Competition.teams.forEach { team ->
             tempScore[team] = team.members.sumOf {
-                if (it.positionInGroup.place == 0)
+                if (it.positionInGroup == null)
                     0
                 else {
-                    val group = Competition.result.sortMembersIn(it.group)
+                    val group = it.group.personalResult.sort()
                     val groupLeaderResult = group.first().runTime
                     val time = it.runTime
                     max(0L, (100 * (2 - time / groupLeaderResult)).toLong())
@@ -23,10 +27,8 @@ class TeamResultByAverageScore : TeamResult {
             }
         }
         score = tempScore
+        saveToDB()
         state = TeamResult.State.COMPLETED
     }
 }
 
-operator fun Duration.div(other: Duration): Double {
-    return this.seconds.toDouble() / other.seconds
-}

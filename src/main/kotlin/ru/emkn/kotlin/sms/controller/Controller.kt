@@ -1,15 +1,23 @@
 package ru.emkn.kotlin.sms.controller
 
+import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.SchemaUtils
+import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.sql.transactions.transaction
+import ru.emkn.kotlin.sms.*
 import ru.emkn.kotlin.sms.io.FileLoader
 import ru.emkn.kotlin.sms.io.FileSaver
 import ru.emkn.kotlin.sms.io.Loader
 import ru.emkn.kotlin.sms.io.Saver
-import ru.emkn.kotlin.sms.model.Competition
-import ru.emkn.kotlin.sms.model.Team
+import ru.emkn.kotlin.sms.model.*
+import java.io.File
 import java.nio.file.Path
+import kotlin.io.path.absolute
 import kotlin.io.path.extension
+import kotlin.io.path.nameWithoutExtension
 
 enum class State {
+    EMPTY,
     CREATED,
     ANNOUNCED,
     REGISTER_OUT,
@@ -18,19 +26,27 @@ enum class State {
 }
 
 object CompetitionController {
-    var state: State = State.CREATED
+    var state: State = State.EMPTY
 
 
-    fun announceFromPath(event: Path, routes: Path) {
+    fun announceFromPath(event: Path?, checkpoints: Path?, routes: Path?) {
+        event ?: throw IllegalArgumentException("event is not chosen")
+        checkpoints ?: throw IllegalArgumentException("checkpoints are not chosen")
+        routes ?: throw IllegalArgumentException("routes are not chosen")
+
         val eventLoader = getLoader(event)
+        val checkPoints = getLoader(checkpoints)
         val routesLoader = getLoader(routes)
-        announce(eventLoader, routesLoader)
+        announce(eventLoader, checkPoints, routesLoader)
     }
 
-    private fun announce(eventLoader: Loader, routesLoader: Loader) {
+    private fun announce(eventLoader: Loader, checkpointsLoader: Loader, routesLoader: Loader) {
         require(state == State.CREATED)
-        Competition.loadEvent(eventLoader)
-        Competition.loadRoutes(routesLoader)
+        transaction {
+            Competition.loadEvent(eventLoader)
+            Competition.loadCheckpoints(checkpointsLoader)
+            Competition.loadRoutes(routesLoader)
+        }
         state = State.ANNOUNCED
     }
 
@@ -42,37 +58,47 @@ object CompetitionController {
 
     private fun register(groupLoader: Loader, teamLoader: Loader) {
         require(state == State.ANNOUNCED)
-        Competition.loadGroups(groupLoader)
-        Competition.loadTeams(teamLoader)
+        transaction {
+            Competition.loadGroups(groupLoader)
+            Competition.loadTeams(teamLoader)
+        }
         state = State.REGISTER_OUT
     }
 
     fun toss() {
         require(state == State.REGISTER_OUT)
-        Competition.toss()
+        transaction {
+            Competition.toss()
+        }
         state = State.TOSSED
     }
 
     fun groupsAndTossFromPath(group: Path, toss: Path) {
         require(state == State.ANNOUNCED)
+        state = State.TOSSED
         val groupLoader = getLoader(group)
         val tossLoader = getLoader(toss)
-        Competition.loadGroups(groupLoader)
-        Competition.toss(tossLoader)
-        Competition.teams.addAll(Team.byName.values.toSet())
-        state = State.TOSSED
+        transaction {
+            Competition.loadGroups(groupLoader)
+            Competition.toss(tossLoader)
+            Competition.teams.addAll(Team.all().toSet())
+        }
     }
 
     fun registerResultsFromPath(checkPoints: Path) {
         require(state == State.TOSSED)
-        val checkPointLoader = getLoader(checkPoints)
-        Competition.loadDump(checkPointLoader)
+        transaction {
+            val checkPointLoader = getLoader(checkPoints)
+            Competition.loadDump(checkPointLoader)
+        }
         state = State.FINISHED
     }
 
-    fun calculatePersonalResults() {
+    fun calculateResult() {
         require(state == State.FINISHED)
-        Competition.calculateResult()
+        transaction {
+            Competition.calculateResult()
+        }
     }
 
     private fun getLoader(path: Path): Loader {
@@ -90,14 +116,67 @@ object CompetitionController {
         }
     }
 
-    fun saveResultsToPath(results: Path) =
+    fun saveResultsToPath(results: Path) = transaction {
         getSaver(results).saveResults()
+    }
 
-    fun saveTossToPath(toss: Path) =
+    fun saveTossToPath(toss: Path) = transaction {
         getSaver(toss).saveToss()
+    }
 
-    fun saveTeamResultsToPath(results: Path) =
+    fun saveTeamResultsToPath(results: Path) = transaction {
         getSaver(results).saveTeamResults()
+    }
 
+    fun getControllerState() = state
+
+    private fun getDBState(): State {
+        var res: State = State.CREATED
+
+        transaction {
+            if (!Checkpoint.all().empty()) {
+                res = State.ANNOUNCED
+            } else if (!Group.all().empty()) {
+                res = State.REGISTER_OUT
+            } else if (!TossTable.selectAll().empty()) {
+                res = State.TOSSED
+            } else if (!PersonalResultTable.selectAll().empty()) {
+                res = State.FINISHED
+            }
+        }
+
+        state = res
+        return res
+    }
+
+    fun createDB(file: File?) {
+        if (file == null) throw IllegalArgumentException("File was not chosen")
+        if (file.exists()) throw IllegalArgumentException("File already exists")
+        file.createNewFile()
+        connectDB(file)
+    }
+
+    fun connectDB(file: File?) {
+        require(state == State.EMPTY)
+        if (file == null) throw IllegalArgumentException("File wasn't chosen")
+        if (!file.isFile) throw IllegalStateException("It must be a file, not a directory")
+        if (!file.canRead()) throw IllegalStateException("File does not readable")
+        if (!file.canWrite()) throw IllegalStateException("File does not writable")
+        var fileName = file.toPath().toAbsolutePath().toString()
+        if (fileName.takeLast(6) == ".mv.db") {
+            fileName = fileName.dropLast(6)
+        } else {
+            throw IllegalArgumentException("File should has extension .mv.db")
+        }
+        Database.connect("$DB_HEADER:$fileName", driver = DB_DRIVER)
+
+        transaction {
+            DB_TABLES.forEach {
+                SchemaUtils.create(it)
+            }
+        }
+        getDBState()
+    }
 }
+
 
