@@ -7,6 +7,7 @@ import ru.emkn.kotlin.sms.io.Loader
 import ru.emkn.kotlin.sms.io.Saver
 import ru.emkn.kotlin.sms.model.Competition
 import ru.emkn.kotlin.sms.model.Team
+import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.extension
 
@@ -116,5 +117,18 @@ object CompetitionController {
     fun saveTeamResultsToPath(results: Path) = transaction {
         getSaver(results).saveTeamResults()
     }
+
+    fun loadCompetitionFromDataBase(path: File?) {
+        TODO()
+    }
+
+    fun createCompetitionDataBaseAtPath(path: File?) {
+        TODO()
+    }
+
+    fun getDataBaseState(): State {
+        TODO()
+    }
 }
+
 

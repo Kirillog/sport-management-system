@@ -1,6 +1,7 @@
 package ru.emkn.kotlin.sms.view.creators
 
 import ru.emkn.kotlin.sms.ObjectFields
+import ru.emkn.kotlin.sms.controller.Creator
 import ru.emkn.kotlin.sms.controller.Editor
 import ru.emkn.kotlin.sms.model.Event
 
@@ -13,7 +14,7 @@ class EventCreator : ItemCreator<Event>() {
     )
 
     override fun createAction(input: Map<ObjectFields, String>) {
-        Editor.createEventFrom(input)
+        Creator.createEventFrom(input)
     }
 
 }

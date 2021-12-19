@@ -14,26 +14,31 @@ enum class Target {
 }
 
 val headers = mapOf(
-    "Название группы" to "name",
-    "Группа" to "group",
-    "Фамилия" to "surname",
-    "Имя" to "name",
-    "Результат" to "resultType",
-    "Тип" to "type",
-    "Количество К/П" to "amount",
-    "Название" to "name",
-    "Г.р." to "birthdayYear",
-    "Разр." to "grade",
-    "Дистанция" to "routeName",
-    "Команда" to "team",
-    "Дата" to "date",
-    "Номер" to "participantId",
-    "Время старта" to "startTime",
-    "Время" to "time",
-    "Полный" to "full",
-    "Выборочный" to "selective",
-    "Стоимость" to "weight",
-    "Номер К/П" to "name"
+    "Название группы" to ObjectFields.Name,
+    "Группа" to ObjectFields.Group,
+    "Фамилия" to ObjectFields.Surname,
+    "Имя" to ObjectFields.Name,
+    "Результат" to ObjectFields.ResultType,
+    "Тип" to ObjectFields.Type,
+    "Количество К/П" to ObjectFields.Amount,
+    "Название" to ObjectFields.Name,
+    "Г.р." to ObjectFields.BirthdayYear,
+    "Разр." to ObjectFields.Grade,
+    "Дистанция" to ObjectFields.RouteName,
+    "Команда" to ObjectFields.Team,
+    "Дата" to ObjectFields.Date,
+    "Номер" to ObjectFields.ID,
+    "Время старта" to ObjectFields.StartTime,
+    "Время" to ObjectFields.Time,
+    "Номер К/П" to ObjectFields.Name,
+    "Стоимость" to ObjectFields.Weight
+)
+
+val english = mapOf(
+    "Полный" to "Full",
+    "Стоимость" to "Weight",
+    "Время" to "Time",
+    "Выборочный" to "Selective"
 )
 
 /**
@@ -66,18 +71,6 @@ class ArgumentsFormat(parser: ArgParser) {
     ).default<String>("competitions")
 }
 
-enum class ObjectFields {
-    ID,
-    Name,
-    Surname,
-    Group,
-    Team,
-    BirthdayYear,
-    Grade,
-    StartTime,
-    Date
-}
-
 const val maxTextLength = 127
 
 enum class ObjectFields {
@@ -85,10 +78,19 @@ enum class ObjectFields {
     Name,
     Surname,
     Group,
+    Time,
     Team,
     BirthdayYear,
     Grade,
     StartTime,
-    Date
+    Date,
+    RouteName,
+    CheckPoints,
+    Type,
+    Amount,
+    Weight,
+    ResultType,
+    Full,
+    Selective
 }
 

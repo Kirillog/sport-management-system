@@ -8,7 +8,7 @@ import ru.emkn.kotlin.sms.view.creators.ParticipantCreator
 class ParticipantsTable : Table<Participant>() {
 
     private val participants
-        get() = Participant.byId.values.toList()
+        get() = Participant.all()
 
     override val header = TableHeader(listOf(
         TableColumn<Participant>(

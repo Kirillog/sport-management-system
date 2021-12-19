@@ -53,20 +53,6 @@ object Competition {
         checkpoints.add(checkpoint)
     }
 
-    fun add(route: Route) {
-        routes.add(route)
-    }
-
-    fun add(team: Team) {
-        teams.add(team)
-    }
-
-    fun add(group: Group) {
-        groups.add(group)
-    }
-
-    fun add(participant: Participant) {}
-
     fun calculateResult() {
         groups.forEach {
             it.personalResult.calculate()
