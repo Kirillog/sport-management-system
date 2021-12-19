@@ -11,16 +11,16 @@ object Competition {
 
     var event = Event("Standard", LocalDate.of(2020, 1, 1))
     var toss = Toss()
-    val checkPoints: MutableSet<CheckPoint> = mutableSetOf()
+    val checkpoints: MutableSet<Checkpoint> = mutableSetOf()
+    val timestamps: MutableSet<Timestamp> = mutableSetOf()
     val routes: MutableSet<Route> = mutableSetOf()
     val teams: MutableSet<Team> = mutableSetOf()
     val groups: MutableSet<Group> = mutableSetOf()
 
     var teamResult: TeamResult = TeamResultByAverageScore()
-    var result: Result = ResultByTime()
 
     fun loadGroups(loader: Loader) {
-        groups.addAll(loader.loadGroups())
+        loader.loadGroups()
     }
 
     fun loadTeams(loader: Loader) {
@@ -28,7 +28,29 @@ object Competition {
     }
 
     fun loadRoutes(loader: Loader) {
-        routes.addAll(loader.loadRoutes())
+        loader.loadRoutes()
+    }
+
+    fun add(route: Route) {
+        routes.add(route)
+    }
+
+    fun add(team: Team) {
+        teams.add(team)
+    }
+
+    fun add(group: Group) {
+        groups.add(group)
+    }
+
+    fun add(participant: Participant) {}
+
+    fun add(timestamp: Timestamp) {
+        timestamps.add(timestamp)
+    }
+
+    fun add(checkpoint: Checkpoint) {
+        checkpoints.add(checkpoint)
     }
 
     fun add(route: Route) {
@@ -46,7 +68,9 @@ object Competition {
     fun add(participant: Participant) {}
 
     fun calculateResult() {
-        result.calculate()
+        groups.forEach {
+            it.personalResult.calculate()
+        }
         teamResult.calculate()
     }
 
@@ -56,7 +80,6 @@ object Competition {
 
     fun loadDump(loader: Loader) {
         RuntimeDump.addAllTimestamps(loader.loadTimestamps())
-        checkPoints.addAll(RuntimeDump.timeStampDump.map { it.checkPoint })
     }
 
     fun toss() {
@@ -66,5 +89,9 @@ object Competition {
 
     fun toss(loader: Loader) {
         toss.build(loader)
+    }
+
+    fun loadCheckpoints(loader: Loader) {
+        checkpoints.addAll(loader.loadCheckpoints())
     }
 }

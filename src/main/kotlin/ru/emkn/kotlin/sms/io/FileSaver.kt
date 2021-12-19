@@ -3,23 +3,23 @@ package ru.emkn.kotlin.sms.io
 import ru.emkn.kotlin.sms.FileType
 import ru.emkn.kotlin.sms.model.Competition
 import ru.emkn.kotlin.sms.model.Group
-import ru.emkn.kotlin.sms.model.formatterForPersonalResults
+import ru.emkn.kotlin.sms.model.Participant
 import java.io.File
 
 class FileSaver(file: File) : Saver {
-    val writer: Writer = Writer(file, FileType.CSV)
+    private val writer: Writer = Writer(file, FileType.CSV)
     override fun saveResults() {
         writer.add(
             listOf(
-                "Место", "Номер", "Имя", "Фамилия", "Г.р.", "Разр.", "Время старта", "Время финиша", "Отставание"
+                "Место", "Номер", "Имя", "Фамилия", "Г.р.", "Разр.", "Время старта", "Время финиша", "Штраф", "Отставание"
             )
         )
 
         Competition.groups.forEach { group ->
             writer.add(group.name)
-            val sortedGroup = Competition.result.sortMembersIn(group)
+            val sortedGroup = group.personalResult.sort()
             sortedGroup.forEach { participant ->
-                writer.add(participant) { formatterForPersonalResults(it) }
+                writer.add(participant) { Participant.formatterForPersonalResults(it) }
             }
         }
         writer.write()
@@ -28,7 +28,7 @@ class FileSaver(file: File) : Saver {
 
     override fun saveToss() {
         writer.add(listOf("Номер", "Имя", "Фамилия", "Г.р.", "Команда", "Разр.", "Время старта"))
-        writer.addAll(Group.byName.values.toList())
+        writer.addAll(Group.all().toList())
         writer.write()
     }
 
