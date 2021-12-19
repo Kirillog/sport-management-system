@@ -1,6 +1,7 @@
 package ru.emkn.kotlin.sms.controller
 
 import mu.KotlinLogging
+import org.jetbrains.exposed.sql.deleteWhere
 import ru.emkn.kotlin.sms.controller.Creator.convert
 import ru.emkn.kotlin.sms.model.*
 import java.time.LocalDate
@@ -82,4 +83,38 @@ object Editor {
             throw err
         }
     }
+
+    fun deleteParticipant(id: Int) {
+        ParticipantTable.deleteWhere { ParticipantTable.id eq id }
+        TossTable.deleteWhere { TossTable.participantID eq id }
+        PersonalResultTable.deleteWhere { ParticipantTable.id eq id }
+        TimestampTable.deleteWhere { TimestampTable.id eq id }
+        logger.info { "Participant with id $id was deleted" }
+    }
+
+    fun deleteGroup(id: Int) {
+        val members = Group.findById(id)?.members ?: return
+        members.forEach { member ->
+            deleteParticipant(member.id.value)
+        }
+        GroupTable.deleteWhere { GroupTable.id eq id }
+        logger.info { "Group with id $id was deleted" }
+    }
+
+    fun deleteTeam(id: Int) {
+        val members = Team.findById(id)?.members ?: return
+        members.forEach { member ->
+            deleteParticipant(member.id.value)
+        }
+        TeamResultTable.deleteWhere { TeamResultTable.teamID eq id }
+        TeamTable.deleteWhere { TeamTable.id eq id }
+        logger.info { "Team with id $id was deleted" }
+    }
+
+    fun deleteRoute(id: Int) {
+        val route = Route.findById(id) ?: return
+        RouteTable.deleteWhere { RouteTable.id eq id }
+        // TODO()
+    }
+
 }
