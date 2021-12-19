@@ -97,6 +97,7 @@ class Participant(id: EntityID<Int>) : IntEntity(id), SingleLineWritable {
             participant.grade,
             participant.startTime.format(DateTimeFormatter.ISO_LOCAL_TIME),
             participant.finishTime?.format(DateTimeFormatter.ISO_LOCAL_TIME),
+            participant.penalty,
             participant.positionInGroup?.deltaFromLeader
         )
     }
