@@ -173,7 +173,7 @@ class CSVReader(file: File) : Reader(file) {
                 null
             }
         }
-        val participants = correctedTable.mapNotNull {
+        val participants = correctedTable.sortedBy { it["participantId"]?.toInt() }.mapNotNull {
             try {
                 Creator.createParticipantFrom(it)
             } catch (err: IllegalArgumentException) {

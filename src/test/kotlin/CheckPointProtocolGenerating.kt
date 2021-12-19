@@ -17,7 +17,7 @@ import kotlin.random.Random
 data class CheckPointsProtocol(val checkPoint: Checkpoint, val protocol: List<Timestamp>) :
     MultilineWritable {
     override fun toMultiline(): List<List<String>> {
-        return listOf(listOf(checkPoint.id.toString())) + listOf(listOf("Номер", "Время")) +
+        return listOf(listOf(checkPoint.name)) + listOf(listOf("Номер", "Время")) +
                 protocol.map { listOf(it.participant.id.toString(), it.time.format(DateTimeFormatter.ISO_LOCAL_TIME)) }
     }
 }
@@ -26,7 +26,7 @@ data class ParticipantsProtocol(val participant: Participant, val protocol: List
     MultilineWritable {
     override fun toMultiline(): List<List<String>> {
         return listOf(listOf(participant.id.toString())) + listOf(listOf("Номер пункта", "Время")) +
-                protocol.map { listOf(it.checkpoint.id.toString(), it.time.format(DateTimeFormatter.ISO_LOCAL_TIME)) }
+                protocol.map { listOf(it.checkpoint.name, it.time.format(DateTimeFormatter.ISO_LOCAL_TIME)) }
     }
 }
 
@@ -52,8 +52,8 @@ fun generateParticipantsProtocol(
 
 fun convertParticipantProtocolsIntoCheckPointProtocols(participantProtocols: List<ParticipantsProtocol>): List<CheckPointsProtocol> {
     return participantProtocols.flatMap { it.protocol }
-        .groupBy { it.checkpoint.id }
-        .map { CheckPointsProtocol(Checkpoint(it.key), it.value) }
+        .groupBy { it.checkpoint }
+        .map { CheckPointsProtocol(it.key, it.value) }
 }
 
 fun generateCheckPointProtocols(
@@ -80,7 +80,7 @@ fun generateCheckPointProtocols(
 
     val checkPointProtocols = convertParticipantProtocolsIntoCheckPointProtocols(participantsProtocols)
     for (protocol in checkPointProtocols) {
-        val writer = Writer(File("$protocolsDir/checkpoint${protocol.checkPoint.id}.csv"), FileType.CSV)
+        val writer = Writer(File("$protocolsDir/checkpoint${protocol.checkPoint.name}.csv"), FileType.CSV)
         writer.add(protocol)
         writer.write()
     }

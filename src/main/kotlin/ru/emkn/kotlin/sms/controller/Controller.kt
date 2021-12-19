@@ -105,14 +105,16 @@ object CompetitionController {
         }
     }
 
-    fun saveResultsToPath(results: Path) =
+    fun saveResultsToPath(results: Path) = transaction {
         getSaver(results).saveResults()
+    }
 
     fun saveTossToPath(toss: Path) = transaction {
         getSaver(toss).saveToss()
     }
 
-    fun saveTeamResultsToPath(results: Path) =
+    fun saveTeamResultsToPath(results: Path) = transaction {
         getSaver(results).saveTeamResults()
+    }
 }
 

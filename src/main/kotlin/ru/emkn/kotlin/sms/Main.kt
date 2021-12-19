@@ -58,6 +58,6 @@ fun main(args: Array<String>): Unit = mainBody {
     CompetitionController.registerResultsFromPath(checkPoints = path.resolve("checkpoints"))
 
     CompetitionController.calculateResult()
-//    CompetitionController.saveResultsToPath(path.resolve("protocols/results.csv"))
-//    CompetitionController.saveTeamResultsToPath(path.resolve("protocols/team_results.csv"))
+    CompetitionController.saveResultsToPath(path.resolve("protocols/results.csv"))
+    CompetitionController.saveTeamResultsToPath(path.resolve("protocols/team_results.csv"))
 }

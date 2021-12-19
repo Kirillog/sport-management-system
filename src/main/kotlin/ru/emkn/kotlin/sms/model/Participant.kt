@@ -5,6 +5,7 @@ import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.Column
+import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
 import ru.emkn.kotlin.sms.MAX_TEXT_FIELD_SIZE
 import ru.emkn.kotlin.sms.io.SingleLineWritable
@@ -69,7 +70,10 @@ class Participant(id: EntityID<Int>) : IntEntity(id), SingleLineWritable {
             grade: String?
         ): Participant {
             val participant = create(name, surname, birthdayYear, groupName, teamName, grade)
-            participant.startTime = startTime
+            TossTable.insert {
+                it[participantID] = participant.id
+                it[this.startTime] = startTime
+            }
             return participant
         }
 
@@ -101,7 +105,9 @@ class Participant(id: EntityID<Int>) : IntEntity(id), SingleLineWritable {
     var surname by ParticipantTable.surname
     var birthdayYear by ParticipantTable.birthdayYear
     var grade: String? by ParticipantTable.grade
-    val way: List<TimeStamp> = TODO() // by Checkpoint referrersOn ParticipantTable.participantID
+
+    val timestamps by Timestamp referrersOn TimestampTable.participantID
+
     private var groupID by ParticipantTable.groupID
     private var teamID by ParticipantTable.teamID
 

@@ -25,7 +25,7 @@ abstract class Result(open val group: Group) {
 
     private fun fillPositions() {
         val tempPositionInGroup = mutableMapOf<Participant, PositionInGroup>()
-        val sortedGroup = sort()
+        val sortedGroup = sortBeforeSaving()
         val leaderPenalty = penalty[sortedGroup[0]]
         sortedGroup.forEachIndexed { place, participant ->
             tempPositionInGroup[participant] = PositionInGroup(
@@ -33,11 +33,16 @@ abstract class Result(open val group: Group) {
                 penalty[participant] - leaderPenalty
             )
         }
+        positionInGroup = tempPositionInGroup
     }
 
-    fun sort() = participantWay.keys.sortedBy {
-        it.penalty
-    }
+    private fun sortBeforeSaving() =
+        participantWay.keys.sortedBy {
+            penalty[it]
+        }
+
+    fun sort() =
+        group.members.filter { it.penalty != null }.sortedBy { it.penalty }
 
     private fun fillFinishTime() {
         participantWay = group.members.associateWith { participant -> participant.way.sortedBy { it.time } }
@@ -64,7 +69,7 @@ abstract class Result(open val group: Group) {
     abstract fun fillPenalty()
 
     private fun saveToDB() {
-        Participant.all().forEach { participant ->
+        group.members.forEach { participant ->
             ResultTable.insert {
                 it[participantID] = participant.id
                 it[finishTime] = this@Result.finishTime[participant]
