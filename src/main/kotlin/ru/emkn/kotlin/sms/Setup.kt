@@ -2,8 +2,11 @@ package ru.emkn.kotlin.sms
 
 import com.xenomachina.argparser.ArgParser
 import com.xenomachina.argparser.default
+import ru.emkn.kotlin.sms.model.*
 
 const val MAX_TEXT_FIELD_SIZE = 127
+const val DB_HEADER = "jdbc:h2"
+const val DB_DRIVER = "org.h2.Driver"
 
 enum class FileType {
     JSON, CSV
@@ -12,6 +15,20 @@ enum class FileType {
 enum class Target {
     TOSS, PERSONAL_RESULT, TEAM_RESULT
 }
+
+val DB_TABLES = listOf(
+    RouteCheckpointsTable,
+    TossTable,
+    PersonalResultTable,
+    TeamResultTable,
+    TimestampTable,
+    CheckpointTable,
+    ParticipantTable,
+    GroupTable,
+    RouteTable,
+    TeamTable
+)
+
 
 val headers = mapOf(
     "Название группы" to "name",

@@ -18,21 +18,8 @@ fun main(args: Array<String>): Unit = mainBody {
     File("./data/testDB.mv.db").delete()
     Database.connect("jdbc:h2:./data/testDB", driver = "org.h2.Driver")
 
-    val dbTables = listOf(
-        RouteCheckpointsTable,
-        TossTable,
-        PersonalResultTable,
-        TeamResultTable,
-        TimestampTable,
-        CheckpointTable,
-        ParticipantTable,
-        GroupTable,
-        RouteTable,
-        TeamTable
-    )
-
     transaction {
-        dbTables.forEach {
+        DB_TABLES.forEach {
             SchemaUtils.create(it)
         }
     }
