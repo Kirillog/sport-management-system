@@ -1,6 +1,7 @@
 package ru.emkn.kotlin.sms.model
 
 import org.jetbrains.exposed.dao.id.IntIdTable
+import org.jetbrains.exposed.sql.batchInsert
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.javatime.time
 import java.time.LocalTime
@@ -69,14 +70,12 @@ abstract class Result(open val group: Group) {
     abstract fun fillPenalty()
 
     private fun saveToDB() {
-        group.members.forEach { participant ->
-            ResultTable.insert {
-                it[participantID] = participant.id
-                it[finishTime] = this@Result.finishTime[participant]
-                it[placeInGroup] = this@Result.positionInGroup[participant]?.place
-                it[deltaFromLeader] = this@Result.positionInGroup[participant]?.deltaFromLeader
-                it[penalty] = this@Result.penalty[participant]
-            }
+        ResultTable.batchInsert(group.members, false, false) { participant ->
+            this[ResultTable.participantID] = participant.id
+            this[ResultTable.finishTime] = this@Result.finishTime[participant]
+            this[ResultTable.placeInGroup] = this@Result.positionInGroup[participant]?.place
+            this[ResultTable.deltaFromLeader] = this@Result.positionInGroup[participant]?.deltaFromLeader
+            this[ResultTable.penalty] = this@Result.penalty[participant]
         }
     }
 

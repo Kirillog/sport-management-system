@@ -88,18 +88,22 @@ class Participant(id: EntityID<Int>) : IntEntity(id), SingleLineWritable {
             participant.grade,
         )
 
-        fun formatterForPersonalResults(participant: Participant) = listOf(
-            participant.positionInGroup?.place,
-            participant.id,
-            participant.name,
-            participant.surname,
-            participant.birthdayYear,
-            participant.grade,
-            participant.startTime.format(DateTimeFormatter.ISO_LOCAL_TIME),
-            participant.finishTime?.format(DateTimeFormatter.ISO_LOCAL_TIME),
-            participant.penalty,
-            participant.positionInGroup?.deltaFromLeader
-        )
+        fun formatterForPersonalResults(participant: Participant): List<Any?> {
+            val resultQuery = ResultTable.select { ResultTable.participantID eq participant.id }.first()
+            return listOf (
+                resultQuery[ResultTable.placeInGroup],
+                participant.id,
+                participant.name,
+                participant.surname,
+                participant.birthdayYear,
+                participant.grade,
+                participant.startTime.format(DateTimeFormatter.ISO_LOCAL_TIME),
+                resultQuery[ResultTable.finishTime]?.format(DateTimeFormatter.ISO_LOCAL_TIME),
+                resultQuery[ResultTable.penalty],
+                resultQuery[ResultTable.deltaFromLeader]
+            )
+        }
+
     }
 
     var name by ParticipantTable.name
