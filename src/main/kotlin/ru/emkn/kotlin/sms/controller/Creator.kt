@@ -4,7 +4,6 @@ import com.sksamuel.hoplite.simpleName
 import mu.KotlinLogging
 import ru.emkn.kotlin.sms.ObjectFields
 import ru.emkn.kotlin.sms.english
-import ru.emkn.kotlin.sms.headers
 import ru.emkn.kotlin.sms.model.*
 import java.time.LocalDate
 import java.time.LocalTime
@@ -60,6 +59,13 @@ object Creator {
                 throw IllegalStateException(message)
             }
         }
+
+    fun createEvent(): Event = createEventFrom(
+        mapOf(
+            ObjectFields.Name to "event",
+            ObjectFields.Date to LocalDate.now().toString()
+        )
+    )
 
     fun createEventFrom(values: Map<ObjectFields, String>): Event {
         Editor.editEvent(Competition.event, values)

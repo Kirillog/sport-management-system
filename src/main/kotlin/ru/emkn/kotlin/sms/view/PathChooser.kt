@@ -13,4 +13,5 @@ class PathChooser(private val title: String) {
         return fileChooser.selectedFile
     }
 
+    fun chooseAndProcess(action: (File?) -> Unit) = action(choose())
 }

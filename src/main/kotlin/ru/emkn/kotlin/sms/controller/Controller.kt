@@ -12,6 +12,7 @@ import ru.emkn.kotlin.sms.io.Saver
 import ru.emkn.kotlin.sms.model.*
 import java.io.File
 import java.nio.file.Path
+import kotlin.io.path.absolute
 import kotlin.io.path.extension
 import kotlin.io.path.nameWithoutExtension
 
@@ -25,10 +26,14 @@ enum class State {
 }
 
 object CompetitionController {
-    var state: State = State.CREATED
+    var state: State = State.EMPTY
 
 
-    fun announceFromPath(event: Path, checkpoints: Path, routes: Path) {
+    fun announceFromPath(event: Path?, checkpoints: Path?, routes: Path?) {
+        event ?: throw IllegalArgumentException("event is not chosen")
+        checkpoints ?: throw IllegalArgumentException("checkpoints are not chosen")
+        routes ?: throw IllegalArgumentException("routes are not chosen")
+
         val eventLoader = getLoader(event)
         val checkPoints = getLoader(checkpoints)
         val routesLoader = getLoader(routes)
@@ -123,18 +128,21 @@ object CompetitionController {
         getSaver(results).saveTeamResults()
     }
 
-    fun getDBState(): State {
-        require(state == State.EMPTY)
+    fun getControllerState() = state
 
+    private fun getDBState(): State {
         var res: State = State.CREATED
-        if (!Checkpoint.all().empty()) {
-            res = State.ANNOUNCED
-        } else if (!Group.all().empty()) {
-            res = State.REGISTER_OUT
-        } else if (!TossTable.selectAll().empty()) {
-            res = State.TOSSED
-        } else if (!PersonalResultTable.selectAll().empty()) {
-            res = State.FINISHED
+
+        transaction {
+            if (!Checkpoint.all().empty()) {
+                res = State.ANNOUNCED
+            } else if (!Group.all().empty()) {
+                res = State.REGISTER_OUT
+            } else if (!TossTable.selectAll().empty()) {
+                res = State.TOSSED
+            } else if (!PersonalResultTable.selectAll().empty()) {
+                res = State.FINISHED
+            }
         }
 
         state = res
@@ -142,17 +150,25 @@ object CompetitionController {
     }
 
     fun connectDB(file: File?) {
-        if (file == null) throw IllegalStateException("File does not exist")
-        if (file.exists() && file.isFile) throw IllegalStateException("It must be a file, not a directory")
-        if (file.canRead()) throw IllegalStateException("File does not readable")
-        if (file.canWrite()) throw IllegalStateException("File does not writable")
-        Database.connect("$DB_HEADER:${file.toPath().nameWithoutExtension.toString()}", driver = DB_DRIVER)
+        require(state == State.EMPTY)
+        if (file == null) throw IllegalArgumentException("File wasn't chosen")
+        if (file.exists() && !file.isFile) throw IllegalStateException("It must be a file, not a directory")
+        if (!file.canRead()) throw IllegalStateException("File does not readable")
+        if (!file.canWrite()) throw IllegalStateException("File does not writable")
+        var fileName = file.toPath().toAbsolutePath().toString()
+        if (fileName.takeLast(6) == ".mv.db") {
+            fileName = fileName.dropLast(6)
+        } else {
+            throw IllegalArgumentException("File should has extension .mv.db")
+        }
+        Database.connect("$DB_HEADER:$fileName", driver = DB_DRIVER)
 
         transaction {
             DB_TABLES.forEach {
                 SchemaUtils.create(it)
             }
         }
+        getDBState()
     }
 }
 
