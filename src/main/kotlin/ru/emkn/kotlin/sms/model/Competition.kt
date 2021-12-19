@@ -55,7 +55,7 @@ object Competition {
 
     fun calculateResult() {
         groups.forEach {
-            it.result.calculate()
+            it.personalResult.calculate()
         }
         teamResult.calculate()
     }

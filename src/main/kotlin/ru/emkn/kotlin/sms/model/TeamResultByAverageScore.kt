@@ -19,7 +19,7 @@ class TeamResultByAverageScore : TeamResult {
                 if (it.positionInGroup == null)
                     0
                 else {
-                    val group = it.group.result.sort()
+                    val group = it.group.personalResult.sort()
                     val groupLeaderResult = group.first().runTime
                     val time = it.runTime
                     max(0L, (100 * (2 - time / groupLeaderResult)).toLong())
@@ -27,6 +27,7 @@ class TeamResultByAverageScore : TeamResult {
             }
         }
         score = tempScore
+        saveToDB()
         state = TeamResult.State.COMPLETED
     }
 }

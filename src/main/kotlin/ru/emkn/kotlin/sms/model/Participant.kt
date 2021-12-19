@@ -89,18 +89,18 @@ class Participant(id: EntityID<Int>) : IntEntity(id), SingleLineWritable {
         )
 
         fun formatterForPersonalResults(participant: Participant): List<Any?> {
-            val resultQuery = ResultTable.select { ResultTable.participantID eq participant.id }.first()
+            val resultQuery = PersonalResultTable.select { PersonalResultTable.participantID eq participant.id }.first()
             return listOf (
-                resultQuery[ResultTable.placeInGroup],
+                resultQuery[PersonalResultTable.placeInGroup],
                 participant.id,
                 participant.name,
                 participant.surname,
                 participant.birthdayYear,
                 participant.grade,
                 participant.startTime.format(DateTimeFormatter.ISO_LOCAL_TIME),
-                resultQuery[ResultTable.finishTime]?.format(DateTimeFormatter.ISO_LOCAL_TIME),
-                resultQuery[ResultTable.penalty],
-                resultQuery[ResultTable.deltaFromLeader]
+                resultQuery[PersonalResultTable.finishTime]?.format(DateTimeFormatter.ISO_LOCAL_TIME),
+                resultQuery[PersonalResultTable.penalty],
+                resultQuery[PersonalResultTable.deltaFromLeader]
             )
         }
 
@@ -140,23 +140,23 @@ class Participant(id: EntityID<Int>) : IntEntity(id), SingleLineWritable {
         }
 
     val finishTime: LocalTime?
-        get() = ResultTable.select { (ResultTable.participantID eq this@Participant.id) }
-            .first()[ResultTable.finishTime]
+        get() = PersonalResultTable.select { (PersonalResultTable.participantID eq this@Participant.id) }
+            .first()[PersonalResultTable.finishTime]
 
     val runTime: Duration
         get() = Duration.between(startTime, finishTime)
 
-    val positionInGroup: Result.PositionInGroup?
+    val positionInGroup: PersonalResult.PositionInGroup?
         get() {
-            val result = ResultTable.select { (ResultTable.participantID eq this@Participant.id) }.first()
-            val deltaFromLeader = result[ResultTable.deltaFromLeader]
-            val placeInGroup = result[ResultTable.placeInGroup]
+            val result = PersonalResultTable.select { (PersonalResultTable.participantID eq this@Participant.id) }.first()
+            val deltaFromLeader = result[PersonalResultTable.deltaFromLeader]
+            val placeInGroup = result[PersonalResultTable.placeInGroup]
             return if (deltaFromLeader == null || placeInGroup == null) null
-            else Result.PositionInGroup(placeInGroup, deltaFromLeader)
+            else PersonalResult.PositionInGroup(placeInGroup, deltaFromLeader)
         }
 
     val penalty: Int?
-        get() = ResultTable.select { (ResultTable.participantID eq this@Participant.id) }.first()[ResultTable.penalty]
+        get() = PersonalResultTable.select { (PersonalResultTable.participantID eq this@Participant.id) }.first()[PersonalResultTable.penalty]
 
     fun change(
         name: String,

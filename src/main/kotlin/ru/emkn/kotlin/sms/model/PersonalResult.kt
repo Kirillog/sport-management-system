@@ -2,11 +2,10 @@ package ru.emkn.kotlin.sms.model
 
 import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.batchInsert
-import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.javatime.time
 import java.time.LocalTime
 
-object ResultTable : IntIdTable("results") {
+object PersonalResultTable : IntIdTable("personal_results") {
     val participantID = reference("participant", ParticipantTable)
     val finishTime = time("finishTime").nullable()
     val placeInGroup = integer("place_in_group").nullable()
@@ -14,7 +13,7 @@ object ResultTable : IntIdTable("results") {
     val deltaFromLeader = integer("delta_from_leader").nullable()
 }
 
-abstract class Result(open val group: Group) {
+abstract class PersonalResult(open val group: Group) {
 
     protected var participantWay: Map<Participant, List<Timestamp>> = mapOf()
 
@@ -70,12 +69,12 @@ abstract class Result(open val group: Group) {
     abstract fun fillPenalty()
 
     private fun saveToDB() {
-        ResultTable.batchInsert(group.members, false, false) { participant ->
-            this[ResultTable.participantID] = participant.id
-            this[ResultTable.finishTime] = this@Result.finishTime[participant]
-            this[ResultTable.placeInGroup] = this@Result.positionInGroup[participant]?.place
-            this[ResultTable.deltaFromLeader] = this@Result.positionInGroup[participant]?.deltaFromLeader
-            this[ResultTable.penalty] = this@Result.penalty[participant]
+        PersonalResultTable.batchInsert(group.members, false, false) { participant ->
+            this[PersonalResultTable.participantID] = participant.id
+            this[PersonalResultTable.finishTime] = this@PersonalResult.finishTime[participant]
+            this[PersonalResultTable.placeInGroup] = this@PersonalResult.positionInGroup[participant]?.place
+            this[PersonalResultTable.deltaFromLeader] = this@PersonalResult.positionInGroup[participant]?.deltaFromLeader
+            this[PersonalResultTable.penalty] = this@PersonalResult.penalty[participant]
         }
     }
 

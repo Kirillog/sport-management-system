@@ -17,7 +17,7 @@ class FileSaver(file: File) : Saver {
 
         Competition.groups.forEach { group ->
             writer.add(group.name)
-            val sortedGroup = group.result.sort()
+            val sortedGroup = group.personalResult.sort()
             sortedGroup.forEach { participant ->
                 writer.add(participant) { Participant.formatterForPersonalResults(it) }
             }

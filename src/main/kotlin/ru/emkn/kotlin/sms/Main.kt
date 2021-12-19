@@ -4,7 +4,6 @@ import com.xenomachina.argparser.mainBody
 import mu.KotlinLogging
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
-import org.jetbrains.exposed.sql.deleteAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.emkn.kotlin.sms.controller.CompetitionController
 import ru.emkn.kotlin.sms.model.*
@@ -22,13 +21,14 @@ fun main(args: Array<String>): Unit = mainBody {
     val dbTables = listOf(
         RouteCheckpointsTable,
         TossTable,
-        ResultTable,
+        PersonalResultTable,
+        TeamResultTable,
         TimestampTable,
         CheckpointTable,
         ParticipantTable,
         GroupTable,
         RouteTable,
-        TeamTable,
+        TeamTable
     )
 
     transaction {

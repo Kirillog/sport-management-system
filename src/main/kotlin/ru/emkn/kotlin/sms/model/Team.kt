@@ -5,10 +5,10 @@ import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.Column
+import org.jetbrains.exposed.sql.select
 import ru.emkn.kotlin.sms.MAX_TEXT_FIELD_SIZE
 import ru.emkn.kotlin.sms.io.MultilineWritable
 import ru.emkn.kotlin.sms.io.SingleLineWritable
-
 
 object TeamTable : IntIdTable("teams") {
     val name: Column<String> = varchar("name", MAX_TEXT_FIELD_SIZE)
@@ -48,8 +48,7 @@ class Team(id: EntityID<Int>) : IntEntity(id), MultilineWritable, SingleLineWrit
     val members by Participant referrersOn ParticipantTable.teamID
 
     val score
-        get() = Competition.teamResult.getScore(this)
-
+        get() = TeamResultTable.select { TeamResultTable.teamID eq id}.first()[TeamResultTable.score]
 
     fun change(name: String) {
         this.name = name

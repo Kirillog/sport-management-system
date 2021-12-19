@@ -2,7 +2,7 @@ package ru.emkn.kotlin.sms.model
 
 import java.time.Duration
 
-class ResultByWeight(group: Group) : Result(group) {
+class PersonalResultByWeight(group: Group) : PersonalResult(group) {
     override var penalty: Map<Participant, Int> = mapOf()
 
     override fun fillPenalty() {

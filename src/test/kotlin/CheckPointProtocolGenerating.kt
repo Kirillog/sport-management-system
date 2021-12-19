@@ -104,7 +104,7 @@ fun main() {
         RouteCheckpointsTable,
         TossTable,
         TimestampTable,
-        ResultTable
+        PersonalResultTable
     )
 
     transaction {

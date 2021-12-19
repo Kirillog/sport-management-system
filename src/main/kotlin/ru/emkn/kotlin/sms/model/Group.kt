@@ -12,13 +12,13 @@ import kotlin.reflect.KFunction1
 
 enum class ResultType {
     WEIGHT {
-        override val implementation = ::ResultByWeight
+        override val implementation = ::PersonalResultByWeight
     },
     TIME {
-        override val implementation = ::ResultByTime
+        override val implementation = ::PersonalResultByTime
     };
 
-    abstract val implementation: KFunction1<Group, Result>
+    abstract val implementation: KFunction1<Group, PersonalResult>
 }
 
 object GroupTable : IntIdTable("groups") {
@@ -50,7 +50,7 @@ class Group(id: EntityID<Int>) : IntEntity(id), MultilineWritable {
         fun create(name: String, resultType: ResultType, routeName: String): Group {
             return Group.new {
                 this.name = name
-                this.result = resultType.implementation(this)
+                this.personalResult = resultType.implementation(this)
                 this.routeID = RouteTable.select { RouteTable.name eq routeName }.first()[RouteTable.id]
             }
         }
@@ -61,7 +61,7 @@ class Group(id: EntityID<Int>) : IntEntity(id), MultilineWritable {
     var routeID by GroupTable.routeID
 
     // var resultType by GroupTable.resultType
-    var result: Result = ResultByTime(this)
+    var personalResult: PersonalResult = PersonalResultByTime(this)
 
     var route: Route
         get() = Route[routeID]
