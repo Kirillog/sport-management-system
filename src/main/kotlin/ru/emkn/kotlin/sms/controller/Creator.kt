@@ -2,6 +2,7 @@ package ru.emkn.kotlin.sms.controller
 
 import com.sksamuel.hoplite.simpleName
 import mu.KotlinLogging
+import org.jetbrains.exposed.sql.transactions.transaction
 import ru.emkn.kotlin.sms.ObjectFields
 import ru.emkn.kotlin.sms.english
 import ru.emkn.kotlin.sms.model.*
@@ -63,7 +64,7 @@ object Creator {
     fun createEvent(): Event = createEventFrom(
         mapOf(
             ObjectFields.Name to "event",
-            ObjectFields.Date to LocalDate.now().toString()
+            ObjectFields.Date to "20.12.2021"
         )
     )
 
@@ -151,7 +152,9 @@ object Creator {
         try {
             val name = convert<String>(values[ObjectFields.Name])
             val weight = convert<Int>(values[ObjectFields.Weight])
-            val checkpoint = Checkpoint.create(name, weight)
+            val checkpoint = transaction {
+                Checkpoint.create(name, weight)
+            }
             Competition.add(checkpoint)
             logger.debug { "Checkpoint $name was successfully created" }
             return checkpoint

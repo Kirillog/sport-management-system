@@ -149,10 +149,17 @@ object CompetitionController {
         return res
     }
 
+    fun createDB(file: File?) {
+        if (file == null) throw IllegalArgumentException("File was not chosen")
+        if (file.exists()) throw IllegalArgumentException("File already exists")
+        file.createNewFile()
+        connectDB(file)
+    }
+
     fun connectDB(file: File?) {
         require(state == State.EMPTY)
         if (file == null) throw IllegalArgumentException("File wasn't chosen")
-        if (file.exists() && !file.isFile) throw IllegalStateException("It must be a file, not a directory")
+        if (!file.isFile) throw IllegalStateException("It must be a file, not a directory")
         if (!file.canRead()) throw IllegalStateException("File does not readable")
         if (!file.canWrite()) throw IllegalStateException("File does not writable")
         var fileName = file.toPath().toAbsolutePath().toString()

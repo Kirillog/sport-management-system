@@ -3,6 +3,7 @@ package ru.emkn.kotlin.sms.view.tables
 import ru.emkn.kotlin.sms.ObjectFields
 import ru.emkn.kotlin.sms.controller.Editor
 import ru.emkn.kotlin.sms.model.Timestamp
+import ru.emkn.kotlin.sms.view.GUI
 import ru.emkn.kotlin.sms.view.creators.ItemCreator
 import ru.emkn.kotlin.sms.view.creators.TimestampCreator
 
@@ -32,7 +33,7 @@ class TimestampTable : Table<Timestamp>() {
             ObjectFields.Name,
             visible = true, readOnly = false,
             comparator = TableComparing.compareByString(ObjectFields.Name),
-            getterGenerator = { { it.checkpoint.toString() }}
+            getterGenerator = { { it.checkpoint.toString() } }
         ),
         TableColumn(
             "Participant",
@@ -59,5 +60,5 @@ class TimestampTable : Table<Timestamp>() {
     override val rows: List<TableRow>
         get() = timestamps.map { TimestampTableRow(it) }
 
-    override val itemCreator = TimestampCreator()
+    override val creatingState = GUI.State.CreateTimestamp
 }

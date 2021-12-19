@@ -14,6 +14,7 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import mu.KotlinLogging
+import org.jetbrains.exposed.sql.transactions.transaction
 import ru.emkn.kotlin.sms.ObjectFields
 import ru.emkn.kotlin.sms.view.GUI
 import kotlin.math.log
@@ -71,7 +72,7 @@ data class TableHeader<T>(val columns: List<TableColumn<T>>) {
     }
 
     fun makeTableCells(item: T, saveFunction: () -> Unit): Map<ObjectFields, TableCell> {
-        return columns.associate { it.field to TableCell(it.getterGenerator(item), saveFunction) }
+        return transaction { columns.associate { it.field to TableCell(it.getterGenerator(item), saveFunction) } }
     }
 
     val comparator: Comparator<Table<T>.TableRow>

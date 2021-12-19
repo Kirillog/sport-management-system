@@ -2,11 +2,17 @@ package ru.emkn.kotlin.sms.view.tables
 
 import ru.emkn.kotlin.sms.ObjectFields
 import ru.emkn.kotlin.sms.controller.Editor
+import ru.emkn.kotlin.sms.model.Competition
 import ru.emkn.kotlin.sms.model.Event
+import ru.emkn.kotlin.sms.view.GUI
 import ru.emkn.kotlin.sms.view.TopAppBar
 import ru.emkn.kotlin.sms.view.creators.EventCreator
+import java.time.format.DateTimeFormatter
 
-class EventTable(event: Event) : Table<Event>() {
+class EventTable : Table<Event>() {
+
+    private val event
+        get() = Competition.event
 
     override val header = TableHeader(
         listOf(
@@ -21,7 +27,13 @@ class EventTable(event: Event) : Table<Event>() {
                 ObjectFields.Date,
                 visible = true, readOnly = false,
                 comparator = TableComparing.compareByLocalDate(ObjectFields.Date),
-                getterGenerator = { { it.date.toString() } }
+                getterGenerator = {
+                    {
+                        val pattern = "dd.MM.yyyy"
+                        val formatter = DateTimeFormatter.ofPattern(pattern)
+                        it.date.format(formatter)
+                    }
+                }
             )
         )
     )
@@ -39,5 +51,4 @@ class EventTable(event: Event) : Table<Event>() {
     }
 
     override val rows: List<TableRow> = listOf(EventTableRow(event))
-    override val itemCreator = EventCreator()
 }

@@ -1,15 +1,17 @@
 package ru.emkn.kotlin.sms.view.tables
 
+import org.jetbrains.exposed.sql.transactions.transaction
 import ru.emkn.kotlin.sms.ObjectFields
 import ru.emkn.kotlin.sms.controller.Editor
 import ru.emkn.kotlin.sms.model.Checkpoint
+import ru.emkn.kotlin.sms.view.GUI
 import ru.emkn.kotlin.sms.view.creators.CheckpointCreator
 import ru.emkn.kotlin.sms.view.creators.ItemCreator
 
 class CheckpointTable : Table<Checkpoint>() {
 
     private val checkpoints
-        get() = Checkpoint.all()
+        get() = transaction { Checkpoint.all().toList() }
 
     override val header = TableHeader(listOf(
         TableColumn<Checkpoint>(
@@ -29,7 +31,7 @@ class CheckpointTable : Table<Checkpoint>() {
         TableColumn(
             "Weight",
             ObjectFields.Weight,
-            visible = false, readOnly = false,
+            visible = true, readOnly = false,
             comparator = TableComparing.compareByInt(ObjectFields.Weight),
             getterGenerator = { { it.weight.toString() } }
         )
@@ -48,8 +50,7 @@ class CheckpointTable : Table<Checkpoint>() {
         }
     }
 
-    override val itemCreator: ItemCreator<Checkpoint>
-        get() = CheckpointCreator()
+    override val creatingState = GUI.State.CreateCheckpoint
 
     override val rows: List<TableRow>
         get() = checkpoints.map { CheckpointTableRow(it) }

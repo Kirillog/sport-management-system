@@ -1,14 +1,16 @@
 package ru.emkn.kotlin.sms.view.tables
 
+import org.jetbrains.exposed.sql.transactions.transaction
 import ru.emkn.kotlin.sms.ObjectFields
 import ru.emkn.kotlin.sms.controller.Editor
 import ru.emkn.kotlin.sms.model.Participant
+import ru.emkn.kotlin.sms.view.GUI
 import ru.emkn.kotlin.sms.view.creators.ParticipantCreator
 
 class ParticipantsTable : Table<Participant>() {
 
     private val participants
-        get() = Participant.all()
+        get() = transaction { Participant.all() }
 
     override val header = TableHeader(listOf(
         TableColumn<Participant>(
@@ -85,5 +87,5 @@ class ParticipantsTable : Table<Participant>() {
     override val rows
         get() = participants.map { ParticipantTableRow(it) }
 
-    override val itemCreator = ParticipantCreator()
+    override val creatingState = GUI.State.CreateParticipant
 }

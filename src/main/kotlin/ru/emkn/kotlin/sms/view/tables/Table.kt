@@ -24,6 +24,8 @@ const val tableDeleteButtonWidth = 10
 
 abstract class Table<T> {
 
+    open fun update() {}
+
     abstract inner class TableRow {
 
         abstract val cells: Map<ObjectFields, TableCell>
@@ -36,6 +38,7 @@ abstract class Table<T> {
 
         @Composable
         open fun draw() {
+            update()
             var rowSize by remember { mutableStateOf(IntSize.Zero) }
 
             Row(
@@ -66,7 +69,8 @@ abstract class Table<T> {
         }
 
         private fun delete() {
-            val id = getData(ObjectFields.ID).toIntOrNull() ?: throw IllegalStateException("ID is not a number")
+            val id = getData(ObjectFields.ID).toIntOrNull() ?: return
+            // TODO убрать кнопку удаления у неудаляемых объектов
             deleteAction(id)
             GUI.reload()
         }
@@ -82,7 +86,7 @@ abstract class Table<T> {
 
     abstract val header: TableHeader<T>
     abstract val rows: List<TableRow>
-    abstract val itemCreator: ItemCreator<T>
+    open val creatingState: GUI.State? = null
 
     @Composable
     open fun draw() {
@@ -94,9 +98,11 @@ abstract class Table<T> {
                 rows.sortedWith(header.comparator).forEach {
                     it.draw()
                 }
-                ActionButton("Add") {
-                    GUI.pushState(GUI.State.CreateParticipant)
-                }.draw()
+                val createState = creatingState
+                if (createState != null)
+                    ActionButton("Add") {
+                        GUI.pushState(createState)
+                    }.draw()
             }
         }
     }
