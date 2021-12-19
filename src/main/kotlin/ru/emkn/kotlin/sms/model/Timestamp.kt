@@ -29,8 +29,11 @@ class Timestamp(id: EntityID<Int>) : IntEntity(id) {
             }
         }
 
-        fun create(time: LocalTime, checkpoint: Checkpoint, participantID: EntityID<Int>): Timestamp {
-            return create(time, checkpoint.id, participantID)
+        fun create(time: LocalTime, checkpointName: String, participantID: Int): Timestamp {
+            val checkpoint = Checkpoint.findByName(checkpointName)
+            val participant = Participant.findById(participantID)
+            requireNotNull(participant)
+            return create(time, checkpoint.id, participant.id)
         }
     }
 

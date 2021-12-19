@@ -20,7 +20,7 @@ val headers = mapOf(
     "Имя" to "name",
     "Результат" to "resultType",
     "Тип" to "type",
-    "Количество необходимых К/П" to "amount",
+    "Количество К/П" to "amount",
     "Название" to "name",
     "Г.р." to "birthdayYear",
     "Разр." to "grade",
@@ -30,6 +30,8 @@ val headers = mapOf(
     "Номер" to "participantId",
     "Время старта" to "startTime",
     "Время" to "time",
+    "Полный" to "full",
+    "Выборочный" to "selective",
     "Стоимость" to "weight",
     "Номер К/П" to "name"
 )

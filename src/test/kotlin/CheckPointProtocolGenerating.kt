@@ -1,11 +1,11 @@
+import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.SchemaUtils
+import org.jetbrains.exposed.sql.transactions.transaction
 import ru.emkn.kotlin.sms.FileType
 import ru.emkn.kotlin.sms.controller.CompetitionController
 import ru.emkn.kotlin.sms.io.MultilineWritable
 import ru.emkn.kotlin.sms.io.Writer
-import ru.emkn.kotlin.sms.model.Checkpoint
-import ru.emkn.kotlin.sms.model.Participant
-import ru.emkn.kotlin.sms.model.Route
-import ru.emkn.kotlin.sms.model.Timestamp
+import ru.emkn.kotlin.sms.model.*
 import java.io.File
 import java.nio.file.Path
 import java.time.LocalTime
@@ -26,7 +26,7 @@ data class ParticipantsProtocol(val participant: Participant, val protocol: List
     MultilineWritable {
     override fun toMultiline(): List<List<String>> {
         return listOf(listOf(participant.id.toString())) + listOf(listOf("Номер пункта", "Время")) +
-                protocol.map { listOf(it.checkPoint.id.toString(), it.time.format(DateTimeFormatter.ISO_LOCAL_TIME)) }
+                protocol.map { listOf(it.checkpoint.id.toString(), it.time.format(DateTimeFormatter.ISO_LOCAL_TIME)) }
     }
 }
 
@@ -39,20 +39,20 @@ fun generateParticipantsProtocol(
     val startTime = participant.startTime
     val startSeconds = startTime.toSecondOfDay()
     val maxFinishSeconds: Int = maxFinishTime.toSecondOfDay()
-    val times = listOf(startTime) + List(route.checkPoints.size - 1) {
+    val times = listOf(startTime) + List(route.checkPoints.toList().size - 1) {
         val randomTime = random.nextInt(startSeconds, maxFinishSeconds)
         LocalTime.ofSecondOfDay(randomTime.toLong())
     }.sorted()
 
     return ParticipantsProtocol(
         participant,
-        route.checkPoints.zip(times) { checkpoint, time -> Timestamp(time, checkpoint, participant.id) }
+        route.checkPoints.zip(times) { checkpoint, time -> Timestamp.create(time, checkpoint.id, participant.id) }
     )
 }
 
 fun convertParticipantProtocolsIntoCheckPointProtocols(participantProtocols: List<ParticipantsProtocol>): List<CheckPointsProtocol> {
     return participantProtocols.flatMap { it.protocol }
-        .groupBy { it.checkPoint.id }
+        .groupBy { it.checkpoint.id }
         .map { CheckPointsProtocol(Checkpoint(it.key), it.value) }
 }
 
@@ -63,6 +63,7 @@ fun generateCheckPointProtocols(
 ): List<CheckPointsProtocol> {
     CompetitionController.announceFromPath(
         event = competitionPath.resolve("input/event.csv"),
+        checkpoints = competitionPath.resolve("input/checkpoints.csv"),
         routes = competitionPath.resolve("input/courses.csv")
     )
     CompetitionController.groupsAndTossFromPath(
@@ -71,7 +72,7 @@ fun generateCheckPointProtocols(
     )
 
     val participantsProtocols = mutableListOf<ParticipantsProtocol>()
-    Participant.byId.values.forEach { participant ->
+    Participant.all().forEach { participant ->
         val course = participant.group.route
         val protocol = generateParticipantsProtocol(participant, course, LocalTime.MAX, random)
         participantsProtocols.add(protocol)
@@ -89,9 +90,36 @@ fun generateCheckPointProtocols(
 fun main() {
     val random = Random(0)
 
+    Database.connect(
+        "jdbc:h2:./data/testDB", driver = "org.h2.Driver",
+        user = "scott", password = "tiger"
+    )
+
+    val dbTables = listOf(
+        ParticipantTable,
+        GroupTable,
+        TeamTable,
+        RouteTable,
+        CheckpointTable,
+        RouteCheckpointsTable,
+        TossTable,
+        TimestampTable,
+        ResultTable
+    )
+
+    transaction {
+        dbTables.forEach {
+            SchemaUtils.create(it)
+//            it.deleteAll()
+        }
+    }
+
     val protocolsDir = "competitions/competition-1/checkpoints"
     if (!File(protocolsDir).exists()) {
         File(protocolsDir).mkdirs()
     }
-    generateCheckPointProtocols(Path("competitions/competition-1"), Path(protocolsDir), random)
+    transaction {
+        generateCheckPointProtocols(Path("competitions/competition-1"), Path(protocolsDir), random)
+        val t = 0
+    }
 }

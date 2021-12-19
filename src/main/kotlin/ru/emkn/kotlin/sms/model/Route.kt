@@ -12,7 +12,7 @@ import ru.emkn.kotlin.sms.io.SingleLineWritable
 
 enum class RouteType {
     FULL,
-    CHOOSABLE
+    SELECTIVE
 }
 
 object RouteTable : IntIdTable("routes") {
@@ -24,7 +24,7 @@ object RouteTable : IntIdTable("routes") {
 /**
  * A class for storing a route along which one group of participants runs.
  */
-abstract class Route(id: EntityID<Int>) : IntEntity(id), SingleLineWritable {
+class Route(id: EntityID<Int>) : IntEntity(id), SingleLineWritable {
     companion object : IntEntityClass<Route>(RouteTable) {
         fun findByName(name: String): Route =
             Route.find { RouteTable.name eq name }.first()
@@ -68,8 +68,8 @@ abstract class Route(id: EntityID<Int>) : IntEntity(id), SingleLineWritable {
     fun checkCorrectness(timestamps: List<Timestamp>): Boolean =
         when (type) {
             RouteType.FULL ->
-                checkPoints == timestamps.map { it.checkpoint }
-            RouteType.CHOOSABLE ->
+                checkPoints.toList() == timestamps.map { it.checkpoint }
+            RouteType.SELECTIVE ->
                 checkPoints.toSet() == timestamps.map { it.checkpoint }.toSet()
         }
 
@@ -92,7 +92,7 @@ class Checkpoint(id: EntityID<Int>) : IntEntity(id) {
         fun create(name: String, weight: Int): Checkpoint =
             Checkpoint.new {
                 this.name = name
-                this.weigth = weight
+                this.weight = weight
             }
 
 
@@ -103,7 +103,7 @@ class Checkpoint(id: EntityID<Int>) : IntEntity(id) {
             !Checkpoint.find { CheckpointTable.name eq name }.empty()
     }
 
-    var weigth by CheckpointTable.weight
+    var weight by CheckpointTable.weight
     var name by CheckpointTable.name
     var routes by Route via RouteCheckpointsTable
 
@@ -114,5 +114,23 @@ class Checkpoint(id: EntityID<Int>) : IntEntity(id) {
             it[this.route] = route.id
             it[this.positionInRoute] = positionInRoute
         }
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as Checkpoint
+
+        if (weight != other.weight) return false
+        if (name != other.name) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = weight
+        result = 31 * result + name.hashCode()
+        return result
     }
 }

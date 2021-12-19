@@ -163,6 +163,16 @@ class CSVReader(file: File) : Reader(file) {
     override fun toss(): Unit? {
         val table = tableWithHeader() ?: return null
         val correctedTable = preprocess(table)
+
+        correctedTable.mapNotNull {
+            it["team"]
+        }.toSet().forEach {
+            try {
+                Creator.createTeamFrom(mapOf("name" to it))
+            } catch (err: IllegalArgumentException) {
+                null
+            }
+        }
         val participants = correctedTable.mapNotNull {
             try {
                 Creator.createParticipantFrom(it)

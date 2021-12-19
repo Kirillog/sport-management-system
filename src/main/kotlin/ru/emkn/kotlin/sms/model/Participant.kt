@@ -20,8 +20,6 @@ object ParticipantTable : IntIdTable("participants") {
 
     val groupID: Column<EntityID<Int>> = reference("groups", GroupTable)
     val teamID: Column<EntityID<Int>> = reference("teams", TeamTable)
-//    val tossID: Column<Int> = integer("toss")
-//    val resultID: Column<Int> = integer("result")
 }
 
 /**
@@ -106,6 +104,9 @@ class Participant(id: EntityID<Int>) : IntEntity(id), SingleLineWritable {
     val way: List<TimeStamp> = TODO() // by Checkpoint referrersOn ParticipantTable.participantID
     private var groupID by ParticipantTable.groupID
     private var teamID by ParticipantTable.teamID
+
+    val way: List<Timestamp>
+        get() = timestamps.toList()
 
     var team: Team
         get() = Team[teamID]

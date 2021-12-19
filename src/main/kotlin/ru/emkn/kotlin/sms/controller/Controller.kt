@@ -17,6 +17,7 @@ enum class State {
     TOSSED,
     FINISHED
 }
+
 object CompetitionController {
     var state: State = State.CREATED
 
@@ -63,6 +64,7 @@ object CompetitionController {
 
     fun groupsAndTossFromPath(group: Path, toss: Path) {
         require(state == State.ANNOUNCED)
+        state = State.TOSSED
         val groupLoader = getLoader(group)
         val tossLoader = getLoader(toss)
         transaction {
@@ -70,19 +72,22 @@ object CompetitionController {
             Competition.toss(tossLoader)
             Competition.teams.addAll(Team.all().toSet())
         }
-        state = State.TOSSED
     }
 
     fun registerResultsFromPath(checkPoints: Path) {
         require(state == State.TOSSED)
-        val checkPointLoader = getLoader(checkPoints)
-        Competition.loadDump(checkPointLoader)
+        transaction {
+            val checkPointLoader = getLoader(checkPoints)
+            Competition.loadDump(checkPointLoader)
+        }
         state = State.FINISHED
     }
 
     fun calculateResult() {
         require(state == State.FINISHED)
-        Competition.calculateResult()
+        transaction {
+            Competition.calculateResult()
+        }
     }
 
     private fun getLoader(path: Path): Loader {

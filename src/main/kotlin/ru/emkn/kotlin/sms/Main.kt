@@ -15,20 +15,27 @@ fun main(args: Array<String>): Unit = mainBody {
 
     logger.info { "Program started" }
     Database.connect(
-        "jdbc:h2:./data/testDB;AUTO_SERVER=TRUE", driver = "org.h2.Driver",
+        "jdbc:h2:./data/testDB", driver = "org.h2.Driver",
         user = "scott", password = "tiger"
     )
 
+    val dbTables = listOf(
+        ParticipantTable,
+        GroupTable,
+        TeamTable,
+        RouteTable,
+        CheckpointTable,
+        RouteCheckpointsTable,
+        TossTable,
+        TimestampTable,
+        ResultTable
+    )
+
     transaction {
-        SchemaUtils.create(
-            ParticipantTable,
-            GroupTable,
-            TeamTable,
-            RouteTable,
-            CheckpointTable,
-            RouteCheckpointsTable,
-            TossTable
-        )
+        dbTables.forEach {
+            SchemaUtils.create(it)
+//            it.deleteAll()
+        }
     }
 
     val path = Path("competitions/competition-1")
@@ -47,6 +54,8 @@ fun main(args: Array<String>): Unit = mainBody {
     CompetitionController.saveTossToPath(
         toss = path.resolve("protocols/toss.csv")
     )
+
+    CompetitionController.registerResultsFromPath(checkPoints = path.resolve("checkpoints"))
 
     CompetitionController.calculateResult()
 //    CompetitionController.saveResultsToPath(path.resolve("protocols/results.csv"))

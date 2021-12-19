@@ -2,9 +2,11 @@ package ru.emkn.kotlin.sms.controller
 
 import com.sksamuel.hoplite.simpleName
 import mu.KotlinLogging
+import ru.emkn.kotlin.sms.headers
 import ru.emkn.kotlin.sms.model.*
 import java.time.LocalDate
 import java.time.LocalTime
+import java.util.*
 import kotlin.reflect.KType
 import kotlin.reflect.full.starProjectedType
 import kotlin.reflect.jvm.jvmErasure
@@ -24,12 +26,10 @@ object Creator {
     fun convert(field: String, kType: KType): Any? =
         when (kType.jvmErasure) {
             Int::class -> field.toIntOrNull()
-                ?: throw IllegalArgumentException("Cannot parse $field as Int")
             String::class -> {
                 field.ifEmpty { null }
             }
             List::class -> field.split(",").dropLastWhile(String::isEmpty).map { element ->
-                val type = kType.arguments
                 kType.arguments.first().type?.let {
                     convert(element, it)
                 }
@@ -50,9 +50,9 @@ object Creator {
                     throw IllegalArgumentException("Cannot parse $field as Time")
                 }
             ResultType::class ->
-                ResultType.valueOf(field)
+                ResultType.valueOf(field.uppercase(Locale.getDefault()))
             RouteType::class ->
-                RouteType.valueOf(field)
+                RouteType.valueOf(field.uppercase(Locale.getDefault()))
             else -> {
                 val message = "Cannot convert essential field for ${kType.simpleName}"
                 throw IllegalStateException(message)
@@ -61,7 +61,7 @@ object Creator {
 
     fun createEventFrom(values: Map<String, String>): Event {
         Editor.editEvent(Competition.event, values)
-        logger.info { "Event was successfully created" }
+        logger.debug { "Event was successfully created" }
         return Competition.event
     }
 
@@ -69,15 +69,15 @@ object Creator {
     fun createRouteFrom(values: Map<String, String>): Route {
         try {
             val routeName = convert<String>(values["name"])
-            val routeType = convert<RouteType>(values["type"])
+            val routeType = convert<RouteType>(headers[values["type"]])
             val amountOfCheckpoint = convert<Int?>(values["amount"])
             val checkPoints = convert(values["checkPoints"] ?: "", typeOf<List<Checkpoint>>()) as List<Checkpoint>
             val route = Route.create(routeName, checkPoints, routeType, amountOfCheckpoint ?: checkPoints.size)
             Competition.add(route)
-            logger.info { "Route was successfully created" }
+            logger.debug { "Route was successfully created" }
             return route
         } catch (err: IllegalArgumentException) {
-            logger.info { "Cannot create new route" }
+            logger.debug { "Cannot create new route" }
             throw err
         }
     }
@@ -101,10 +101,10 @@ object Creator {
                 Participant.create(name, surname, birthdayYear, groupName, teamName, grade)
             }
             Competition.add(participant)
-            logger.info { "Participant was successfully created" }
+            logger.debug { "Participant was successfully created" }
             return participant
         } catch (err: IllegalArgumentException) {
-            logger.info { "Cannot create new participant" }
+            logger.debug { "Cannot create new participant" }
             throw err
         }
     }
@@ -112,16 +112,16 @@ object Creator {
     fun createGroupFrom(values: Map<String, String>): Group {
         try {
             val name = convert<String>(values["name"])
-            val resultType = convert<ResultType>(values["resultType"])
+            val resultType = convert<ResultType>(headers[values["resultType"]])
             val routeName = convert<String>(values["routeName"])
             if (!Route.checkByName(routeName))
                 throw IllegalArgumentException("Cannot find route $routeName")
             val group = Group.create(name, resultType, routeName)
             Competition.add(group)
-            logger.info { "Group was successfully created" }
+            logger.debug { "Group was successfully created" }
             return group
         } catch (err: IllegalArgumentException) {
-            logger.info { "Cannot create new group" }
+            logger.debug { "Cannot create new group" }
             throw err
         }
     }
@@ -131,10 +131,10 @@ object Creator {
             val teamName = convert<String>(values["name"])
             val team = Team.create(teamName)
             Competition.add(team)
-            logger.info { "Team was successfully created" }
+            logger.debug { "Team was successfully created" }
             return team
         } catch (err: IllegalArgumentException) {
-            logger.info { "Cannot create team" }
+            logger.debug { "Cannot create team" }
             throw err
         }
     }
@@ -145,15 +145,26 @@ object Creator {
             val weight = convert<Int>(values["weight"])
             val checkpoint = Checkpoint.create(name, weight)
             Competition.add(checkpoint)
-            logger.info { "Checkpoint $name was successfully created" }
+            logger.debug { "Checkpoint $name was successfully created" }
             return checkpoint
         } catch (err: IllegalArgumentException) {
-            logger.info { "Cannot create checkpoint" }
+            logger.debug { "Cannot create checkpoint" }
             throw err
         }
     }
 
     fun createTimeStampFrom(values: Map<String, String>): Timestamp {
-        return TODO()
+        try {
+            val participantId = convert<Int>(values["participantId"])
+            val time = convert<LocalTime>(values["time"])
+            val checkpointId = convert<String>(values["checkPointId"])
+            val timestamp = Timestamp.create(time, checkpointId, participantId)
+            Competition.add(timestamp)
+            logger.debug { "Timestamp was successfully created" }
+            return timestamp
+        } catch (err: IllegalArgumentException) {
+            logger.debug { "Cannot create timestamp" }
+            throw err
+        }
     }
 }

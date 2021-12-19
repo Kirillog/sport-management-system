@@ -15,9 +15,9 @@ object ResultTable : IntIdTable("results") {
 
 abstract class Result(open val group: Group) {
 
-    private var participantWay: Map<Participant, List<Timestamp>> = mapOf()
+    protected var participantWay: Map<Participant, List<Timestamp>> = mapOf()
 
-    private var finishTime: Map<Participant, LocalTime> = mapOf()
+    protected var finishTime: Map<Participant, LocalTime> = mapOf()
 
     private var positionInGroup: Map<Participant, PositionInGroup> = mapOf()
 
