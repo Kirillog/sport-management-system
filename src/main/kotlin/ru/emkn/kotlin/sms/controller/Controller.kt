@@ -1,17 +1,22 @@
 package ru.emkn.kotlin.sms.controller
 
+import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.SchemaUtils
+import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
+import ru.emkn.kotlin.sms.*
 import ru.emkn.kotlin.sms.io.FileLoader
 import ru.emkn.kotlin.sms.io.FileSaver
 import ru.emkn.kotlin.sms.io.Loader
 import ru.emkn.kotlin.sms.io.Saver
-import ru.emkn.kotlin.sms.model.Competition
-import ru.emkn.kotlin.sms.model.Team
+import ru.emkn.kotlin.sms.model.*
 import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.extension
+import kotlin.io.path.nameWithoutExtension
 
 enum class State {
+    EMPTY,
     CREATED,
     ANNOUNCED,
     REGISTER_OUT,
@@ -118,16 +123,36 @@ object CompetitionController {
         getSaver(results).saveTeamResults()
     }
 
-    fun loadCompetitionFromDataBase(path: File?) {
-        TODO()
+    fun getDBState(): State {
+        require(state == State.EMPTY)
+
+        var res: State = State.CREATED
+        if (!Checkpoint.all().empty()) {
+            res = State.ANNOUNCED
+        } else if (!Group.all().empty()) {
+            res = State.REGISTER_OUT
+        } else if (!TossTable.selectAll().empty()) {
+            res = State.TOSSED
+        } else if (!PersonalResultTable.selectAll().empty()) {
+            res = State.FINISHED
+        }
+
+        state = res
+        return res
     }
 
-    fun createCompetitionDataBaseAtPath(path: File?) {
-        TODO()
-    }
+    fun connectDB(file: File?) {
+        if (file == null) throw IllegalStateException("File does not exist")
+        if (file.exists() && file.isFile) throw IllegalStateException("It must be a file, not a directory")
+        if (file.canRead()) throw IllegalStateException("File does not readable")
+        if (file.canWrite()) throw IllegalStateException("File does not writable")
+        Database.connect("$DB_HEADER:${file.toPath().nameWithoutExtension.toString()}", driver = DB_DRIVER)
 
-    fun getDataBaseState(): State {
-        TODO()
+        transaction {
+            DB_TABLES.forEach {
+                SchemaUtils.create(it)
+            }
+        }
     }
 }
 
