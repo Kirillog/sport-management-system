@@ -44,6 +44,7 @@ val headers = mapOf(
     "Дистанция" to ObjectFields.RouteName,
     "Команда" to ObjectFields.Team,
     "Дата" to ObjectFields.Date,
+    "К/П" to ObjectFields.CheckPoints,
     "Номер" to ObjectFields.ID,
     "Время старта" to ObjectFields.StartTime,
     "Время" to ObjectFields.Time,

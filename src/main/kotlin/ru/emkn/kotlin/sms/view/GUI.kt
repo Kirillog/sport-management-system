@@ -24,6 +24,7 @@ import ru.emkn.kotlin.sms.view.tables.ParticipantsTable
 import ru.emkn.kotlin.sms.view.tables.TimestampTable
 import java.io.File
 
+//TODO: сделать честную переотрисовку нашего окна.
 object GUI {
     fun run() = application {
         Window(onCloseRequest = ::exitApplication, title = "Sport Management System") {

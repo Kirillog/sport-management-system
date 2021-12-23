@@ -9,6 +9,7 @@ import ru.emkn.kotlin.sms.model.*
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.*
+import kotlin.reflect.KClass
 import kotlin.reflect.KType
 import kotlin.reflect.full.starProjectedType
 import kotlin.reflect.jvm.jvmErasure
@@ -17,11 +18,12 @@ import kotlin.reflect.typeOf
 private val logger = KotlinLogging.logger { }
 
 object Creator {
+    @OptIn(ExperimentalStdlibApi::class)
     inline fun <reified T> convert(field: String?): T {
         val message = "Cannot convert essential field for ${T::class.simpleName}"
         if (field == null)
             throw IllegalStateException(message)
-        val result = convert(field, T::class.starProjectedType)
+        val result = convert(field, typeOf<T>())
         return result as T
     }
 
@@ -74,13 +76,13 @@ object Creator {
         return Competition.event
     }
 
-    @OptIn(ExperimentalStdlibApi::class)
     fun createRouteFrom(values: Map<ObjectFields, String>): Route {
         try {
             val routeName = convert<String>(values[ObjectFields.Name])
             val routeType = convert<RouteType>(english[values[ObjectFields.Type]])
             val amountOfCheckpoint = convert<Int?>(values[ObjectFields.Amount])
-            val checkPoints = convert(values[ObjectFields.CheckPoints] ?: "", typeOf<List<Checkpoint>>()) as List<Checkpoint>
+            val checkPoints = convert<List<Checkpoint>>(values[ObjectFields.CheckPoints])
+            // val checkPoints = convert(values[ObjectFields.CheckPoints] ?: "", typeOf<List<Checkpoint>>()) as List<Checkpoint>
             val route = Route.create(routeName, checkPoints, routeType, amountOfCheckpoint ?: checkPoints.size)
             Competition.add(route)
             logger.debug { "Route was successfully created" }

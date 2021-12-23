@@ -178,5 +178,3 @@ object CompetitionController {
         getDBState()
     }
 }
-
-

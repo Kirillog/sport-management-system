@@ -22,7 +22,8 @@ class CSVReader(file: File) : Reader(file) {
     private fun toObjectFields(table : List<Map<String, String>>) : List<Map<ObjectFields, String>> {
         return table.map { line ->
             line.map { entry ->
-                ObjectFields.valueOf(entry.key) to entry.value
+                val header = headers[entry.key] ?: throw IllegalStateException()
+                header to entry.value
             }.toMap()
         }
     }
@@ -83,14 +84,14 @@ class CSVReader(file: File) : Reader(file) {
                 groupName = currentGroupName.first()
                 null
             } else
-                record + ("group" to groupName)
+                record + ("Группа" to groupName)
         }
     }
 
     override fun team(): Team? {
         val name = name() ?: return null
         val table = tableWithHeader()?.map { record ->
-            record + ("team" to name)
+            record + ("Команда" to name)
         } ?: return null
         val team = Team.create(name)
         toObjectFields(table).mapNotNull {
@@ -118,7 +119,7 @@ class CSVReader(file: File) : Reader(file) {
         val table = tableWithHeader() ?: return null
         val correctedTable = toObjectFields(table.map { record ->
             val checkPoints =
-                "checkPoints" to record.filterKeys { it.toIntOrNull() != null }.values.joinToString(",")
+                "К/П" to record.filterKeys { it.toIntOrNull() != null }.values.joinToString(",")
             record.filterKeys { it.toIntOrNull() == null } + checkPoints
         })
         val routes = correctedTable.mapNotNull {
@@ -172,7 +173,7 @@ class CSVReader(file: File) : Reader(file) {
         val correctedTable = preprocess(table)
 
         toObjectFields(correctedTable.map {
-            mapOf("name" to (it["team"] ?: ""))
+            mapOf("Имя" to (it["team"] ?: ""))
         }).forEach {
             try {
                 Creator.createTeamFrom(it)
