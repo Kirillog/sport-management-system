@@ -2,6 +2,7 @@ import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.*
+import ru.emkn.kotlin.sms.FileType
 import ru.emkn.kotlin.sms.controller.CompetitionController
 import ru.emkn.kotlin.sms.controller.State
 import ru.emkn.kotlin.sms.io.FileLoader
@@ -26,7 +27,7 @@ internal class FileLoaderTest {
     }
 
     private fun <T> loadTransaction(path: Path, loads: FileLoader.() -> T): T = transaction {
-        FileLoader(path).loads()
+        FileLoader(path, FileType.CSV).loads()
     }
 
     @BeforeEach

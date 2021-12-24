@@ -4,7 +4,10 @@ import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
-import ru.emkn.kotlin.sms.*
+import ru.emkn.kotlin.sms.DB_DRIVER
+import ru.emkn.kotlin.sms.DB_HEADER
+import ru.emkn.kotlin.sms.DB_TABLES
+import ru.emkn.kotlin.sms.FileType
 import ru.emkn.kotlin.sms.io.FileLoader
 import ru.emkn.kotlin.sms.io.FileSaver
 import ru.emkn.kotlin.sms.io.Loader
@@ -12,9 +15,7 @@ import ru.emkn.kotlin.sms.io.Saver
 import ru.emkn.kotlin.sms.model.*
 import java.io.File
 import java.nio.file.Path
-import kotlin.io.path.absolute
 import kotlin.io.path.extension
-import kotlin.io.path.nameWithoutExtension
 
 enum class State {
     EMPTY,
@@ -103,8 +104,8 @@ object CompetitionController {
 
     private fun getLoader(path: Path): Loader {
         return when (path.extension) {
-            "csv" -> FileLoader(path)
-            "" -> FileLoader(path)
+            "csv" -> FileLoader(path, FileType.CSV)
+            "" -> FileLoader(path, FileType.CSV)
             else -> throw IllegalStateException("Unsupported file format for $path")
         }
     }
