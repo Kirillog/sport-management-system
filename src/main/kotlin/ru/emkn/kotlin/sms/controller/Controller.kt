@@ -135,9 +135,9 @@ object CompetitionController {
         var res: State = State.CREATED
 
         transaction {
-            if (!Checkpoint.all().empty()) {
+        if (!Checkpoint.all().empty() && !Route.all().empty() && !Event.all().empty()) {
                 res = State.ANNOUNCED
-            } else if (!Group.all().empty()) {
+            } else if (!Group.all().empty() && !Team.all().empty()) {
                 res = State.REGISTER_OUT
             } else if (!TossTable.selectAll().empty()) {
                 res = State.TOSSED

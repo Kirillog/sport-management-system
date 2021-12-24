@@ -1,5 +1,6 @@
 package ru.emkn.kotlin.sms.model
 
+import org.jetbrains.exposed.sql.transactions.transaction
 import ru.emkn.kotlin.sms.io.Loader
 import java.time.LocalDate
 
@@ -9,7 +10,13 @@ import java.time.LocalDate
  */
 object Competition {
 
-    var event: Event? = null
+    var event: Event
+        get() = transaction { Event.all().first() }
+        set(newEvent) {
+            transaction {
+                Event.create(newEvent.name, newEvent.date)
+            }
+        }
     var toss = Toss()
     val checkpoints: MutableSet<Checkpoint> = mutableSetOf()
     val timestamps: MutableSet<Timestamp> = mutableSetOf()
@@ -18,13 +25,6 @@ object Competition {
     val groups: MutableSet<Group> = mutableSetOf()
 
     var teamResult: TeamResult = TeamResultByAverageScore()
-
-    fun event(): Event {
-        event?.let {
-            return it
-        }
-        return Event("Standard", LocalDate.of(2020, 1, 1))
-    }
 
     fun loadGroups(loader: Loader) {
         loader.loadGroups()

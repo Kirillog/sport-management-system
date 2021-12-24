@@ -74,7 +74,9 @@ object Creator {
         try {
             val eventName = convert<String>(values[ObjectFields.Name])
             val data = convert<LocalDate>(values[ObjectFields.Date])
-            val event = Event(eventName, data)
+            val event = transaction {
+                Event.create(eventName, data)
+            }
             Competition.event = event
             logger.info { "Event was successfully created" }
             return event

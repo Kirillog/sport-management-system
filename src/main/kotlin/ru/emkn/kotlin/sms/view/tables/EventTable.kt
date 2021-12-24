@@ -1,5 +1,6 @@
 package ru.emkn.kotlin.sms.view.tables
 
+import org.jetbrains.exposed.sql.transactions.transaction
 import ru.emkn.kotlin.sms.ObjectFields
 import ru.emkn.kotlin.sms.controller.Editor
 import ru.emkn.kotlin.sms.model.Competition
@@ -10,7 +11,7 @@ import java.time.format.DateTimeFormatter
 class EventTable : Table<Event>() {
 
     private val event
-        get() = Competition.event()
+        get() = transaction { Event.all().toList() }
 
     override val header = TableHeader(
         listOf(
@@ -48,5 +49,6 @@ class EventTable : Table<Event>() {
         }
     }
 
-    override val rows: List<TableRow> = listOf(EventTableRow(event))
+    override val rows: List<TableRow>
+        get() = event.map { EventTableRow(it) }
 }
