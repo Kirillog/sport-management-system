@@ -49,7 +49,7 @@ class Route(id: EntityID<Int>) : IntEntity(id), SingleLineWritable {
     }
 
     var name by RouteTable.name
-    var checkPoints by Checkpoint via RouteCheckpointsTable
+    var checkpoints by Checkpoint via RouteCheckpointsTable
     var amountOfCheckpoint by RouteTable.checkpointAmount
     var type by RouteTable.type
 
@@ -68,9 +68,9 @@ class Route(id: EntityID<Int>) : IntEntity(id), SingleLineWritable {
     fun checkCorrectness(timestamps: List<Timestamp>): Boolean =
         when (type) {
             RouteType.FULL ->
-                checkPoints.toList() == timestamps.map { it.checkpoint }
+                checkpoints.toList() == timestamps.map { it.checkpoint }
             RouteType.SELECTIVE ->
-                checkPoints.toSet() == timestamps.map { it.checkpoint }.toSet()
+                checkpoints.toSet() == timestamps.map { it.checkpoint }.toSet()
         }
 
     override fun toLine(): List<Any?> {
@@ -78,7 +78,7 @@ class Route(id: EntityID<Int>) : IntEntity(id), SingleLineWritable {
             null
         else
             amountOfCheckpoint
-        return listOf(name, type.russian, amount) + checkPoints.map { it.name }
+        return listOf(name, type.russian, amount) + checkpoints.map { it.name }
     }
 
     override fun equals(other: Any?): Boolean {
@@ -88,7 +88,7 @@ class Route(id: EntityID<Int>) : IntEntity(id), SingleLineWritable {
         other as Route
 
         if (name != other.name) return false
-        if (checkPoints.toSet() != other.checkPoints.toSet()) return false
+        if (checkpoints.toSet() != other.checkpoints.toSet()) return false
         if (amountOfCheckpoint != other.amountOfCheckpoint) return false
         if (type != other.type) return false
 
@@ -97,7 +97,7 @@ class Route(id: EntityID<Int>) : IntEntity(id), SingleLineWritable {
 
     override fun hashCode(): Int {
         var result = name.hashCode()
-        result = 31 * result + checkPoints.toSet().hashCode()
+        result = 31 * result + checkpoints.toSet().hashCode()
         result = 31 * result + amountOfCheckpoint
         result = 31 * result + type.hashCode()
         return result
@@ -136,13 +136,18 @@ class Checkpoint(id: EntityID<Int>) : IntEntity(id), SingleLineWritable {
     var routes by Route via RouteCheckpointsTable
 
     fun addToRoute(route: Route) {
-        val positionInRoute = route.checkPoints.toList().size
+        val positionInRoute = route.checkpoints.toList().size
         RouteCheckpointsTable.insert {
             it[this.checkpoint] = this@Checkpoint.id
             it[this.route] = route.id
             it[this.positionInRoute] = positionInRoute
         }
     }
+
+     fun change(name: String, weight: Int) {
+         this.name = name
+         this.weight = weight
+     }
 
     override fun toLine(): List<Any?> =
         listOf(name, weight)

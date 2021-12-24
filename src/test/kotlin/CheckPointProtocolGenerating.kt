@@ -50,14 +50,14 @@ fun Generator.generateParticipantsProtocol(
         val startTime = participant.startTime
         val startSeconds = startTime.toSecondOfDay()
         val maxFinishSeconds: Int = maxFinishTime.toSecondOfDay()
-        val times = listOf(startTime) + List(route.checkPoints.toList().size - 1) {
+        val times = listOf(startTime) + List(route.checkpoints.toList().size - 1) {
             val randomTime = random.nextInt(startSeconds, maxFinishSeconds)
             LocalTime.ofSecondOfDay(randomTime.toLong())
         }.sorted()
 
         ParticipantsProtocol(
             participant,
-            route.checkPoints.zip(times) { checkpoint, time -> Timestamp.create(time, checkpoint.id, participant.id) }
+            route.checkpoints.zip(times) { checkpoint, time -> Timestamp.create(time, checkpoint.id, participant.id) }
         )
     }
 }

@@ -21,7 +21,6 @@ object CompetitionDataEditor {
 
 
     var state = mutableStateOf(EditCompetitionState.EventEditing)
-
 }
 
 @Composable

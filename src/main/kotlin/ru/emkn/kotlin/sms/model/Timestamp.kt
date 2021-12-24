@@ -4,6 +4,8 @@ import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.javatime.time
 import org.jetbrains.exposed.sql.select
 import java.time.LocalTime
@@ -53,6 +55,13 @@ class Timestamp(id: EntityID<Int>) : IntEntity(id) {
             participantID =
                 ParticipantTable.select { ParticipantTable.id eq participant.id }.first()[ParticipantTable.id]
         }
+
+    fun change(time: LocalTime, participantID: Int, checkpointName: String) {
+        this.time = time
+        this.participantID = EntityID(participantID, ParticipantTable)
+        this.checkpointID = Checkpoint.findByName(checkpointName).id
+
+    }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

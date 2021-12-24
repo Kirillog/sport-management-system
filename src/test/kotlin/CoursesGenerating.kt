@@ -62,7 +62,7 @@ fun Generator.generateCourses(
         }
         val file = path.resolve("courses.csv").toFile()
         val writer = Writer(file, FileType.CSV)
-        val maxLength = coursesList.maxOf { it.checkPoints.count() }.toInt()
+        val maxLength = coursesList.maxOf { it.checkpoints.count() }.toInt()
         writer.add(listOf("Название", "Тип", "Количество К/П") + List(maxLength) { "${it + 1}" })
         writer.addAllLines(coursesList)
         writer.write()

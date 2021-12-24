@@ -181,12 +181,11 @@ object Creator {
     }
 
     fun createTimeStampFrom(values: Map<ObjectFields, String>): Timestamp {
-        //TODO: решить конфликт имён
         try {
             val participantId = convert<Int>(values[ObjectFields.ID])
             val time = convert<LocalTime>(values[ObjectFields.Time])
-            val checkpointId = convert<String>(values[ObjectFields.Name])
-            val timestamp = Timestamp.create(time, checkpointId, participantId)
+            val checkpointName = convert<String>(values[ObjectFields.Name])
+            val timestamp = Timestamp.create(time, checkpointName, participantId)
             Competition.add(timestamp)
             logger.debug { "Timestamp was successfully created" }
             return timestamp

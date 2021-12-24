@@ -23,7 +23,6 @@ class GUI {
         ShowParticipants,
         CreateParticipant,
         CreateCheckpoint,
-        CreateRoutes,
         CreateTimestamp,
         CheckDataBaseState,
         EditAnnounceData,
@@ -34,11 +33,7 @@ class GUI {
     private val statesStack = mutableListOf(state.value)
 
     //val timestampsTable by lazy { mutableStateOf(TimestampTable()) }
-
-
     val participantsTable by lazy { mutableStateOf(ParticipantsTable()) }
-
-
     // TODO routes table
 
     fun pushState(newState: State) {
@@ -51,15 +46,6 @@ class GUI {
         state.value = statesStack.lastOrNull() ?: throw IllegalStateException("GUI stack error")
     }
 
-    enum class EditCompetitionState {
-        EventEditing,
-        CheckpointsEditing,
-        RoutesEditing
-    }
-
-
-
-
     fun pushDataBaseState() {
         pushState(
             when (CompetitionController.getControllerState()) {
@@ -69,8 +55,6 @@ class GUI {
             }
         )
     }
-
-
 }
 
 fun mainContent() {

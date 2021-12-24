@@ -87,7 +87,9 @@ object Editor {
         try {
             val routeName = convert<String>(values[ObjectFields.Name])
             val checkPoints = convert<List<Checkpoint>>(values[ObjectFields.CheckPoints])
-            route.change(routeName, checkPoints)
+            transaction {
+                route.change(routeName, checkPoints)
+            }
             logger.info { "Route was successfully edited" }
         } catch (err: IllegalArgumentException) {
             logger.info { "Cannot edit route ${route.name}" }
@@ -96,70 +98,32 @@ object Editor {
     }
 
     fun editCheckpoint(checkpoint: Checkpoint, values: Map<ObjectFields, String>) {
-        transaction {
+        try {
+            val name = convert<String>(values[ObjectFields.Name])
+            val weight = convert<Int>(values[ObjectFields.Weight])
+            transaction {
+                checkpoint.change(name, weight)
+            }
+            logger.info { "Checkpoint was successfully edited" }
+        } catch (err: IllegalArgumentException) {
+            logger.info { "Cannot edit checkpoint ${checkpoint.name}" }
+            throw err
         }
-        TODO()
     }
 
     fun editTimestamp(timestamp: Timestamp, values: Map<ObjectFields, String>) {
-        TODO()
-    }
-}
-
-object Deleter {
-
-    fun deleteParticipant(id: Int) {
-        transaction {
-            ParticipantTable.deleteWhere { ParticipantTable.id eq id }
-            TossTable.deleteWhere { TossTable.participantID eq id }
-            PersonalResultTable.deleteWhere { ParticipantTable.id eq id }
-            TimestampTable.deleteWhere { TimestampTable.id eq id }
-        }
-        logger.info { "Participant with id $id was deleted" }
-    }
-
-    fun deleteGroup(id: Int) {
-        transaction {
-            val members = Group.findById(id)?.members ?: throw IllegalStateException("No group with such id $id")
-            members.forEach { member ->
-                deleteParticipant(member.id.value)
+        try {
+            val participantId = convert<Int>(values[ObjectFields.ID])
+            val time = convert<LocalTime>(values[ObjectFields.Time])
+            val checkpointName = convert<String>(values[ObjectFields.Name])
+            transaction {
+                timestamp.change(time, participantId, checkpointName)
             }
-            GroupTable.deleteWhere { GroupTable.id eq id }
+            Competition.add(timestamp)
+            logger.debug { "Timestamp was successfully edited" }
+        } catch (err: IllegalArgumentException) {
+            logger.debug { "Cannot edit timestamp ${timestamp.id}" }
+            throw err
         }
-        logger.info { "Group with id $id was deleted" }
-    }
-
-    fun deleteTeam(id: Int) {
-        transaction {
-            val members = Team.findById(id)?.members ?: throw IllegalStateException("No team with such id $id")
-            members.forEach { member ->
-                deleteParticipant(member.id.value)
-            }
-            TeamResultTable.deleteWhere { TeamResultTable.teamID eq id }
-            TeamTable.deleteWhere { TeamTable.id eq id }
-        }
-        logger.info { "Team with id $id was deleted" }
-    }
-
-    fun deleteRoute(id: Int) {
-        transaction {
-            val route = Route.findById(id) ?: throw IllegalStateException("No route with such id $id")
-            RouteCheckpointsTable.deleteWhere { RouteCheckpointsTable.route eq route.id }
-            route.delete()
-        }
-        logger.info { "Route with id $id was deleted" }
-    }
-
-    fun deleteCheckpoint(id: Int) {
-        transaction {
-            val checkpoint = Checkpoint.findById(id) ?: throw IllegalStateException("No checkpoint with such id $id")
-            RouteCheckpointsTable.deleteWhere { RouteCheckpointsTable.checkpoint eq checkpoint.id }
-            checkpoint.delete()
-        }
-        logger.info { "Checkpoint with id $id was deleted" }
-    }
-
-    fun deleteTimestamp(id: Int) {
-        TODO()
     }
 }
