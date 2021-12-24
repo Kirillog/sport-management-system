@@ -5,7 +5,7 @@ import java.nio.file.Path
 import java.time.LocalDate
 import kotlin.random.Random
 
-fun generateEvents(path: Path, amountOfEvents: Int = 3, random: Random = Random(0)) : List<Event> {
+fun Generator.generateEvents(path: Path, amountOfEvents: Int = 3, random: Random = Random(0)): List<Event> {
     val events = List(amountOfEvents) {
         Event(
             "event$it",
