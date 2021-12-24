@@ -153,6 +153,7 @@ internal class FileLoaderTest {
         Generator.generateApplications(applicationPath)
         disconnect()
         connect()
+        CompetitionController.connectDB(File("./${path}/testDB.mv.db"))
         CompetitionController.announceFromPath(
             initPath.resolve("event.csv"),
             initPath.resolve("checkpoints.csv"),

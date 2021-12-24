@@ -173,7 +173,7 @@ class CSVReader(file: File) : Reader(file) {
         val correctedTable = preprocess(table)
 
         toObjectFields(correctedTable.map {
-            mapOf("Имя" to (it["team"] ?: ""))
+            mapOf("Имя" to (it["Команда"] ?: ""))
         }).forEach {
             try {
                 Creator.createTeamFrom(it)
@@ -181,7 +181,7 @@ class CSVReader(file: File) : Reader(file) {
                 null
             }
         }
-        val participants = toObjectFields(correctedTable.sortedBy { it["participantId"]?.toInt() }).mapNotNull {
+        val participants = toObjectFields(correctedTable.sortedBy { it["Номер"]?.toInt() }).mapNotNull {
             try {
                 Creator.createParticipantFrom(it)
             } catch (err: IllegalArgumentException) {
