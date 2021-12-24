@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import org.jetbrains.exposed.dao.id.EntityID
 import ru.emkn.kotlin.sms.ObjectFields
 import ru.emkn.kotlin.sms.view.ActionButton
 import ru.emkn.kotlin.sms.view.GUI
@@ -29,6 +30,7 @@ abstract class Table<T> {
     abstract inner class TableRow {
 
         abstract val cells: Map<ObjectFields, TableCell>
+        abstract val id: Int
 
         open val changes: Map<ObjectFields, String>
             get() = header.columns.filter { it.visible }.associate {
@@ -50,16 +52,22 @@ abstract class Table<T> {
                 horizontalArrangement = Arrangement.SpaceAround,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Box(modifier = Modifier.border(BorderStroke(1.dp, Color.Black))) {
-                    IconButton(
-                        onClick = { delete() },
-                        modifier = Modifier.size(tableDeleteButtonWidth.dp)
-                    ) {
-                        Icon(imageVector = Icons.Filled.Close, contentDescription = "Delete", tint = Color.Black)
+                if (header.deleteButton)
+                    Box(modifier = Modifier.border(BorderStroke(1.dp, Color.Black))) {
+                        IconButton(
+                            onClick = { delete() },
+                            modifier = Modifier.size(tableDeleteButtonWidth.dp)
+                        ) {
+                            Icon(imageVector = Icons.Filled.Close, contentDescription = "Delete", tint = Color.Black)
+                        }
                     }
-                }
                 val elementsInRow = header.columns.count { it.visible }
-                val cellWidth = ((rowSize.width - tableDeleteButtonWidth) / elementsInRow).dp
+
+                val cellWidth = if (header.deleteButton)
+                    ((rowSize.width - tableDeleteButtonWidth) / elementsInRow).dp
+                else
+                    (rowSize.width / elementsInRow).dp
+
                 for (columnHeader in header.columns) {
                     if (columnHeader.visible)
                         cells[columnHeader.field]?.draw(cellWidth, columnHeader.readOnly)
@@ -69,14 +77,14 @@ abstract class Table<T> {
         }
 
         private fun delete() {
-            val id = getData(ObjectFields.ID).toIntOrNull() ?: return
-            // TODO убрать кнопку удаления у неудаляемых объектов
-            deleteAction(id)
+            if (!header.deleteButton)
+                return
+            deleteAction()
             GUI.reload()
         }
 
         abstract fun saveChanges()
-        abstract fun deleteAction(id: Int)
+        open fun deleteAction() {}
 
         fun getData(field: ObjectFields): String {
             val cell = cells[field] ?: throw NoSuchElementException("No field $field in cell")

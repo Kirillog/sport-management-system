@@ -69,17 +69,18 @@ class ParticipantsTable : Table<Participant>() {
             comparator = TableComparing.compareByLocalTime(ObjectFields.StartTime),
             getterGenerator = { { it.startTime.toString() } }
         )
-    ))
+    ), deleteButton = true)
 
     inner class ParticipantTableRow(private val participant: Participant) : TableRow() {
 
+        override val id = participant.id.value
         override val cells = header.makeTableCells(participant, ::saveChanges)
 
         override fun saveChanges() {
             Editor.editParticipant(participant, changes)
         }
 
-        override fun deleteAction(id: Int) {
+        override fun deleteAction() {
             Editor.deleteParticipant(id)
         }
     }

@@ -31,7 +31,7 @@ data class TableColumn<T>(
 
 private val logger = KotlinLogging.logger {}
 
-data class TableHeader<T>(val columns: List<TableColumn<T>>) {
+class TableHeader<T>(val columns: List<TableColumn<T>>, val deleteButton: Boolean) {
 
     var orderByColumn = 0
     var reversedOrder = false
@@ -48,8 +48,14 @@ data class TableHeader<T>(val columns: List<TableColumn<T>>) {
             horizontalArrangement = Arrangement.SpaceAround
         ) {
             val columnsCount = columns.count { it.visible }
-            val columnWidth = ((rowSize.width - tableDeleteButtonWidth) / columnsCount).dp
-            Box(modifier = Modifier.width(tableDeleteButtonWidth.dp))
+
+            val columnWidth = if (deleteButton)
+                ((rowSize.width - tableDeleteButtonWidth) / columnsCount).dp
+            else
+                (rowSize.width / columnsCount).dp
+            if (deleteButton)
+                Box(modifier = Modifier.width(tableDeleteButtonWidth.dp))
+
             columns.forEachIndexed { index, column ->
                 if (!column.visible)
                     return@forEachIndexed

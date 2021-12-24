@@ -35,9 +35,11 @@ class CheckpointTable : Table<Checkpoint>() {
             comparator = TableComparing.compareByInt(ObjectFields.Weight),
             getterGenerator = { { it.weight.toString() } }
         )
-    ))
+    ), deleteButton = true)
 
     inner class CheckpointTableRow(private val checkpoint: Checkpoint) : TableRow() {
+
+        override val id = checkpoint.id.value
 
         override val cells = header.makeTableCells(checkpoint, ::saveChanges)
 
@@ -45,7 +47,7 @@ class CheckpointTable : Table<Checkpoint>() {
             Editor.editCheckpoint(checkpoint, changes)
         }
 
-        override fun deleteAction(id: Int) {
+        override fun deleteAction() {
             Editor.deleteCheckpoint(id)
         }
     }

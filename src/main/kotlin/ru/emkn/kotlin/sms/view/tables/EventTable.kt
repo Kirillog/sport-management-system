@@ -33,18 +33,17 @@ class EventTable : Table<Event>() {
                     }
                 }
             )
-        )
+        ),
+        deleteButton = false
     )
 
     inner class EventTableRow(private val event: Event) : TableRow() {
+
+        override val id = 0
         override val cells = header.makeTableCells(event, ::saveChanges)
 
         override fun saveChanges() {
             Editor.editEvent(event, changes)
-        }
-
-        override fun deleteAction(id: Int) {
-            TopAppBar.setMessage("You cant delete event metadata. Only change")
         }
     }
 
