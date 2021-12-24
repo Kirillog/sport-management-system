@@ -2,11 +2,14 @@ package ru.emkn.kotlin.sms.controller
 
 import com.sksamuel.hoplite.simpleName
 import mu.KotlinLogging
-import ru.emkn.kotlin.sms.headers
+import org.jetbrains.exposed.sql.transactions.transaction
+import ru.emkn.kotlin.sms.ObjectFields
+import ru.emkn.kotlin.sms.english
 import ru.emkn.kotlin.sms.model.*
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.*
+import kotlin.reflect.KClass
 import kotlin.reflect.KType
 import kotlin.reflect.full.starProjectedType
 import kotlin.reflect.jvm.jvmErasure
@@ -15,11 +18,12 @@ import kotlin.reflect.typeOf
 private val logger = KotlinLogging.logger { }
 
 object Creator {
+    @OptIn(ExperimentalStdlibApi::class)
     inline fun <reified T> convert(field: String?): T {
         val message = "Cannot convert essential field for ${T::class.simpleName}"
         if (field == null)
             throw IllegalStateException(message)
-        val result = convert(field, T::class.starProjectedType)
+        val result = convert(field, typeOf<T>())
         return result as T
     }
 
@@ -59,10 +63,17 @@ object Creator {
             }
         }
 
-    fun createEventFrom(values: Map<String, String>): Event {
+    fun createEvent(): Event = createEventFrom(
+        mapOf(
+            ObjectFields.Name to "event",
+            ObjectFields.Date to "20.12.2021"
+        )
+    )
+
+    fun createEventFrom(values: Map<ObjectFields, String>): Event {
         try {
-            val eventName = convert<String>(values["name"])
-            val data = convert<LocalDate>(values["date"])
+            val eventName = convert<String>(values[ObjectFields.Name])
+            val data = convert<LocalDate>(values[ObjectFields.Date])
             val event = Event(eventName, data)
             Competition.event = event
             logger.info { "Event was successfully created" }
@@ -73,13 +84,13 @@ object Creator {
         }
     }
 
-    @OptIn(ExperimentalStdlibApi::class)
-    fun createRouteFrom(values: Map<String, String>): Route {
+    fun createRouteFrom(values: Map<ObjectFields, String>): Route {
         try {
-            val routeName = convert<String>(values["name"])
-            val routeType = convert<RouteType>(headers[values["type"]])
-            val amountOfCheckpoint = convert<Int?>(values["amount"])
-            val checkPoints = convert(values["checkPoints"] ?: "", typeOf<List<Checkpoint>>()) as List<Checkpoint>
+            val routeName = convert<String>(values[ObjectFields.Name])
+            val routeType = convert<RouteType>(english[values[ObjectFields.Type]])
+            val amountOfCheckpoint = convert<Int?>(values[ObjectFields.Amount])
+            val checkPoints = convert<List<Checkpoint>>(values[ObjectFields.CheckPoints])
+            // val checkPoints = convert(values[ObjectFields.CheckPoints] ?: "", typeOf<List<Checkpoint>>()) as List<Checkpoint>
             val route = Route.create(routeName, checkPoints, routeType, amountOfCheckpoint ?: checkPoints.size)
             Competition.add(route)
             logger.debug { "Route was successfully created" }
@@ -90,20 +101,20 @@ object Creator {
         }
     }
 
-    fun createParticipantFrom(values: Map<String, String>): Participant {
+    fun createParticipantFrom(values: Map<ObjectFields, String>): Participant {
         try {
-            val name = convert<String>(values["name"])
-            val surname = convert<String>(values["surname"])
-            val birthdayYear = convert<Int>(values["birthdayYear"])
-            val grade = convert<String?>(values["grade"])
-            val groupName = convert<String>(values["group"])
-            val teamName = convert<String>(values["team"])
+            val name = convert<String>(values[ObjectFields.Name])
+            val surname = convert<String>(values[ObjectFields.Surname])
+            val birthdayYear = convert<Int>(values[ObjectFields.BirthdayYear])
+            val grade = convert<String?>(values[ObjectFields.Grade])
+            val groupName = convert<String>(values[ObjectFields.Group])
+            val teamName = convert<String>(values[ObjectFields.Team])
             if (!Group.checkByName(groupName))
                 throw IllegalArgumentException("Cannot find group $groupName")
             if (!Team.checkByName(teamName))
                 throw IllegalArgumentException("Cannot find team $teamName")
             val participant = if (CompetitionController.state == State.TOSSED) {
-                val startTime = convert<LocalTime>(values["startTime"])
+                val startTime = convert<LocalTime>(values[ObjectFields.StartTime])
                 Participant.create(name, surname, birthdayYear, groupName, teamName, startTime, grade)
             } else {
                 Participant.create(name, surname, birthdayYear, groupName, teamName, grade)
@@ -117,11 +128,11 @@ object Creator {
         }
     }
 
-    fun createGroupFrom(values: Map<String, String>): Group {
+    fun createGroupFrom(values: Map<ObjectFields, String>): Group {
         try {
-            val name = convert<String>(values["name"])
-            val resultType = convert<ResultType>(headers[values["resultType"]])
-            val routeName = convert<String>(values["routeName"])
+            val name = convert<String>(values[ObjectFields.Name])
+            val resultType = convert<ResultType>(english[values[ObjectFields.ResultType]])
+            val routeName = convert<String>(values[ObjectFields.RouteName])
             if (!Route.checkByName(routeName))
                 throw IllegalArgumentException("Cannot find route $routeName")
             val group = Group.create(name, resultType, routeName)
@@ -134,9 +145,9 @@ object Creator {
         }
     }
 
-    fun createTeamFrom(values: Map<String, String>): Team {
+    fun createTeamFrom(values: Map<ObjectFields, String>): Team {
         try {
-            val teamName = convert<String>(values["name"])
+            val teamName = convert<String>(values[ObjectFields.Name])
             val team = Team.create(teamName)
             Competition.add(team)
             logger.debug { "Team was successfully created" }
@@ -147,11 +158,13 @@ object Creator {
         }
     }
 
-    fun createCheckPointFrom(values: Map<String, String>): Checkpoint {
+    fun createCheckPointFrom(values: Map<ObjectFields, String>): Checkpoint {
         try {
-            val name = convert<String>(values["name"])
-            val weight = convert<Int>(values["weight"])
-            val checkpoint = Checkpoint.create(name, weight)
+            val name = convert<String>(values[ObjectFields.Name])
+            val weight = convert<Int>(values[ObjectFields.Weight])
+            val checkpoint = transaction {
+                Checkpoint.create(name, weight)
+            }
             Competition.add(checkpoint)
             logger.debug { "Checkpoint $name was successfully created" }
             return checkpoint
@@ -161,11 +174,12 @@ object Creator {
         }
     }
 
-    fun createTimeStampFrom(values: Map<String, String>): Timestamp {
+    fun createTimeStampFrom(values: Map<ObjectFields, String>): Timestamp {
+        //TODO: решить конфликт имён
         try {
-            val participantId = convert<Int>(values["participantId"])
-            val time = convert<LocalTime>(values["time"])
-            val checkpointId = convert<String>(values["checkPointId"])
+            val participantId = convert<Int>(values[ObjectFields.ID])
+            val time = convert<LocalTime>(values[ObjectFields.Time])
+            val checkpointId = convert<String>(values[ObjectFields.Name])
             val timestamp = Timestamp.create(time, checkpointId, participantId)
             Competition.add(timestamp)
             logger.debug { "Timestamp was successfully created" }

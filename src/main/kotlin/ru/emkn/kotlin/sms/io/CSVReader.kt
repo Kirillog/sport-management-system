@@ -2,6 +2,7 @@ package ru.emkn.kotlin.sms.io
 
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import mu.KotlinLogging
+import ru.emkn.kotlin.sms.ObjectFields
 import ru.emkn.kotlin.sms.controller.Creator
 import ru.emkn.kotlin.sms.headers
 import ru.emkn.kotlin.sms.model.*
@@ -17,6 +18,15 @@ private val logger = KotlinLogging.logger { }
 class CSVReader(file: File) : Reader(file) {
     private val csvReader = csvReader()
     private var buffer: List<List<String>> = csvReader.readAll(file)
+
+    private fun toObjectFields(table : List<Map<String, String>>) : List<Map<ObjectFields, String>> {
+        return table.map { line ->
+            line.map { entry ->
+                val header = headers[entry.key] ?: throw IllegalStateException()
+                header to entry.value
+            }.toMap()
+        }
+    }
 
     /**
      * Returns list of map, each of which transform header name to field
@@ -34,11 +44,7 @@ class CSVReader(file: File) : Reader(file) {
             }
             val data = table.map { record ->
                 record.mapKeys {
-                    val key = it.key.trim()
-                    if (key.toIntOrNull() == null)
-                        headers[key] ?: throw IOException("Wrong name in header")
-                    else
-                        key
+                    it.key.trim()
                 }.mapValues { it.value.trim() }
             }
             data.ifEmpty {
@@ -78,17 +84,17 @@ class CSVReader(file: File) : Reader(file) {
                 groupName = currentGroupName.first()
                 null
             } else
-                record + ("group" to groupName)
+                record + ("Группа" to groupName)
         }
     }
 
     override fun team(): Team? {
         val name = name() ?: return null
         val table = tableWithHeader()?.map { record ->
-            record + ("team" to name)
+            record + ("Команда" to name)
         } ?: return null
         val team = Team.create(name)
-        table.mapNotNull {
+        toObjectFields(table).mapNotNull {
             try {
                 Creator.createParticipantFrom(it)
             } catch (err: IllegalArgumentException) {
@@ -100,7 +106,7 @@ class CSVReader(file: File) : Reader(file) {
 
     override fun groups(): Set<Group>? {
         val table = tableWithHeader() ?: return null
-        return table.mapNotNull {
+        return toObjectFields(table).mapNotNull {
             try {
                 Creator.createGroupFrom(it)
             } catch (err: IllegalArgumentException) {
@@ -111,12 +117,14 @@ class CSVReader(file: File) : Reader(file) {
 
     override fun courses(): Set<Route>? {
         val table = tableWithHeader() ?: return null
-        val routes = table.mapNotNull { record ->
+        val correctedTable = toObjectFields(table.map { record ->
+            val checkPoints =
+                "К/П" to record.filterKeys { it.toIntOrNull() != null }.values.joinToString(",")
+            record.filterKeys { it.toIntOrNull() == null } + checkPoints
+        })
+        val routes = correctedTable.mapNotNull {
             try {
-                val checkPoints =
-                    "checkPoints" to record.filterKeys { it.toIntOrNull() != null }.values.joinToString(",")
-                val entry = record.filterKeys { it.toIntOrNull() == null } + checkPoints
-                Creator.createRouteFrom(entry)
+                Creator.createRouteFrom(it)
             } catch (err: IllegalArgumentException) {
                 null
             }
@@ -128,7 +136,7 @@ class CSVReader(file: File) : Reader(file) {
 
     override fun event(): Event? {
         val table = tableWithHeader() ?: return null
-        val events = table.mapNotNull {
+        val events = toObjectFields(table).mapNotNull {
             try {
                 Creator.createEventFrom(it)
             } catch (err: IllegalArgumentException) {
@@ -146,9 +154,9 @@ class CSVReader(file: File) : Reader(file) {
     override fun timestamps(): Set<Timestamp>? {
         val name = name()?.toIntOrNull() ?: throw IOException("Wrong type of checkPoint id")
         val table = tableWithHeader()?.map { record ->
-            record + ("checkPointId" to name.toString())
+            record + ("Номер К/П" to name.toString())
         } ?: return null
-        val timeStamps = table.mapNotNull {
+        val timeStamps = toObjectFields(table).mapNotNull {
             try {
                 Creator.createTimeStampFrom(it)
             } catch (err: IllegalArgumentException) {
@@ -164,16 +172,16 @@ class CSVReader(file: File) : Reader(file) {
         val table = tableWithHeader() ?: return null
         val correctedTable = preprocess(table)
 
-        correctedTable.mapNotNull {
-            it["team"]
-        }.toSet().forEach {
+        toObjectFields(correctedTable.map {
+            mapOf("Имя" to (it["team"] ?: ""))
+        }).forEach {
             try {
-                Creator.createTeamFrom(mapOf("name" to it))
+                Creator.createTeamFrom(it)
             } catch (err: IllegalArgumentException) {
                 null
             }
         }
-        val participants = correctedTable.sortedBy { it["participantId"]?.toInt() }.mapNotNull {
+        val participants = toObjectFields(correctedTable.sortedBy { it["participantId"]?.toInt() }).mapNotNull {
             try {
                 Creator.createParticipantFrom(it)
             } catch (err: IllegalArgumentException) {
@@ -187,7 +195,7 @@ class CSVReader(file: File) : Reader(file) {
 
     override fun checkPoints(): Set<Checkpoint>? {
         val table = tableWithHeader() ?: return null
-        return table.mapNotNull {
+        return toObjectFields(table).mapNotNull {
             try {
                 Creator.createCheckPointFrom(it)
             } catch (err: IllegalArgumentException) {

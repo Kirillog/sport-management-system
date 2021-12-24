@@ -1,16 +1,23 @@
 package ru.emkn.kotlin.sms.controller
 
+import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.SchemaUtils
+import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
+import ru.emkn.kotlin.sms.*
 import ru.emkn.kotlin.sms.io.FileLoader
 import ru.emkn.kotlin.sms.io.FileSaver
 import ru.emkn.kotlin.sms.io.Loader
 import ru.emkn.kotlin.sms.io.Saver
-import ru.emkn.kotlin.sms.model.Competition
-import ru.emkn.kotlin.sms.model.Team
+import ru.emkn.kotlin.sms.model.*
+import java.io.File
 import java.nio.file.Path
+import kotlin.io.path.absolute
 import kotlin.io.path.extension
+import kotlin.io.path.nameWithoutExtension
 
 enum class State {
+    EMPTY,
     CREATED,
     ANNOUNCED,
     REGISTER_OUT,
@@ -19,10 +26,14 @@ enum class State {
 }
 
 object CompetitionController {
-    var state: State = State.CREATED
+    var state: State = State.EMPTY
 
 
-    fun announceFromPath(event: Path, checkpoints: Path, routes: Path) {
+    fun announceFromPath(event: Path?, checkpoints: Path?, routes: Path?) {
+        event ?: throw IllegalArgumentException("event is not chosen")
+        checkpoints ?: throw IllegalArgumentException("checkpoints are not chosen")
+        routes ?: throw IllegalArgumentException("routes are not chosen")
+
         val eventLoader = getLoader(event)
         val checkPoints = getLoader(checkpoints)
         val routesLoader = getLoader(routes)
@@ -116,5 +127,54 @@ object CompetitionController {
     fun saveTeamResultsToPath(results: Path) = transaction {
         getSaver(results).saveTeamResults()
     }
-}
 
+    fun getControllerState() = state
+
+    private fun getDBState(): State {
+        var res: State = State.CREATED
+
+        transaction {
+            if (!Checkpoint.all().empty()) {
+                res = State.ANNOUNCED
+            } else if (!Group.all().empty()) {
+                res = State.REGISTER_OUT
+            } else if (!TossTable.selectAll().empty()) {
+                res = State.TOSSED
+            } else if (!PersonalResultTable.selectAll().empty()) {
+                res = State.FINISHED
+            }
+        }
+
+        state = res
+        return res
+    }
+
+    fun createDB(file: File?) {
+        if (file == null) throw IllegalArgumentException("File was not chosen")
+        if (file.exists()) throw IllegalArgumentException("File already exists")
+        file.createNewFile()
+        connectDB(file)
+    }
+
+    fun connectDB(file: File?) {
+        require(state == State.EMPTY)
+        if (file == null) throw IllegalArgumentException("File wasn't chosen")
+        if (!file.isFile) throw IllegalStateException("It must be a file, not a directory")
+        if (!file.canRead()) throw IllegalStateException("File does not readable")
+        if (!file.canWrite()) throw IllegalStateException("File does not writable")
+        var fileName = file.toPath().toAbsolutePath().toString()
+        if (fileName.takeLast(6) == ".mv.db") {
+            fileName = fileName.dropLast(6)
+        } else {
+            throw IllegalArgumentException("File should has extension .mv.db")
+        }
+        Database.connect("$DB_HEADER:$fileName", driver = DB_DRIVER)
+
+        transaction {
+            DB_TABLES.forEach {
+                SchemaUtils.create(it)
+            }
+        }
+        getDBState()
+    }
+}
