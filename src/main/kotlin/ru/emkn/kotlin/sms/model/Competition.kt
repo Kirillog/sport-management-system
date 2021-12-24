@@ -9,7 +9,7 @@ import java.time.LocalDate
  */
 object Competition {
 
-    var event = Event("Standard", LocalDate.of(2020, 1, 1))
+    var event: Event? = null
     var toss = Toss()
     val checkpoints: MutableSet<Checkpoint> = mutableSetOf()
     val timestamps: MutableSet<Timestamp> = mutableSetOf()
@@ -18,6 +18,13 @@ object Competition {
     val groups: MutableSet<Group> = mutableSetOf()
 
     var teamResult: TeamResult = TeamResultByAverageScore()
+
+    fun event(): Event {
+        event?.let {
+            return it
+        }
+        return Event("Standard", LocalDate.of(2020, 1, 1))
+    }
 
     fun loadGroups(loader: Loader) {
         loader.loadGroups()

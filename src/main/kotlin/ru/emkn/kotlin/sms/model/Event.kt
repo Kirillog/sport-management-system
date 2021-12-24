@@ -1,16 +1,14 @@
 package ru.emkn.kotlin.sms.model
 
-import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.Column
 import org.jetbrains.exposed.sql.Table
-import org.jetbrains.exposed.sql.Table.Dual.varchar
 import org.jetbrains.exposed.sql.deleteAll
 import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.javatime.date
+import org.jetbrains.exposed.sql.transactions.transaction
 import ru.emkn.kotlin.sms.MAX_TEXT_FIELD_SIZE
 import ru.emkn.kotlin.sms.io.SingleLineWritable
-import ru.emkn.kotlin.sms.model.EventTable.date
 import java.time.LocalDate
-import org.jetbrains.exposed.sql.javatime.date
 import java.time.format.DateTimeFormatter
 
 
@@ -35,10 +33,12 @@ data class Event(var name: String, var date: LocalDate) : SingleLineWritable {
     }
 
     init {
-        EventTable.deleteAll()
-        EventTable.insert {
-            it[this.name] = this@Event.name
-            it[this.date] = this@Event.date
+        transaction {
+            EventTable.deleteAll()
+            EventTable.insert {
+                it[this.name] = this@Event.name
+                it[this.date] = this@Event.date
+            }
         }
     }
 }

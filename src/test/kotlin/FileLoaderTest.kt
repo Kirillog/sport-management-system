@@ -1,12 +1,13 @@
+
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.*
+import ru.emkn.kotlin.sms.DB_TABLES
 import ru.emkn.kotlin.sms.FileType
 import ru.emkn.kotlin.sms.controller.CompetitionController
 import ru.emkn.kotlin.sms.controller.State
 import ru.emkn.kotlin.sms.io.FileLoader
-import ru.emkn.kotlin.sms.model.*
 import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.Path
@@ -34,21 +35,8 @@ internal class FileLoaderTest {
     fun connect() {
         Database.connect("jdbc:h2:./${path}/testDB", driver = "org.h2.Driver")
 
-        val dbTables = listOf(
-            RouteCheckpointsTable,
-            TossTable,
-            PersonalResultTable,
-            TeamResultTable,
-            TimestampTable,
-            CheckpointTable,
-            ParticipantTable,
-            GroupTable,
-            RouteTable,
-            TeamTable
-        )
-
         transaction {
-            dbTables.forEach {
+            DB_TABLES.forEach {
                 SchemaUtils.create(it)
             }
         }

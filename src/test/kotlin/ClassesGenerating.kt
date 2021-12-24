@@ -1,9 +1,12 @@
+
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
+import ru.emkn.kotlin.sms.DB_TABLES
 import ru.emkn.kotlin.sms.FileType
 import ru.emkn.kotlin.sms.io.Writer
-import ru.emkn.kotlin.sms.model.*
+import ru.emkn.kotlin.sms.model.Group
+import ru.emkn.kotlin.sms.model.ResultType
 import java.io.File
 import java.io.IOException
 import java.nio.file.Path
@@ -57,21 +60,8 @@ fun <T> generate(path: Path, gen: Generator.() -> T): T {
 
     Database.connect("jdbc:h2:./${path}/testDB", driver = "org.h2.Driver")
 
-    val dbTables = listOf(
-        RouteCheckpointsTable,
-        TossTable,
-        PersonalResultTable,
-        TeamResultTable,
-        TimestampTable,
-        CheckpointTable,
-        ParticipantTable,
-        GroupTable,
-        RouteTable,
-        TeamTable
-    )
-
     transaction {
-        dbTables.forEach {
+        DB_TABLES.forEach {
             SchemaUtils.create(it)
         }
     }

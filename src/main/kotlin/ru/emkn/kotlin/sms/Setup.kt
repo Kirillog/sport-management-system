@@ -17,6 +17,7 @@ enum class Target {
 }
 
 val DB_TABLES = listOf(
+    EventTable,
     RouteCheckpointsTable,
     TossTable,
     PersonalResultTable,
