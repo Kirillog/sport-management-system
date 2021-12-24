@@ -12,10 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import com.sun.nio.sctp.IllegalReceiveException
-import ru.emkn.kotlin.sms.ObjectFields
 import ru.emkn.kotlin.sms.controller.CompetitionController
-import ru.emkn.kotlin.sms.controller.Creator
-import ru.emkn.kotlin.sms.model.Event
 import ru.emkn.kotlin.sms.view.creators.CheckpointCreator
 import ru.emkn.kotlin.sms.view.creators.ParticipantCreator
 import ru.emkn.kotlin.sms.view.tables.CheckpointTable
@@ -40,16 +37,16 @@ object GUI {
         CreateTimestamp,
         Reload,
         CheckDataBaseState,
-        LoadOrCreateCompetitionData,
-        EditCompetitionData
+        EditAnnounceData,
+        EditRegisterData
     }
 
     private var state = mutableStateOf(State.LoadOrCreateDataBase)
     private val statesStack = mutableListOf(state.value)
 
     private val participantsTable by lazy { mutableStateOf(ParticipantsTable()) }
-    private val eventTable by lazy { mutableStateOf(EventTable()) }
-    private val checkpointTable by lazy { mutableStateOf(CheckpointTable()) }
+    val eventTable by lazy { mutableStateOf(EventTable()) }
+    val checkpointTable by lazy { mutableStateOf(CheckpointTable()) }
 
     // TODO routes table
     private val timestampsTable by lazy { mutableStateOf(TimestampTable()) }
@@ -76,18 +73,18 @@ object GUI {
             createTitle = "choose path for new database",
             loadAction = {
                 CompetitionController.connectDB(it)
-                pushState(State.CheckDataBaseState)
+                pushDataBaseState()
             },
             createAction = {
                 CompetitionController.createDB(it)
-                pushState(State.LoadOrCreateCompetitionData)
+                pushState(State.EditAnnounceData)
             },
             fileExtension = ".mv.db",
             fileExtensionDescription = "Database"
         ).draw()
     }
 
-    @Composable
+/*    @Composable
     private fun loadOrCreateCompetitionData() {
         ButtonsChooser(
             "Load or create competition parameters?",
@@ -102,7 +99,7 @@ object GUI {
                             checkpointsFile?.toPath(),
                             routesFile?.toPath()
                         )
-                        pushState(State.EditCompetitionData)
+                        pushState(State.EditAnnounceData)
                     } catch (e: Exception) {
                         TopAppBar.setMessage(e.message ?: "Undefined error")
                     }
@@ -110,11 +107,11 @@ object GUI {
                 },
                 ActionButton("Create") {
                     Creator.createEvent()
-                    pushState(State.EditCompetitionData)
+                    pushState(State.EditAnnounceData)
                 }
             )
         ).draw()
-    }
+    }*/
 
     enum class EditCompetitionState {
         EventEditing,
@@ -124,7 +121,6 @@ object GUI {
 
     @Composable
     private fun editCompetitionData() {
-
         val state = remember { mutableStateOf(EditCompetitionState.EventEditing) }
 
         Column {
@@ -165,11 +161,11 @@ object GUI {
     }
 
 
-    private fun checkDataBaseState() {
+    private fun pushDataBaseState() {
         pushState(
             when (CompetitionController.getControllerState()) {
-                ru.emkn.kotlin.sms.controller.State.CREATED -> State.LoadOrCreateCompetitionData
-                ru.emkn.kotlin.sms.controller.State.ANNOUNCED -> State.EditCompetitionData
+                ru.emkn.kotlin.sms.controller.State.CREATED -> State.EditAnnounceData
+                ru.emkn.kotlin.sms.controller.State.ANNOUNCED -> State.EditRegisterData
                 else -> TODO()
             }
         )
@@ -186,9 +182,9 @@ object GUI {
             TopAppBar.draw()
             when (state.value) {
                 State.LoadOrCreateDataBase -> loadOrCreateDataBase()
-                State.LoadOrCreateCompetitionData -> loadOrCreateCompetitionData()
-                State.EditCompetitionData -> editCompetitionData()
-                State.CheckDataBaseState -> checkDataBaseState()
+//                State.LoadOrCreateCompetitionData -> loadOrCreateCompetitionData()
+                State.EditAnnounceData -> CompetitionDataEditor().draw()
+                State.CheckDataBaseState -> pushDataBaseState()
                 State.ShowParticipants -> participantsTable.draw()
                 State.CreateParticipant -> ParticipantCreator().draw()
                 State.CreateCheckpoint -> CheckpointCreator().draw()
