@@ -1,13 +1,9 @@
 package ru.emkn.kotlin.sms.controller
 
-import org.jetbrains.exposed.sql.Database
-import org.jetbrains.exposed.sql.SchemaUtils
-import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.dao.id.IntIdTable
+import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
-import ru.emkn.kotlin.sms.DB_DRIVER
-import ru.emkn.kotlin.sms.DB_HEADER
-import ru.emkn.kotlin.sms.DB_TABLES
-import ru.emkn.kotlin.sms.FileType
+import ru.emkn.kotlin.sms.*
 import ru.emkn.kotlin.sms.io.FileLoader
 import ru.emkn.kotlin.sms.io.FileSaver
 import ru.emkn.kotlin.sms.io.Loader
@@ -26,9 +22,22 @@ enum class State {
     FINISHED
 }
 
-object CompetitionController {
-    var state: State = State.EMPTY
+object StateTable : IntIdTable("state") {
+    val state = enumerationByName("state", MAX_TEXT_FIELD_SIZE, State::class)
+}
 
+object CompetitionController {
+
+    var state: State = State.EMPTY
+    set(state) {
+        field = state
+        transaction {
+            StateTable.deleteAll()
+            StateTable.insert {
+                it[this.state] = state
+            }
+        }
+    }
 
     fun announceFromPath(event: Path?, checkpoints: Path?, routes: Path?) {
         event ?: throw IllegalArgumentException("event is not chosen")
@@ -131,25 +140,6 @@ object CompetitionController {
 
     fun getControllerState() = state
 
-    private fun getDBState(): State {
-        var res: State = State.CREATED
-
-        transaction {
-        if (!Checkpoint.all().empty() && !Route.all().empty() && !Event.all().empty()) {
-                res = State.ANNOUNCED
-            } else if (!Group.all().empty() && !Team.all().empty()) {
-                res = State.REGISTER_OUT
-            } else if (!TossTable.selectAll().empty()) {
-                res = State.TOSSED
-            } else if (!PersonalResultTable.selectAll().empty()) {
-                res = State.FINISHED
-            }
-        }
-
-        state = res
-        return res
-    }
-
     fun createDB(file: File?) {
         if (file == null) throw IllegalArgumentException("File was not chosen")
         if (file.exists()) throw IllegalArgumentException("File already exists")
@@ -175,7 +165,8 @@ object CompetitionController {
             DB_TABLES.forEach {
                 SchemaUtils.create(it)
             }
+            val query = StateTable.selectAll()
+            state = if (query.empty()) State.EMPTY else query.first()[StateTable.state]
         }
-        getDBState()
     }
 }

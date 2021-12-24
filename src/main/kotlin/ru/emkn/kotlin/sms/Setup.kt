@@ -2,6 +2,7 @@ package ru.emkn.kotlin.sms
 
 import com.xenomachina.argparser.ArgParser
 import com.xenomachina.argparser.default
+import ru.emkn.kotlin.sms.controller.StateTable
 import ru.emkn.kotlin.sms.model.*
 
 const val MAX_TEXT_FIELD_SIZE = 127
@@ -27,7 +28,8 @@ val DB_TABLES = listOf(
     ParticipantTable,
     GroupTable,
     RouteTable,
-    TeamTable
+    TeamTable,
+    StateTable
 )
 
 val english = mapOf(
