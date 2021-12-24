@@ -1,254 +1,268 @@
-//import com.github.doyaaaaaken.kotlincsv.util.MalformedCSVException
-//import org.junit.jupiter.api.Assertions.assertEquals
-//import org.junit.jupiter.api.Nested
-//import org.junit.jupiter.api.Test
-//import org.junit.jupiter.api.assertThrows
-//import ru.emkn.kotlin.sms.model.*
-//import java.io.File
-//import java.io.IOException
-//import java.time.LocalDate
-//import java.time.LocalTime
-//import kotlin.io.path.Path
-//
-//internal class CSVReaderTest {
-//    private val resources = Path("src/test/resources")
-//
-//    private fun readTeam(file: File): Team? =
-//        CSVReader(file).team()
-//
-//    private fun readCourses(file: File): Set<Route>? =
-//        CSVReader(file).courses()
-//
-//    private fun readEvent(file: File): Event? =
-//        CSVReader(file).event()
-//
-//    private fun readGroups(file: File): Set<Group>? =
-//        CSVReader(file).groups()
-//
-//    private fun readTimeStamps(file: File): Set<Timestamp>? =
-//        CSVReader(file).timestamps()
-//
-//    private fun readToss(file: File): Unit? =
-//        CSVReader(file).toss()
-//
-//    interface ReadTest {
-//        @Test
-//        fun simple()
-//
-//        @Test
-//        fun incorrectTypeOfField()
-//    }
-//
-//    @Nested
-//    inner class IncorrectFilesTest {
-//        @Test
-//        fun emptyFiles() {
-//            val file = kotlin.io.path.createTempFile().toFile()
-//            assertEquals(null, readTeam(file))
-//            assertEquals(null, readCourses(file))
-//            assertEquals(null, readGroups(file))
-//        }
-//
-//        @Test
-//        fun incorrectHeader() {
-//            val coursesFile = resources.resolve("incorrectFiles/incorrectHeader.csv").toFile()
-//            assertThrows<IOException> { readCourses(coursesFile) }
-//        }
-//
-//        @Test
-//        fun emptyContent() {
-//            val teamFile = resources.resolve("incorrectFiles/emptyTeam.csv").toFile()
-//            val coursesFile = resources.resolve("incorrectFiles/emptyCourses.csv").toFile()
-//            assertEquals(null, readTeam(teamFile))
-//            assertEquals(null, readCourses(coursesFile))
-//        }
-//
-//        @Test
-//        fun incorrectCSVFormat() {
-//            val teamFile = resources.resolve("incorrectFiles/incorrectCSVFormat.csv").toFile()
-//            assertThrows<MalformedCSVException> { readTeam(teamFile) }
-//        }
-//    }
-//
-//    @Nested
-//    inner class ReadTeamTest : ReadTest {
-//        @Test
-//        override fun simple() {
-//            val teamFile = resources.resolve("applications/simple.csv").toFile()
-//            assertEquals(
-//                Team(
-//                    "СЕБЕЖ", listOf(
-//                        Participant("Дмитрий", "Исаков", 2009, "М12", "СЕБЕЖ", null),
-//                        Participant("Михаил", "Гришмановский", 2005, "М16", "СЕБЕЖ", "2р")
-//                    )
-//                ),
-//                readTeam(teamFile)
-//            )
-//
-//        }
-//
-//        @Test
-//        override fun incorrectTypeOfField() {
-//            val teamFile = resources.resolve("applications/incorrectTypeOfField.csv").toFile()
-//            assertEquals(
-//                Team(
-//                    "ПСКОВ,РУСЬ", listOf(
-//                        Participant("АЛЛА", "НИКИТИНА", 1939, "VIP", "ПСКОВ,РУСЬ", "1р"),
-//                        Participant("МИХАИЛ", "ЖЕЛЕЗНЫЙ", 2007, "М14", "ПСКОВ,РУСЬ", null)
-//                    )
-//                ), readTeam(teamFile)
-//            )
-//        }
-//    }
-//
-//    @Nested
-//    inner class ReadCoursesTest : ReadTest {
-//        @Test
-//        override fun incorrectTypeOfField() {
-//            val coursesFile = resources.resolve("courses/incorrectTypeOfField.csv").toFile()
-//            assertEquals(
-//                listOf(
-//                    Route("М18 21 40 50", listOf(Checkpoint(31), Checkpoint(32))),
-//                    Route("Ж14", listOf(Checkpoint(47), Checkpoint(46), Checkpoint(45), Checkpoint(34)))
-//                ),
-//                readCourses(coursesFile)
-//            )
-//        }
-//
-//        @Test
-//        override fun simple() {
-//            val coursesFile = resources.resolve("courses/simple.csv").toFile()
-//            assertEquals(
-//                listOf(
-//                    Route(
-//                        "МЖ9 10",
-//                        listOf(Checkpoint(32), Checkpoint(46), Checkpoint(34), Checkpoint(33), Checkpoint(53))
-//                    ),
-//                    Route(
-//                        "Ж14",
-//                        listOf(
-//                            Checkpoint(47),
-//                            Checkpoint(46),
-//                            Checkpoint(45),
-//                            Checkpoint(34),
-//                            Checkpoint(33),
-//                            Checkpoint(32)
-//                        )
-//                    ),
-//                    Route("Ж12", listOf(Checkpoint(32), Checkpoint(46)))
-//                ),
-//                readCourses(coursesFile)
-//            )
-//        }
-//    }
-//
-////    @Nested
-////    inner class ReadGroups : ReadTest {
-////        @Test
-////        override fun simple() {
-////            val file = resources.resolve("groups/simple.csv").toFile()
-////            assertEquals(setOf(Group("М10" to "МЖ9 10", "М12" to "М12", "М14" to "М14 20"), readGroups(file))
-////        }
-////
-////        @Test
-////        override fun incorrectTypeOfField() {
-////            val file = resources.resolve("groups/incorrectTypeOfField.csv").toFile()
-////            assertEquals(mapOf("М10" to "МЖ9 10", "М16" to "М16 Ж6"), readGroupsToCourses(file))
-////        }
-////    }
-//
-//    @Nested
-//    inner class ReadEventsTest : ReadTest {
-//        @Test
-//        override fun simple() {
-//            val file = resources.resolve("events/simple.csv").toFile()
-//            assertEquals(Event("Первенство пятой бани", LocalDate.parse("2022-01-01")), readEvent(file))
-//        }
-//
-//        @Test
-//        override fun incorrectTypeOfField() {
-//            val file = resources.resolve("events/incorrectTypeOfField.csv").toFile()
-//            assertEquals(listOf<Event>(), readEvent(file))
-//        }
-//    }
-//
-//    @Nested
-//    inner class ReadTimeStamps : ReadTest {
-//        @Test
-//        override fun simple() {
-//            val file = resources.resolve("checkPoints/simple.csv").toFile()
-//            assertEquals(
-//                setOf(
-//                    Timestamp(LocalTime.of(21, 22, 30), Checkpoint(12), 100),
-//                    Timestamp(LocalTime.of(19, 15, 30), Checkpoint(12), 102),
-//                    Timestamp(LocalTime.of(17, 15, 56), Checkpoint(12), 105)
-//                ), readTimeStamps(file)
-//            )
-//        }
-//
-//        @Test
-//        override fun incorrectTypeOfField() {
-//            val file = resources.resolve("checkPoints/incorrectTypeOfField.csv").toFile()
-//            assertEquals(
-//                setOf(
-//                    Timestamp(LocalTime.of(17, 15, 56), Checkpoint(2), 105)
-//                ),
-//                readTimeStamps(file)
-//            )
-//        }
-//
-//    }
-//
-//    @Nested
-//    inner class ReadParticipants : ReadTest {
-//        @Test
-//        override fun simple() {
-//            val file = resources.resolve("protocols/simple.csv").toFile()
-//            readToss(file)
-//            assertEquals(
-//                listOf(
-//                    Participant("Анна", "Сосницкая", 2013, "Ж10", "0-ПСКОВ", 101, LocalTime.of(12, 0, 0), "1р"),
-//                    Participant(
-//                        "АРТЁМ",
-//                        "КАЧНОВ",
-//                        2008,
-//                        "МЖ14",
-//                        "ВЕЛИКОЛУКСКИЙ РАЙОН",
-//                        128,
-//                        LocalTime.of(12, 5, 0)
-//                    ),
-//                    Participant(
-//                        "АЛЕКСАНДРА",
-//                        "ЛОВЦОВА",
-//                        2014,
-//                        "МЖ14",
-//                        "ВЕЛИКИЕ ЛУКИ",
-//                        102,
-//                        LocalTime.of(12, 10, 0)
-//                    )
-//                ), Participant.byId.values.toList()
-//            )
-//        }
-//
-//        override fun incorrectTypeOfField() {
-//            val file = resources.resolve("protocols/incorrectTypeOfField.csv").toFile()
-//            readToss(file)
-//            assertEquals(
-//                listOf(
-//                    Participant(
-//                        "ЗАХАР",
-//                        "МАЖАРОВ",
-//                        2012,
-//                        "M10",
-//                        "ВЕЛИКОЛУКСКИЙ РАЙОН",
-//                        121,
-//                        LocalTime.of(13, 45, 0)
-//                    ),
-//                    Participant("РОМАН", "МЕРЦАЛОВ", 0, "М40", "ГДОВСКИЙ РАЙОН", 125, LocalTime.of(13, 55, 0), "3р")
-//                ),
-//                Participant.byId.values.toList()
-//            )
-//        }
-//
-//    }
-//}
+import com.github.doyaaaaaken.kotlincsv.util.MalformedCSVException
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import ru.emkn.kotlin.sms.ObjectFields
+import ru.emkn.kotlin.sms.io.CSVReader
+import java.io.File
+import java.io.IOException
+import kotlin.io.path.Path
+
+internal class CSVReaderTest {
+    private val resources = Path("src/test/resources")
+
+    private fun readTeam(file: File): List<Map<ObjectFields, String>>? =
+        CSVReader(file).team()
+
+    private fun readCourses(file: File): List<Map<ObjectFields, String>>? =
+        CSVReader(file).courses()
+
+    private fun readEvent(file: File): List<Map<ObjectFields, String>>? =
+        CSVReader(file).event()
+
+    private fun readGroups(file: File): List<Map<ObjectFields, String>>? =
+        CSVReader(file).groups()
+
+    private fun readTimeStamps(file: File): List<Map<ObjectFields, String>>? =
+        CSVReader(file).timestamps()
+
+    private fun readToss(file: File): List<Map<ObjectFields, String>>? =
+        CSVReader(file).toss()
+
+    private fun readCheckpoints(file: File): List<Map<ObjectFields, String>>? =
+        CSVReader(file).checkPoints()
+
+    interface ReadTest {
+        @Test
+        fun simple()
+
+    }
+
+    @Nested
+    inner class IncorrectFilesTest {
+        @Test
+        fun emptyFiles() {
+            val file = kotlin.io.path.createTempFile().toFile()
+            assertEquals(null, readTeam(file))
+            assertEquals(null, readCourses(file))
+            assertEquals(null, readGroups(file))
+        }
+
+        @Test
+        fun incorrectHeader() {
+            val coursesFile = resources.resolve("incorrectFiles/incorrectHeader.csv").toFile()
+            assertThrows<IOException> { readCourses(coursesFile) }
+        }
+
+        @Test
+        fun emptyContent() {
+            val teamFile = resources.resolve("incorrectFiles/emptyTeam.csv").toFile()
+            val coursesFile = resources.resolve("incorrectFiles/emptyCourses.csv").toFile()
+            assertEquals(null, readTeam(teamFile))
+            assertEquals(null, readCourses(coursesFile))
+        }
+
+        @Test
+        fun incorrectCSVFormat() {
+            val teamFile = resources.resolve("incorrectFiles/incorrectCSVFormat.csv").toFile()
+            assertThrows<MalformedCSVException> { readTeam(teamFile) }
+        }
+    }
+
+    @Nested
+    inner class ReadTeamTest : ReadTest {
+        @Test
+        override fun simple() {
+            val teamFile = resources.resolve("applications/simple.csv").toFile()
+            val team = listOf(
+                mapOf(
+                    ObjectFields.Name to "Дмитрий",
+                    ObjectFields.Surname to "Исаков",
+                    ObjectFields.BirthdayYear to "2009",
+                    ObjectFields.Group to "М12",
+                    ObjectFields.Team to "СЕБЕЖ",
+                    ObjectFields.Grade to ""
+                ),
+                mapOf(
+                    ObjectFields.Name to "Михаил",
+                    ObjectFields.Surname to "Гришмановский",
+                    ObjectFields.BirthdayYear to "2005",
+                    ObjectFields.Group to "М16",
+                    ObjectFields.Team to "СЕБЕЖ",
+                    ObjectFields.Grade to "2р"
+                )
+            )
+            assertEquals(team, readTeam(teamFile))
+        }
+
+    }
+
+    @Nested
+    inner class ReadCoursesTest : ReadTest {
+
+        @Test
+        override fun simple() {
+            val coursesFile = resources.resolve("courses/simple.csv").toFile()
+            val routes = listOf(
+                mapOf(
+                    ObjectFields.Name to "МЖ9 10",
+                    ObjectFields.Type to "Полный",
+                    ObjectFields.Amount to "",
+                    ObjectFields.CheckPoints to "32,46,34,33,53"
+                ),
+                mapOf(
+                    ObjectFields.Name to "Ж14",
+                    ObjectFields.Type to "Выборочный",
+                    ObjectFields.Amount to "4",
+                    ObjectFields.CheckPoints to "47,46,45,34,33,32"
+                ),
+                mapOf(
+                    ObjectFields.Name to "Ж12",
+                    ObjectFields.Type to "Полный",
+                    ObjectFields.Amount to "",
+                    ObjectFields.CheckPoints to "32,46"
+                ),
+            )
+            assertEquals(
+                routes,
+                readCourses(coursesFile)
+            )
+        }
+    }
+
+    @Nested
+    inner class ReadGroups : ReadTest {
+        @Test
+        override fun simple() {
+            val file = resources.resolve("groups/simple.csv").toFile()
+            val groups = listOf(
+                mapOf(
+                    ObjectFields.Name to "М10",
+                    ObjectFields.ResultType to "Время",
+                    ObjectFields.RouteName to "МЖ9 10"
+                ),
+                mapOf(
+                    ObjectFields.Name to "М12",
+                    ObjectFields.ResultType to "Стоимость",
+                    ObjectFields.RouteName to "М12"
+                ),
+                mapOf(
+                    ObjectFields.Name to "М14",
+                    ObjectFields.ResultType to "Время",
+                    ObjectFields.RouteName to "М14 20"
+                )
+            )
+            assertEquals(groups, readGroups(file))
+        }
+
+    }
+
+    @Nested
+    inner class ReadEventsTest : ReadTest {
+        @Test
+        override fun simple() {
+            val file = resources.resolve("events/simple.csv").toFile()
+            val event = listOf(
+                mapOf(
+                    ObjectFields.Name to "Первенство пятой бани",
+                    ObjectFields.Date to "01.01.2022"
+                )
+            )
+            assertEquals(event, readEvent(file))
+        }
+
+    }
+
+    @Nested
+    inner class ReadCheckPoints : ReadTest {
+        @Test
+        override fun simple() {
+            val file = resources.resolve("checkpoints/simple.csv").toFile()
+            val checkPoints = listOf(
+                mapOf(
+                    ObjectFields.Name to "0",
+                    ObjectFields.Weight to "9"
+                ),
+                mapOf(
+                    ObjectFields.Name to "3",
+                    ObjectFields.Weight to "2"
+                ),
+                mapOf(
+                    ObjectFields.Name to "4",
+                    ObjectFields.Weight to "1"
+                ),
+            )
+            assertEquals(checkPoints, readCheckpoints(file))
+        }
+
+    }
+
+    @Nested
+    inner class ReadTimeStamps : ReadTest {
+        @Test
+        override fun simple() {
+            val file = resources.resolve("timestamps/simple.csv").toFile()
+            val timestamps = listOf(
+                mapOf(
+                    ObjectFields.Time to "21:22:30",
+                    ObjectFields.ID to "100",
+                    ObjectFields.Name to "12"
+                ),
+                mapOf(
+                    ObjectFields.Time to "19:15:30",
+                    ObjectFields.ID to "102",
+                    ObjectFields.Name to "12"
+                ),
+                mapOf(
+                    ObjectFields.Time to "17:15:56",
+                    ObjectFields.ID to "105",
+                    ObjectFields.Name to "12"
+                )
+            )
+            assertEquals(timestamps, readTimeStamps(file))
+        }
+
+    }
+
+    @Nested
+    inner class ReadParticipants : ReadTest {
+        @Test
+        override fun simple() {
+            val file = resources.resolve("protocols/simple.csv").toFile()
+            val participants = listOf(
+                mapOf(
+                    ObjectFields.Name to "Анна",
+                    ObjectFields.Surname to "Сосницкая",
+                    ObjectFields.BirthdayYear to "2013",
+                    ObjectFields.Group to "Ж10",
+                    ObjectFields.Team to "0-ПСКОВ",
+                    ObjectFields.Grade to "1р",
+                    ObjectFields.ID to "101",
+                    ObjectFields.StartTime to "12:00:00"
+                ),
+                mapOf(
+                    ObjectFields.Name to "АРТЁМ",
+                    ObjectFields.Surname to "КАЧНОВ",
+                    ObjectFields.BirthdayYear to "2008",
+                    ObjectFields.Group to "МЖ14",
+                    ObjectFields.Team to "ВЕЛИКОЛУКСКИЙ РАЙОН",
+                    ObjectFields.Grade to "",
+                    ObjectFields.ID to "128",
+                    ObjectFields.StartTime to "12:05:00"
+                ),
+                mapOf(
+                    ObjectFields.Name to "АЛЕКСАНДРА",
+                    ObjectFields.Surname to "ЛОВЦОВА",
+                    ObjectFields.BirthdayYear to "2014",
+                    ObjectFields.Group to "МЖ14",
+                    ObjectFields.Team to "ВЕЛИКИЕ ЛУКИ",
+                    ObjectFields.Grade to "",
+                    ObjectFields.ID to "102",
+                    ObjectFields.StartTime to "12:10:00"
+                ),
+            )
+            assertEquals(participants, readToss(file))
+        }
+    }
+}

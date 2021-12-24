@@ -29,29 +29,6 @@ val DB_TABLES = listOf(
     TeamTable
 )
 
-
-val headers = mapOf(
-    "Название группы" to ObjectFields.Name,
-    "Группа" to ObjectFields.Group,
-    "Фамилия" to ObjectFields.Surname,
-    "Имя" to ObjectFields.Name,
-    "Результат" to ObjectFields.ResultType,
-    "Тип" to ObjectFields.Type,
-    "Количество К/П" to ObjectFields.Amount,
-    "Название" to ObjectFields.Name,
-    "Г.р." to ObjectFields.BirthdayYear,
-    "Разр." to ObjectFields.Grade,
-    "Дистанция" to ObjectFields.RouteName,
-    "Команда" to ObjectFields.Team,
-    "Дата" to ObjectFields.Date,
-    "К/П" to ObjectFields.CheckPoints,
-    "Номер" to ObjectFields.ID,
-    "Время старта" to ObjectFields.StartTime,
-    "Время" to ObjectFields.Time,
-    "Номер К/П" to ObjectFields.Name,
-    "Стоимость" to ObjectFields.Weight
-)
-
 val english = mapOf(
     "Полный" to "Full",
     "Стоимость" to "Weight",
