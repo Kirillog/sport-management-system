@@ -8,7 +8,10 @@ import ru.emkn.kotlin.sms.io.FileLoader
 import ru.emkn.kotlin.sms.io.FileSaver
 import ru.emkn.kotlin.sms.io.Loader
 import ru.emkn.kotlin.sms.io.Saver
-import ru.emkn.kotlin.sms.model.*
+import ru.emkn.kotlin.sms.model.Checkpoint
+import ru.emkn.kotlin.sms.model.Competition
+import ru.emkn.kotlin.sms.model.Route
+import ru.emkn.kotlin.sms.model.Team
 import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.extension
@@ -29,15 +32,15 @@ object StateTable : IntIdTable("state") {
 object CompetitionController {
 
     var state: State = State.EMPTY
-    set(state) {
-        field = state
-        transaction {
-            StateTable.deleteAll()
-            StateTable.insert {
-                it[this.state] = state
+        set(state) {
+            field = state
+            transaction {
+                StateTable.deleteAll()
+                StateTable.insert {
+                    it[this.state] = state
+                }
             }
         }
-    }
 
     private fun load(path: Path?, trueState: State, loadFunc: Competition.(Loader) -> Unit) {
         path ?: throw IllegalArgumentException("path is not chosen")
@@ -52,6 +55,15 @@ object CompetitionController {
     fun loadCheckpoints(path: Path?) = load(path, State.CREATED) { loadCheckpoints(it) }
 
     fun loadRoutes(path: Path?) = load(path, State.CREATED) { loadRoutes(it) }
+
+    fun announce() {
+        if (state != State.CREATED) throw IllegalStateException("Before announce state must be CREATED NOT $state")
+        transaction {
+            if (Route.all().empty() || Checkpoint.all().empty())
+                throw IllegalStateException("Fill routes and checkpoints before announce")
+        }
+        state = State.ANNOUNCED
+    }
 
     fun registerFromPath(group: Path, team: Path) {
         val groupLoader = getLoader(group)
@@ -76,18 +88,6 @@ object CompetitionController {
         state = State.TOSSED
     }
 
-    fun groupsAndTossFromPath(group: Path, toss: Path) {
-        require(state == State.ANNOUNCED)
-        state = State.TOSSED
-        val groupLoader = getLoader(group)
-        val tossLoader = getLoader(toss)
-        transaction {
-            Competition.loadGroups(groupLoader)
-            Competition.toss(tossLoader)
-            Competition.teams.addAll(Team.all().toSet())
-        }
-    }
-
     fun registerResultsFromPath(checkPoints: Path) {
         require(state == State.TOSSED)
         transaction {
@@ -104,7 +104,7 @@ object CompetitionController {
         }
     }
 
-    private fun getLoader(path: Path): Loader {
+    fun getLoader(path: Path): Loader {
         return when (path.extension) {
             "csv" -> FileLoader(path, FileType.CSV)
             "" -> FileLoader(path, FileType.CSV)

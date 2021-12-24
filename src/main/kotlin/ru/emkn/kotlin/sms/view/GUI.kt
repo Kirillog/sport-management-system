@@ -23,6 +23,7 @@ import ru.emkn.kotlin.sms.view.tables.EventTable
 import ru.emkn.kotlin.sms.view.tables.ParticipantsTable
 import ru.emkn.kotlin.sms.view.tables.TimestampTable
 import java.io.File
+import java.time.LocalDate
 
 //TODO: сделать честную переотрисовку нашего окна.
 object GUI {
@@ -107,7 +108,7 @@ object GUI {
 
                 },
                 ActionButton("Create") {
-                    Creator.createEvent()
+                    Creator.createEventIfEmpty("Название", LocalDate.of(2021, 12, 31))
                     pushState(State.EditCompetitionData)
                 }
             )

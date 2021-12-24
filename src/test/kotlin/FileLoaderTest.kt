@@ -143,11 +143,10 @@ internal class FileLoaderTest {
         disconnect()
         connect()
         CompetitionController.connectDB(File("./${path}/testDB.mv.db"))
-        CompetitionController.announceFromPath(
-            initPath.resolve("event.csv"),
-            initPath.resolve("checkpoints.csv"),
-            initPath.resolve("courses.csv")
-        )
+        CompetitionController.loadEvent(initPath.resolve("event.csv"))
+        CompetitionController.loadCheckpoints(initPath.resolve("checkpoints.csv"))
+        CompetitionController.loadRoutes(initPath.resolve("courses.csv"))
+        CompetitionController.announce()
         CompetitionController.registerFromPath(initPath.resolve("classes.csv"), applicationPath)
         CompetitionController.toss()
         CompetitionController.saveTossToPath(protocolPath.resolve("toss.csv"))

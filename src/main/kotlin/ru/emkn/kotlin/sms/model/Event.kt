@@ -27,13 +27,10 @@ class Event(id: EntityID<Int>) : IntEntity(id), SingleLineWritable {
 
     companion object : IntEntityClass<Event>(EventTable) {
         fun create(name: String, date: LocalDate): Event {
-            return if (Event.all().empty()) {
-                Event.new {
-                    this.name = name
-                    this.date = date
-                }
-            } else {
-                Event.all().first()
+            EventTable.deleteAll()
+            return Event.new {
+                this.name = name
+                this.date = date
             }
         }
     }

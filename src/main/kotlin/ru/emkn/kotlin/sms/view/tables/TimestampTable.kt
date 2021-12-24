@@ -1,6 +1,7 @@
 package ru.emkn.kotlin.sms.view.tables
 
 import ru.emkn.kotlin.sms.ObjectFields
+import ru.emkn.kotlin.sms.controller.Deleter
 import ru.emkn.kotlin.sms.controller.Editor
 import ru.emkn.kotlin.sms.model.Timestamp
 import ru.emkn.kotlin.sms.view.GUI
@@ -53,7 +54,7 @@ class TimestampTable : Table<Timestamp>() {
         }
 
         override fun deleteAction(id: Int) {
-            Editor.deleteTimestamp(id)
+            Deleter.deleteTimestamp(id)
         }
     }
 

@@ -2,6 +2,7 @@ package ru.emkn.kotlin.sms.view.tables
 
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.emkn.kotlin.sms.ObjectFields
+import ru.emkn.kotlin.sms.controller.Deleter
 import ru.emkn.kotlin.sms.controller.Editor
 import ru.emkn.kotlin.sms.model.Participant
 import ru.emkn.kotlin.sms.view.GUI
@@ -80,7 +81,7 @@ class ParticipantsTable : Table<Participant>() {
         }
 
         override fun deleteAction(id: Int) {
-            Editor.deleteParticipant(id)
+            Deleter.deleteParticipant(id)
         }
     }
 
