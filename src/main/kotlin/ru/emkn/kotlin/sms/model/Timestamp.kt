@@ -53,4 +53,24 @@ class Timestamp(id: EntityID<Int>) : IntEntity(id) {
             participantID =
                 ParticipantTable.select { ParticipantTable.id eq participant.id }.first()[ParticipantTable.id]
         }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as Timestamp
+
+        if (time != other.time) return false
+        if (checkpointID != other.checkpointID) return false
+        if (participantID != other.participantID) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = time.hashCode()
+        result = 31 * result + checkpointID.hashCode()
+        result = 31 * result + participantID.hashCode()
+        return result
+    }
 }

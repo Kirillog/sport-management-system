@@ -10,11 +10,11 @@ import ru.emkn.kotlin.sms.MAX_TEXT_FIELD_SIZE
 import ru.emkn.kotlin.sms.io.MultilineWritable
 import kotlin.reflect.KFunction1
 
-enum class ResultType {
-    WEIGHT {
+enum class ResultType(val russian: String) {
+    WEIGHT("Стоимость") {
         override val implementation = ::PersonalResultByWeight
     },
-    TIME {
+    TIME("Время") {
         override val implementation = ::PersonalResultByTime
     };
 
@@ -90,7 +90,6 @@ class Group(id: EntityID<Int>) : IntEntity(id), MultilineWritable {
 
         if (name != other.name) return false
         if (route != other.route) return false
-        if (members != other.members) return false
 
         return true
     }
@@ -98,7 +97,6 @@ class Group(id: EntityID<Int>) : IntEntity(id), MultilineWritable {
     override fun hashCode(): Int {
         var result = name.hashCode()
         result = 31 * result + route.hashCode()
-        result = 31 * result + members.hashCode()
         return result
     }
 

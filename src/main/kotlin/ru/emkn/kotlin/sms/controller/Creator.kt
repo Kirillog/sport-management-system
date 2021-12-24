@@ -60,9 +60,17 @@ object Creator {
         }
 
     fun createEventFrom(values: Map<String, String>): Event {
-        Editor.editEvent(Competition.event, values)
-        logger.debug { "Event was successfully created" }
-        return Competition.event
+        try {
+            val eventName = convert<String>(values["name"])
+            val data = convert<LocalDate>(values["date"])
+            val event = Event(eventName, data)
+            Competition.event = event
+            logger.info { "Event was successfully created" }
+            return event
+        } catch (err: IllegalArgumentException) {
+            logger.info { "Cannot create event" }
+            throw err
+        }
     }
 
     @OptIn(ExperimentalStdlibApi::class)

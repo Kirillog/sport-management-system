@@ -80,11 +80,11 @@ class Participant(id: EntityID<Int>) : IntEntity(id), SingleLineWritable {
         private fun Duration.toIntervalString(): String =
             "${this.toHoursPart()}h ${this.toMinutesPart()}m ${this.toSecondsPart()}s"
 
-        fun formatterParticipantForApplications(participant: Participant) = listOf(
+        fun formatterParticipantForApplications(participant: Participant): List<Any?> = listOf(
             participant.name,
             participant.surname,
-            participant.teamID,
             participant.birthdayYear,
+            participant.group.name,
             participant.grade,
         )
 
@@ -176,4 +176,26 @@ class Participant(id: EntityID<Int>) : IntEntity(id), SingleLineWritable {
 
     override fun toLine() =
         listOf(id, name, surname, birthdayYear, team, grade, startTime.format(DateTimeFormatter.ISO_LOCAL_TIME))
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as Participant
+
+        if (name != other.name) return false
+        if (surname != other.surname) return false
+        if (birthdayYear != other.birthdayYear) return false
+        if (grade != other.grade) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = name.hashCode()
+        result = 31 * result + surname.hashCode()
+        result = 31 * result + birthdayYear
+        result = 31 * result + (grade?.hashCode() ?: 0)
+        return result
+    }
 }
