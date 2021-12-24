@@ -97,11 +97,9 @@ object GUI {
                     val checkpointsFile = PathChooser("Choose checkpoints", ".csv", "Checkpoints").choose()
                     val routesFile = PathChooser("Choose routes", ".csv", "Routes").choose()
                     try {
-                        CompetitionController.announceFromPath(
-                            eventFile?.toPath(),
-                            checkpointsFile?.toPath(),
-                            routesFile?.toPath()
-                        )
+                        CompetitionController.loadEvent(eventFile?.toPath())
+                        CompetitionController.loadCheckpoints(checkpointsFile?.toPath())
+                        CompetitionController.loadRoutes(routesFile?.toPath())
                         pushState(State.EditCompetitionData)
                     } catch (e: Exception) {
                         TopAppBar.setMessage(e.message ?: "Undefined error")

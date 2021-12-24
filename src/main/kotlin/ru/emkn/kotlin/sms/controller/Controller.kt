@@ -39,26 +39,19 @@ object CompetitionController {
         }
     }
 
-    fun announceFromPath(event: Path?, checkpoints: Path?, routes: Path?) {
-        event ?: throw IllegalArgumentException("event is not chosen")
-        checkpoints ?: throw IllegalArgumentException("checkpoints are not chosen")
-        routes ?: throw IllegalArgumentException("routes are not chosen")
-
-        val eventLoader = getLoader(event)
-        val checkPoints = getLoader(checkpoints)
-        val routesLoader = getLoader(routes)
-        announce(eventLoader, checkPoints, routesLoader)
-    }
-
-    private fun announce(eventLoader: Loader, checkpointsLoader: Loader, routesLoader: Loader) {
-        require(state == State.CREATED)
+    private fun load(path: Path?, trueState: State, loadFunc: Competition.(Loader) -> Unit) {
+        path ?: throw IllegalArgumentException("path is not chosen")
+        if (state != trueState) throw IllegalStateException("For this load state must be $trueState")
         transaction {
-            Competition.loadEvent(eventLoader)
-            Competition.loadCheckpoints(checkpointsLoader)
-            Competition.loadRoutes(routesLoader)
+            Competition.loadFunc(getLoader(path))
         }
-        state = State.ANNOUNCED
     }
+
+    fun loadEvent(path: Path?) = load(path, State.CREATED) { loadEvent(it) }
+
+    fun loadCheckpoints(path: Path?) = load(path, State.CREATED) { loadCheckpoints(it) }
+
+    fun loadRoutes(path: Path?) = load(path, State.CREATED) { loadRoutes(it) }
 
     fun registerFromPath(group: Path, team: Path) {
         val groupLoader = getLoader(group)
@@ -166,7 +159,7 @@ object CompetitionController {
                 SchemaUtils.create(it)
             }
             val query = StateTable.selectAll()
-            state = if (query.empty()) State.EMPTY else query.first()[StateTable.state]
+            state = if (query.empty()) State.CREATED else query.first()[StateTable.state]
         }
     }
 }
