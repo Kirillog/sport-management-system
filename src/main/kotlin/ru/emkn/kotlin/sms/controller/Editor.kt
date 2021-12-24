@@ -12,6 +12,7 @@ import java.time.LocalTime
 private val logger = KotlinLogging.logger { }
 
 object Editor {
+
     fun editParticipant(participant: Participant, values: Map<ObjectFields, String>) {
         try {
             val name = convert<String>(values[ObjectFields.Name])
@@ -94,6 +95,19 @@ object Editor {
         }
     }
 
+    fun editCheckpoint(checkpoint: Checkpoint, values: Map<ObjectFields, String>) {
+        transaction {
+        }
+        TODO()
+    }
+
+    fun editTimestamp(timestamp: Timestamp, values: Map<ObjectFields, String>) {
+        TODO()
+    }
+}
+
+object Deleter {
+
     fun deleteParticipant(id: Int) {
         transaction {
             ParticipantTable.deleteWhere { ParticipantTable.id eq id }
@@ -136,13 +150,6 @@ object Editor {
         logger.info { "Route with id $id was deleted" }
     }
 
-    fun editCheckpoint(checkpoint: Checkpoint, values: Map<ObjectFields, String>) {
-        transaction {
-
-        }
-        TODO()
-    }
-
     fun deleteCheckpoint(id: Int) {
         transaction {
             val checkpoint = Checkpoint.findById(id) ?: throw IllegalStateException("No checkpoint with such id $id")
@@ -152,12 +159,7 @@ object Editor {
         logger.info { "Checkpoint with id $id was deleted" }
     }
 
-    fun editTimestamp(timestamp: Timestamp, values: Map<ObjectFields, String>) {
-        TODO()
-    }
-
     fun deleteTimestamp(id: Int) {
         TODO()
     }
-
 }

@@ -20,6 +20,7 @@ import ru.emkn.kotlin.sms.view.tables.EventTable
 import ru.emkn.kotlin.sms.view.tables.ParticipantsTable
 import ru.emkn.kotlin.sms.view.tables.TimestampTable
 import java.io.File
+import java.time.LocalDate
 
 //TODO: сделать честную переотрисовку нашего окна.
 object GUI {
@@ -94,11 +95,9 @@ object GUI {
                     val checkpointsFile = PathChooser("Choose checkpoints", ".csv", "Checkpoints").choose()
                     val routesFile = PathChooser("Choose routes", ".csv", "Routes").choose()
                     try {
-                        CompetitionController.announceFromPath(
-                            eventFile?.toPath(),
-                            checkpointsFile?.toPath(),
-                            routesFile?.toPath()
-                        )
+                        CompetitionController.loadEvent(eventFile?.toPath())
+                        CompetitionController.loadCheckpoints(checkpointsFile?.toPath())
+                        CompetitionController.loadRoutes(routesFile?.toPath())
                         pushState(State.EditAnnounceData)
                     } catch (e: Exception) {
                         TopAppBar.setMessage(e.message ?: "Undefined error")
@@ -106,7 +105,7 @@ object GUI {
 
                 },
                 ActionButton("Create") {
-                    Creator.createEvent()
+                    Creator.createEventIfEmpty("Название", LocalDate.of(2021, 12, 31))
                     pushState(State.EditAnnounceData)
                 }
             )

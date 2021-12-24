@@ -1,18 +1,27 @@
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.emkn.kotlin.sms.FileType
 import ru.emkn.kotlin.sms.controller.CompetitionController
+import ru.emkn.kotlin.sms.controller.State
 import ru.emkn.kotlin.sms.io.MultilineWritable
 import ru.emkn.kotlin.sms.io.Writer
-import ru.emkn.kotlin.sms.model.Checkpoint
-import ru.emkn.kotlin.sms.model.Participant
-import ru.emkn.kotlin.sms.model.Route
-import ru.emkn.kotlin.sms.model.Timestamp
+import ru.emkn.kotlin.sms.model.*
 import java.io.File
 import java.nio.file.Path
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import kotlin.io.path.Path
 import kotlin.random.Random
+
+fun CompetitionController.groupsAndTossFromPath(group: Path, toss: Path) {
+    state = State.TOSSED
+    val groupLoader = getLoader(group)
+    val tossLoader = getLoader(toss)
+    transaction {
+        Competition.loadGroups(groupLoader)
+        Competition.toss(tossLoader)
+        Competition.teams.addAll(Team.all().toSet())
+    }
+}
 
 
 data class CheckPointsProtocol(val checkPoint: Checkpoint, val protocol: List<Timestamp>) :
@@ -64,11 +73,11 @@ fun Generator.generateCheckPointProtocols(
     protocolsDir: Path,
     random: Random = Random(0)
 ): List<CheckPointsProtocol> {
-    CompetitionController.announceFromPath(
-        event = competitionPath.resolve("input/event.csv"),
-        checkpoints = competitionPath.resolve("input/checkpoints.csv"),
-        routes = competitionPath.resolve("input/courses.csv")
-    )
+    CompetitionController.loadEvent(competitionPath.resolve("input/event.csv"))
+    CompetitionController.loadCheckpoints(competitionPath.resolve("input/checkpoints.csv"),)
+    CompetitionController.loadRoutes(competitionPath.resolve("input/courses.csv"))
+    CompetitionController.announce()
+
     CompetitionController.groupsAndTossFromPath(
         group = competitionPath.resolve("input/classes.csv"),
         toss = competitionPath.resolve("protocols/toss.csv")

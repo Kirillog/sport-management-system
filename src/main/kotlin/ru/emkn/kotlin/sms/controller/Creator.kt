@@ -8,10 +8,9 @@ import ru.emkn.kotlin.sms.english
 import ru.emkn.kotlin.sms.model.*
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 import java.util.*
-import kotlin.reflect.KClass
 import kotlin.reflect.KType
-import kotlin.reflect.full.starProjectedType
 import kotlin.reflect.jvm.jvmErasure
 import kotlin.reflect.typeOf
 
@@ -63,18 +62,25 @@ object Creator {
             }
         }
 
-    fun createEvent(): Event = createEventFrom(
-        mapOf(
-            ObjectFields.Name to "event",
-            ObjectFields.Date to "20.12.2021"
+    fun createEventIfEmpty(name: String, date: LocalDate): Event {
+        return transaction {
+            if (!Event.all().empty()) Event.all().first()
+            else null
+        } ?: createEventFrom(
+            mapOf(
+                ObjectFields.Name to name,
+                ObjectFields.Date to date.format(DateTimeFormatter.ISO_DATE)
+            )
         )
-    )
+    }
 
     fun createEventFrom(values: Map<ObjectFields, String>): Event {
         try {
             val eventName = convert<String>(values[ObjectFields.Name])
             val data = convert<LocalDate>(values[ObjectFields.Date])
-            val event = Event(eventName, data)
+            val event = transaction {
+                Event.create(eventName, data)
+            }
             Competition.event = event
             logger.info { "Event was successfully created" }
             return event
