@@ -3,6 +3,7 @@ package ru.emkn.kotlin.sms.view.tables
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.emkn.kotlin.sms.ObjectFields
 import ru.emkn.kotlin.sms.controller.CompetitionController
+import ru.emkn.kotlin.sms.controller.Deleter
 import ru.emkn.kotlin.sms.controller.Editor
 import ru.emkn.kotlin.sms.model.Group
 import ru.emkn.kotlin.sms.view.PathChooser
@@ -44,6 +45,11 @@ class GroupTable : Table<Group>() {
 
         override fun saveChanges() {
             Editor.editGroup(group, changes)
+        }
+
+        override fun deleteAction() {
+            Deleter.deleteGroup(id)
+            state = State.Outdated
         }
     }
 

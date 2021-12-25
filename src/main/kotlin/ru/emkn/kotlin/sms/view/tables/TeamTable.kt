@@ -3,6 +3,7 @@ package ru.emkn.kotlin.sms.view.tables
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.emkn.kotlin.sms.ObjectFields
 import ru.emkn.kotlin.sms.controller.CompetitionController
+import ru.emkn.kotlin.sms.controller.Deleter
 import ru.emkn.kotlin.sms.controller.Editor
 import ru.emkn.kotlin.sms.model.Team
 import ru.emkn.kotlin.sms.view.PathChooser
@@ -32,6 +33,11 @@ class TeamTable : Table<Team>() {
 
         override fun saveChanges() {
             Editor.editTeam(team, changes)
+        }
+
+        override fun deleteAction() {
+            Deleter.deleteTeam(id)
+            state = State.Outdated
         }
     }
 

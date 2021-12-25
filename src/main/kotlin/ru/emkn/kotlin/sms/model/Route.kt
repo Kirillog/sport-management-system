@@ -124,8 +124,12 @@ class Checkpoint(id: EntityID<Int>) : IntEntity(id), SingleLineWritable {
             }
 
 
-        fun findByName(name: String): Checkpoint =
-            Checkpoint.find { CheckpointTable.name eq name }.first()
+        fun findByName(name: String): Checkpoint {
+            return Checkpoint.find { CheckpointTable.name eq name }.let {
+                if (it.empty()) throw IllegalStateException("No checkpoint with name $name")
+                else it.first()
+            }
+        }
 
         fun checkByName(name: String): Boolean =
             !Checkpoint.find { CheckpointTable.name eq name }.empty()
