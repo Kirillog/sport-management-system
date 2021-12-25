@@ -9,6 +9,7 @@ import androidx.compose.ui.window.application
 import com.sun.nio.sctp.IllegalReceiveException
 import ru.emkn.kotlin.sms.controller.CompetitionController
 import ru.emkn.kotlin.sms.view.creators.CheckpointCreator
+import ru.emkn.kotlin.sms.view.creators.EventCreator
 import ru.emkn.kotlin.sms.view.creators.ParticipantCreator
 import ru.emkn.kotlin.sms.view.creators.RoutesCreator
 import ru.emkn.kotlin.sms.view.creators.draw
@@ -24,6 +25,7 @@ class GUI {
         CreateCheckpoint,
         CreateRoute,
         CreateTimestamp,
+        CreateEvent,
         CheckDataBaseState,
         EditAnnounceData,
     }
@@ -88,6 +90,7 @@ private fun app() {
             GUI.State.CreateParticipant -> draw(gui, ParticipantCreator())
             GUI.State.CreateCheckpoint -> draw(gui, CheckpointCreator())
             GUI.State.CreateRoute -> draw(gui, RoutesCreator())
+            GUI.State.CreateEvent -> draw(gui, EventCreator())
             GUI.State.CreateTimestamp -> TODO()
             else -> throw IllegalReceiveException("Forbidden state of GUI")
         }
