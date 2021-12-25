@@ -6,7 +6,6 @@ import ru.emkn.kotlin.sms.controller.Deleter
 import ru.emkn.kotlin.sms.controller.Editor
 import ru.emkn.kotlin.sms.model.Participant
 import ru.emkn.kotlin.sms.view.GUI
-import ru.emkn.kotlin.sms.view.creators.ParticipantCreator
 
 class ParticipantsTable : Table<Participant>() {
 
@@ -74,7 +73,6 @@ class ParticipantsTable : Table<Participant>() {
 
     inner class ParticipantTableRow(private val participant: Participant) : TableRow() {
 
-        override val id = participant.id.value
         override val cells = header.makeTableCells(participant, ::saveChanges)
 
         override fun saveChanges() {
@@ -84,6 +82,8 @@ class ParticipantsTable : Table<Participant>() {
         override fun deleteAction() {
             Deleter.deleteParticipant(id)
         }
+
+        override val id: Int = participant.id.value
     }
 
     override val rows

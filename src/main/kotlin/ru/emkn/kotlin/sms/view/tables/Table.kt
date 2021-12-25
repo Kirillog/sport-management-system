@@ -5,7 +5,8 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.*
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.*
@@ -15,11 +16,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import org.jetbrains.exposed.dao.id.EntityID
 import ru.emkn.kotlin.sms.ObjectFields
 import ru.emkn.kotlin.sms.view.ActionButton
 import ru.emkn.kotlin.sms.view.GUI
-import ru.emkn.kotlin.sms.view.creators.ItemCreator
 
 const val tableDeleteButtonWidth = 10
 
@@ -39,8 +38,8 @@ abstract class Table<T> {
             }
 
         @Composable
-        open fun draw() {
-            update()
+        open fun draw(gui: GUI) {
+//            update()
             var rowSize by remember { mutableStateOf(IntSize.Zero) }
 
             Row(
@@ -55,7 +54,7 @@ abstract class Table<T> {
                 if (header.deleteButton)
                     Box(modifier = Modifier.border(BorderStroke(1.dp, Color.Black))) {
                         IconButton(
-                            onClick = { delete() },
+                            onClick = { delete(gui) },
                             modifier = Modifier.size(tableDeleteButtonWidth.dp)
                         ) {
                             Icon(imageVector = Icons.Filled.Close, contentDescription = "Delete", tint = Color.Black)
@@ -76,11 +75,11 @@ abstract class Table<T> {
             }
         }
 
-        private fun delete() {
+        private fun delete(gui: GUI) {
             if (!header.deleteButton)
                 return
             deleteAction()
-            GUI.reload()
+            gui.reload()
         }
 
         abstract fun saveChanges()
@@ -95,23 +94,33 @@ abstract class Table<T> {
     abstract val header: TableHeader<T>
     abstract val rows: List<TableRow>
     open val creatingState: GUI.State? = null
+    open val loadAction: (gui: GUI) -> Unit = {}
 
     @Composable
-    open fun draw() {
+    open fun draw(gui: GUI) {
         Column {
-            header.draw()
+            header.draw(gui)
             Column(
                 modifier = Modifier.verticalScroll(rememberScrollState())
             ) {
                 rows.sortedWith(header.comparator).forEach {
-                    it.draw()
+                    it.draw(gui)
                 }
-                val createState = creatingState
-                if (createState != null)
-                    ActionButton("Add") {
-                        GUI.pushState(createState)
-                    }.draw()
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceAround
+                ) {
+                    val createState = creatingState
+                    ActionButton("Load") {
+                        loadAction(gui)
+                    }.draw(gui)
+                    if (createState != null)
+                        ActionButton("Add") {
+                            gui.pushState(createState)
+                        }.draw(gui)
+                }
             }
         }
     }
 }
+

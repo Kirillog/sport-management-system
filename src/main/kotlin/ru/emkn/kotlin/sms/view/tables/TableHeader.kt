@@ -4,7 +4,6 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.*
@@ -17,7 +16,6 @@ import mu.KotlinLogging
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.emkn.kotlin.sms.ObjectFields
 import ru.emkn.kotlin.sms.view.GUI
-import kotlin.math.log
 
 
 data class TableColumn<T>(
@@ -37,7 +35,7 @@ class TableHeader<T>(val columns: List<TableColumn<T>>, val deleteButton: Boolea
     var reversedOrder = false
 
     @Composable
-    fun draw() {
+    fun draw(gui: GUI) {
         var rowSize by remember { mutableStateOf(IntSize.Zero) }
         Row(
             modifier = Modifier
@@ -64,7 +62,7 @@ class TableHeader<T>(val columns: List<TableColumn<T>>, val deleteButton: Boolea
                         if (orderByColumn == index)
                             reversedOrder = !reversedOrder
                         orderByColumn = index
-                        GUI.reload()
+                        gui.reload()
                     },
                     modifier = Modifier
                         .border(BorderStroke(1.dp, Color.Black))
@@ -86,4 +84,8 @@ class TableHeader<T>(val columns: List<TableColumn<T>>, val deleteButton: Boolea
             columns[orderByColumn].comparator.reversed()
         else
             columns[orderByColumn].comparator
+}
+
+fun <T> TableHeader(tableHeader: TableHeader<T>) {
+
 }

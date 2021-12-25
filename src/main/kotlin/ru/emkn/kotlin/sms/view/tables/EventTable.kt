@@ -2,10 +2,11 @@ package ru.emkn.kotlin.sms.view.tables
 
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.emkn.kotlin.sms.ObjectFields
+import ru.emkn.kotlin.sms.controller.CompetitionController
 import ru.emkn.kotlin.sms.controller.Editor
-import ru.emkn.kotlin.sms.model.Competition
 import ru.emkn.kotlin.sms.model.Event
-import ru.emkn.kotlin.sms.view.TopAppBar
+import ru.emkn.kotlin.sms.view.GUI
+import ru.emkn.kotlin.sms.view.PathChooser
 import java.time.format.DateTimeFormatter
 
 class EventTable : Table<Event>() {
@@ -40,7 +41,7 @@ class EventTable : Table<Event>() {
 
     inner class EventTableRow(private val event: Event) : TableRow() {
 
-        override val id = 0
+        override val id = event.id.value
         override val cells = header.makeTableCells(event, ::saveChanges)
 
         override fun saveChanges() {
@@ -50,4 +51,10 @@ class EventTable : Table<Event>() {
 
     override val rows: List<TableRow>
         get() = event.map { EventTableRow(it) }
+
+    override val loadAction: (GUI) -> Unit = {
+        val eventFile = PathChooser("Choose event", ".csv", "Event").choose()
+        CompetitionController.loadEvent(eventFile?.toPath())
+        it.reload()
+    }
 }

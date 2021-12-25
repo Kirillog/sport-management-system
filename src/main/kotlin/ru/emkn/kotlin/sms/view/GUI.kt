@@ -1,6 +1,5 @@
 package ru.emkn.kotlin.sms.view
 
-import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -20,21 +19,16 @@ import ru.emkn.kotlin.sms.view.tables.EventTable
 import ru.emkn.kotlin.sms.view.tables.ParticipantsTable
 import ru.emkn.kotlin.sms.view.tables.TimestampTable
 import java.io.File
-import java.time.LocalDate
 
 //TODO: сделать честную переотрисовку нашего окна.
-object GUI {
-    fun run() = application {
-        Window(onCloseRequest = ::exitApplication, title = "Sport Management System") {
-            app()
-        }
-    }
+class GUI {
 
     enum class State {
         LoadOrCreateDataBase,
         ShowParticipants,
         CreateParticipant,
         CreateCheckpoint,
+        CreateRoutes,
         CreateTimestamp,
         Reload,
         CheckDataBaseState,
@@ -42,7 +36,7 @@ object GUI {
         EditRegisterData
     }
 
-    private var state = mutableStateOf(State.LoadOrCreateDataBase)
+    var state = mutableStateOf(State.LoadOrCreateDataBase)
     private val statesStack = mutableListOf(state.value)
 
     private val participantsTable by lazy { mutableStateOf(ParticipantsTable()) }
@@ -66,24 +60,7 @@ object GUI {
         state.value = statesStack.lastOrNull() ?: throw IllegalStateException("GUI stack error")
     }
 
-    @Composable
-    private fun loadOrCreateDataBase() {
-        LoadOrCreate(
-            question = "Load database or create new one?",
-            loadTitle = "select database file",
-            createTitle = "choose path for new database",
-            loadAction = {
-                CompetitionController.connectDB(it)
-                pushDataBaseState()
-            },
-            createAction = {
-                CompetitionController.createDB(it)
-                pushState(State.EditAnnounceData)
-            },
-            fileExtension = ".mv.db",
-            fileExtensionDescription = "Database"
-        ).draw()
-    }
+
 
 /*    @Composable
     private fun loadOrCreateCompetitionData() {
@@ -118,32 +95,7 @@ object GUI {
         RoutesEditing
     }
 
-    @Composable
-    private fun editCompetitionData() {
-        val state = remember { mutableStateOf(EditCompetitionState.EventEditing) }
 
-        Column {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceAround
-            ) {
-                ActionButton("events") {
-                    state.value = EditCompetitionState.EventEditing
-                }.draw()
-                ActionButton("checkpoints") {
-                    state.value = EditCompetitionState.CheckpointsEditing
-                }.draw()
-                ActionButton("Routes") {
-                    TODO()
-                }.draw()
-            }
-            when (state.value) {
-                EditCompetitionState.EventEditing -> eventTable.value.draw()
-                EditCompetitionState.CheckpointsEditing -> checkpointTable.value.draw()
-                EditCompetitionState.RoutesEditing -> TODO()
-            }
-        }
-    }
 
     fun chooseFileAndProcess(
         chooserTitle: String,
@@ -160,7 +112,7 @@ object GUI {
     }
 
 
-    private fun pushDataBaseState() {
+    fun pushDataBaseState() {
         pushState(
             when (CompetitionController.getControllerState()) {
                 ru.emkn.kotlin.sms.controller.State.CREATED -> State.EditAnnounceData
@@ -170,26 +122,82 @@ object GUI {
         )
     }
 
-    @Preview
-    @Composable
-    private fun app() {
-        println(state.value)
-        while (state.value == State.Reload)
-            popState()
-        val participantsTable = remember { ParticipantsTable() }
-        Column {
-            TopAppBar.draw()
-            when (state.value) {
-                State.LoadOrCreateDataBase -> loadOrCreateDataBase()
-//                State.LoadOrCreateCompetitionData -> loadOrCreateCompetitionData()
-                State.EditAnnounceData -> CompetitionDataEditor().draw()
-                State.CheckDataBaseState -> pushDataBaseState()
-                State.ShowParticipants -> participantsTable.draw()
-                State.CreateParticipant -> ParticipantCreator().draw()
-                State.CreateCheckpoint -> CheckpointCreator().draw()
-                State.CreateTimestamp -> TODO()
-                else -> throw IllegalReceiveException("Forbidden state of GUI")
-            }
+
+}
+
+fun mainContent() {
+    application {
+        Window(onCloseRequest = ::exitApplication, title = "Sport Management System") {
+            app()
         }
     }
+}
+
+@Composable
+private fun app() {
+    val gui = remember { GUI() }
+    println(gui.state.value)
+    while (gui.state.value == GUI.State.Reload)
+        gui.popState()
+    val participantsTable = remember { ParticipantsTable() }
+    Column {
+        TopAppBar.draw()
+        when (gui.state.value) {
+            GUI.State.LoadOrCreateDataBase -> loadOrCreateDataBase(gui)
+//                State.LoadOrCreateCompetitionData -> loadOrCreateCompetitionData()
+            GUI.State.EditAnnounceData -> CompetitionDataEditor().draw(gui)
+            GUI.State.CheckDataBaseState -> gui.pushDataBaseState()
+            GUI.State.ShowParticipants -> participantsTable.draw(gui)
+            GUI.State.CreateParticipant -> ParticipantCreator().draw(gui)
+            GUI.State.CreateCheckpoint -> CheckpointCreator().draw(gui)
+            GUI.State.CreateTimestamp -> TODO()
+            else -> throw IllegalReceiveException("Forbidden state of GUI")
+        }
+    }
+}
+
+@Composable
+private fun editCompetitionData(gui: GUI) {
+    val state = remember { mutableStateOf(GUI.EditCompetitionState.EventEditing) }
+
+    Column {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceAround
+        ) {
+            ActionButton("events") {
+                state.value = GUI.EditCompetitionState.EventEditing
+            }.draw(gui)
+            ActionButton("checkpoints") {
+                state.value = GUI.EditCompetitionState.CheckpointsEditing
+            }.draw(gui)
+            ActionButton("Routes") {
+                TODO()
+            }.draw(gui)
+        }
+        when (state.value) {
+            GUI.EditCompetitionState.EventEditing -> gui.eventTable.value.draw(gui)
+            GUI.EditCompetitionState.CheckpointsEditing -> gui.checkpointTable.value.draw(gui)
+            GUI.EditCompetitionState.RoutesEditing -> TODO()
+        }
+    }
+}
+
+@Composable
+private fun loadOrCreateDataBase(gui: GUI) {
+    LoadOrCreate(
+        question = "Load database or create new one?",
+        loadTitle = "select database file",
+        createTitle = "choose path for new database",
+        loadAction = {
+            CompetitionController.connectDB(it)
+            gui.pushDataBaseState()
+        },
+        createAction = {
+            CompetitionController.createDB(it)
+            gui.pushState(GUI.State.EditAnnounceData)
+        },
+        fileExtension = ".mv.db",
+        fileExtensionDescription = "Database"
+    ).draw(gui)
 }

@@ -8,12 +8,12 @@ import androidx.compose.ui.graphics.Color
 
 class ActionButton(
     private val text: String,
-    private val action: () -> Unit
+    private val action: (gui: GUI) -> Unit
 ) {
     @Composable
-    fun draw() {
+    fun draw(gui: GUI) {
         Button(
-            onClick = action,
+            onClick = { action(gui) },
             colors = buttonColors(backgroundColor = Color.Gray)
         ) {
             Text(text)

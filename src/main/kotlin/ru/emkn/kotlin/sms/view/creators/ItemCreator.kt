@@ -1,7 +1,10 @@
 package ru.emkn.kotlin.sms.view.creators
 
-import androidx.compose.foundation.*
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.runtime.*
@@ -40,17 +43,17 @@ data class ItemCreatorInputField(
 abstract class ItemCreator<T> {
     abstract val fields: List<ItemCreatorInputField>
 
-    private fun create() {
+    private fun create(gui: GUI) {
         try {
             createAction(input)
-            GUI.popState()
+            gui.popState()
         } catch (e: Exception) {
-            TopAppBar.setMessage(e.message ?: "Undefined error");
+            TopAppBar.setMessage(e.message ?: "Undefined error")
         }
     }
 
-    private fun cancel() {
-        GUI.popState()
+    private fun cancel(gui: GUI) {
+        gui.popState()
     }
 
     abstract fun createAction(input: Map<ObjectFields, String>)
@@ -59,7 +62,7 @@ abstract class ItemCreator<T> {
         get() = fields.associate { it.field to it.data.value }
 
     @Composable
-    open fun draw() {
+    open fun draw(gui: GUI) {
         var columnSize by remember { mutableStateOf(IntSize.Zero) }
 
         Column(modifier = Modifier
@@ -71,8 +74,8 @@ abstract class ItemCreator<T> {
             for (field in fields) {
                 field.draw(columnSize.width.dp)
             }
-            ActionButton("Create", ::create).draw()
-            ActionButton("Cancel", ::cancel).draw()
+            ActionButton("Create", ::create).draw(gui)
+            ActionButton("Cancel", ::cancel).draw(gui)
         }
     }
 }

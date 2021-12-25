@@ -13,17 +13,17 @@ class LoadOrCreate(
     private val fileExtensionDescription: String,
 ) {
     @Composable
-    fun draw() {
+    fun draw(gui: GUI) {
         ButtonsChooser(
             question = question,
             listOf(
                 ActionButton("Load") {
-                    GUI.chooseFileAndProcess(loadTitle, fileExtension, fileExtensionDescription, loadAction)
+                    gui.chooseFileAndProcess(loadTitle, fileExtension, fileExtensionDescription, loadAction)
                 },
                 ActionButton("Create") {
-                    GUI.chooseFileAndProcess(createTitle, fileExtension, fileExtensionDescription, createAction)
+                    gui.chooseFileAndProcess(createTitle, fileExtension, fileExtensionDescription, createAction)
                 }
             )
-        ).draw()
+        ).draw(gui)
     }
 }

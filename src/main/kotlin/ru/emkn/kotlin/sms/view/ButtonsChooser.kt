@@ -11,7 +11,7 @@ import androidx.compose.ui.Modifier
 class ButtonsChooser(private val question: String, private val buttons: List<ActionButton>) {
 
     @Composable
-    fun draw() {
+    fun draw(gui: GUI) {
         Column(
             modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.Center,
@@ -19,7 +19,7 @@ class ButtonsChooser(private val question: String, private val buttons: List<Act
         ) {
             Text(question)
             for (button in buttons) {
-                button.draw()
+                button.draw(gui)
             }
         }
     }

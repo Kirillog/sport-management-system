@@ -20,7 +20,7 @@ class CompetitionDataEditor {
     }
 
     @Composable
-    fun draw() {
+    fun draw(gui: GUI) {
         Column {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -28,17 +28,17 @@ class CompetitionDataEditor {
             ) {
                 ActionButton("events") {
                     state.value = EditCompetitionState.EventEditing
-                }.draw()
+                }.draw(gui)
                 ActionButton("checkpoints") {
                     state.value = EditCompetitionState.CheckpointsEditing
-                }.draw()
+                }.draw(gui)
                 ActionButton("Routes") {
                     TODO()
-                }.draw()
+                }.draw(gui)
             }
             when (state.value) {
-                EditCompetitionState.EventEditing -> GUI.eventTable.value.draw()
-                EditCompetitionState.CheckpointsEditing -> GUI.checkpointTable.value.draw()
+                EditCompetitionState.EventEditing -> gui.eventTable.value.draw(gui)
+                EditCompetitionState.CheckpointsEditing -> gui.checkpointTable.value.draw(gui)
                 EditCompetitionState.RoutesEditing -> TODO()
             }
         }
