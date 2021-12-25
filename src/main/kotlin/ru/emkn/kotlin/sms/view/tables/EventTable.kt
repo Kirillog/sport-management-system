@@ -5,14 +5,15 @@ import ru.emkn.kotlin.sms.ObjectFields
 import ru.emkn.kotlin.sms.controller.CompetitionController
 import ru.emkn.kotlin.sms.controller.Editor
 import ru.emkn.kotlin.sms.model.Event
-import ru.emkn.kotlin.sms.view.GUI
 import ru.emkn.kotlin.sms.view.PathChooser
 import java.time.format.DateTimeFormatter
 
 class EventTable : Table<Event>() {
 
-    private val event
-        get() = transaction { Event.all().toList() }
+    private val event: List<Event>
+        get() {
+            return transaction { Event.all().toList() }
+        }
 
     override val header = TableHeader(
         listOf(
@@ -49,12 +50,13 @@ class EventTable : Table<Event>() {
         }
     }
 
+
     override val rows: List<TableRow>
         get() = event.map { EventTableRow(it) }
 
-    override val loadAction: (GUI) -> Unit = {
+    override val loadAction = {
         val eventFile = PathChooser("Choose event", ".csv", "Event").choose()
         CompetitionController.loadEvent(eventFile?.toPath())
-        it.reload()
+        state = State.Outdated
     }
 }

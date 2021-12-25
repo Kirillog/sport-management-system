@@ -19,31 +19,34 @@ import ru.emkn.kotlin.sms.maxTextLength
 import ru.emkn.kotlin.sms.view.ActionButton
 import ru.emkn.kotlin.sms.view.GUI
 import ru.emkn.kotlin.sms.view.TopAppBar
+import ru.emkn.kotlin.sms.view.draw
 
 data class ItemCreatorInputField(
     val title: String,
     val field: ObjectFields,
     var data: MutableState<String> = mutableStateOf("")
-) {
-    @Composable
-    fun draw(width: Dp) {
+)
 
-        TextField(data.value,
-            modifier = Modifier
-                .border(BorderStroke(1.dp, Color.Black))
-                .width(width),
-            onValueChange = {
-                data.value = it.replace("\n", "").take(maxTextLength)
-            },
-            label = { Text(title) }
-        )
-    }
+@Composable
+fun draw(inputFieldCreator: ItemCreatorInputField, width: Dp) {
+
+    TextField(inputFieldCreator.data.value,
+        modifier = Modifier
+            .border(BorderStroke(1.dp, Color.Black))
+            .width(width),
+        onValueChange = {
+            inputFieldCreator.data.value = it.replace("\n", "").take(maxTextLength)
+        },
+        label = { Text(inputFieldCreator.title) }
+    )
 }
 
 abstract class ItemCreator<T> {
     abstract val fields: List<ItemCreatorInputField>
 
-    private fun create(gui: GUI) {
+    abstract fun createAction(input: Map<ObjectFields, String>)
+
+    fun create(gui: GUI) {
         try {
             createAction(input)
             gui.popState()
@@ -52,30 +55,29 @@ abstract class ItemCreator<T> {
         }
     }
 
-    private fun cancel(gui: GUI) {
+    fun cancel(gui: GUI) {
         gui.popState()
     }
 
-    abstract fun createAction(input: Map<ObjectFields, String>)
-
     open val input: Map<ObjectFields, String>
         get() = fields.associate { it.field to it.data.value }
+}
 
-    @Composable
-    open fun draw(gui: GUI) {
-        var columnSize by remember { mutableStateOf(IntSize.Zero) }
 
-        Column(modifier = Modifier
-            .fillMaxWidth()
-            .onSizeChanged {
-                columnSize = it
-            }
-        ) {
-            for (field in fields) {
-                field.draw(columnSize.width.dp)
-            }
-            ActionButton("Create", ::create).draw(gui)
-            ActionButton("Cancel", ::cancel).draw(gui)
+@Composable
+fun <T> draw(gui: GUI, creator: ItemCreator<T>) {
+    var columnSize by remember { mutableStateOf(IntSize.Zero) }
+
+    Column(modifier = Modifier
+        .fillMaxWidth()
+        .onSizeChanged {
+            columnSize = it
         }
+    ) {
+        for (field in creator.fields) {
+            draw(field, columnSize.width.dp)
+        }
+        draw(ActionButton("Create") { creator.create(gui) })
+        draw(ActionButton("Cancel") { creator.cancel(gui) })
     }
 }

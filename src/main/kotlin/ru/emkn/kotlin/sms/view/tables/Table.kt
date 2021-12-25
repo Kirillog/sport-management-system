@@ -19,14 +19,22 @@ import androidx.compose.ui.unit.dp
 import ru.emkn.kotlin.sms.ObjectFields
 import ru.emkn.kotlin.sms.view.ActionButton
 import ru.emkn.kotlin.sms.view.GUI
+import ru.emkn.kotlin.sms.view.draw
 
 const val tableDeleteButtonWidth = 10
 
 abstract class Table<T> {
 
+    enum class State {
+        Updated, Outdated
+    }
+
     open fun update() {}
 
     abstract inner class TableRow {
+
+        val header
+            get() = this@Table.header
 
         abstract val cells: Map<ObjectFields, TableCell>
         abstract val id: Int
@@ -37,49 +45,10 @@ abstract class Table<T> {
                 it.field to cell.shownText.value
             }
 
-        @Composable
-        open fun draw(gui: GUI) {
-//            update()
-            var rowSize by remember { mutableStateOf(IntSize.Zero) }
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .onSizeChanged {
-                        rowSize = it
-                    },
-                horizontalArrangement = Arrangement.SpaceAround,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                if (header.deleteButton)
-                    Box(modifier = Modifier.border(BorderStroke(1.dp, Color.Black))) {
-                        IconButton(
-                            onClick = { delete(gui) },
-                            modifier = Modifier.size(tableDeleteButtonWidth.dp)
-                        ) {
-                            Icon(imageVector = Icons.Filled.Close, contentDescription = "Delete", tint = Color.Black)
-                        }
-                    }
-                val elementsInRow = header.columns.count { it.visible }
-
-                val cellWidth = if (header.deleteButton)
-                    ((rowSize.width - tableDeleteButtonWidth) / elementsInRow).dp
-                else
-                    (rowSize.width / elementsInRow).dp
-
-                for (columnHeader in header.columns) {
-                    if (columnHeader.visible)
-                        cells[columnHeader.field]?.draw(cellWidth, columnHeader.readOnly)
-                            ?: throw IllegalStateException("Cell of ${columnHeader.field} not exists")
-                }
-            }
-        }
-
-        private fun delete(gui: GUI) {
+        fun delete() {
             if (!header.deleteButton)
                 return
             deleteAction()
-            gui.reload()
         }
 
         abstract fun saveChanges()
@@ -93,34 +62,79 @@ abstract class Table<T> {
 
     abstract val header: TableHeader<T>
     abstract val rows: List<TableRow>
-    open val creatingState: GUI.State? = null
-    open val loadAction: (gui: GUI) -> Unit = {}
 
-    @Composable
-    open fun draw(gui: GUI) {
-        Column {
-            header.draw(gui)
-            Column(
-                modifier = Modifier.verticalScroll(rememberScrollState())
-            ) {
-                rows.sortedWith(header.comparator).forEach {
-                    it.draw(gui)
-                }
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceAround
+    var state by mutableStateOf(State.Updated)
+
+    open val creatingState: GUI.State? = null
+    open val loadAction: () -> Unit = {}
+}
+
+@Composable
+fun <T> draw(tableRow: Table<T>.TableRow) {
+    var rowSize by remember { mutableStateOf(IntSize.Zero) }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .onSizeChanged {
+                rowSize = it
+            },
+        horizontalArrangement = Arrangement.SpaceAround,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        if (tableRow.header.deleteButton)
+            Box(modifier = Modifier.border(BorderStroke(1.dp, Color.Black))) {
+                IconButton(
+                    onClick = { tableRow.delete() },
+                    modifier = Modifier.size(tableDeleteButtonWidth.dp)
                 ) {
-                    val createState = creatingState
+                    Icon(imageVector = Icons.Filled.Close, contentDescription = "Delete", tint = Color.Black)
+                }
+            }
+        val elementsInRow = tableRow.header.columns.count { it.visible }
+
+        val cellWidth = if (tableRow.header.deleteButton)
+            ((rowSize.width - tableDeleteButtonWidth) / elementsInRow).dp
+        else
+            (rowSize.width / elementsInRow).dp
+
+        for (columnHeader in tableRow.header.columns) {
+            if (columnHeader.visible)
+                tableRow.cells[columnHeader.field]?.draw(cellWidth, columnHeader.readOnly)
+                    ?: throw IllegalStateException("Cell of ${columnHeader.field} not exists")
+        }
+    }
+}
+
+@Composable
+fun <F, T : Table<F>> draw(gui: GUI, table: T) {
+    if (table.state == Table.State.Outdated)
+        table.state = Table.State.Updated
+    Column {
+        draw(table.header)
+        Column(
+            modifier = Modifier.verticalScroll(rememberScrollState())
+        ) {
+            table.rows.sortedWith(table.header.comparator).forEach {
+                draw(it)
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceAround
+            ) {
+                val createState = table.creatingState
+                draw(
                     ActionButton("Load") {
-                        loadAction(gui)
-                    }.draw(gui)
-                    if (createState != null)
+                        table.loadAction()
+                    }
+                )
+                if (createState != null) {
+                    draw(
                         ActionButton("Add") {
                             gui.pushState(createState)
-                        }.draw(gui)
+                        }
+                    )
                 }
             }
         }
     }
 }
-

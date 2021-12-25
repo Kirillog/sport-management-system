@@ -81,6 +81,7 @@ class ParticipantsTable : Table<Participant>() {
 
         override fun deleteAction() {
             Deleter.deleteParticipant(id)
+            state = State.Outdated
         }
 
         override val id: Int = participant.id.value

@@ -15,7 +15,6 @@ import androidx.compose.ui.unit.dp
 import mu.KotlinLogging
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.emkn.kotlin.sms.ObjectFields
-import ru.emkn.kotlin.sms.view.GUI
 
 
 data class TableColumn<T>(
@@ -31,61 +30,56 @@ private val logger = KotlinLogging.logger {}
 
 class TableHeader<T>(val columns: List<TableColumn<T>>, val deleteButton: Boolean) {
 
-    var orderByColumn = 0
-    var reversedOrder = false
-
-    @Composable
-    fun draw(gui: GUI) {
-        var rowSize by remember { mutableStateOf(IntSize.Zero) }
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .onSizeChanged {
-                    rowSize = it
-                },
-            horizontalArrangement = Arrangement.SpaceAround
-        ) {
-            val columnsCount = columns.count { it.visible }
-
-            val columnWidth = if (deleteButton)
-                ((rowSize.width - tableDeleteButtonWidth) / columnsCount).dp
-            else
-                (rowSize.width / columnsCount).dp
-            if (deleteButton)
-                Box(modifier = Modifier.width(tableDeleteButtonWidth.dp))
-
-            columns.forEachIndexed { index, column ->
-                if (!column.visible)
-                    return@forEachIndexed
-                TextButton(
-                    onClick = {
-                        if (orderByColumn == index)
-                            reversedOrder = !reversedOrder
-                        orderByColumn = index
-                        gui.reload()
-                    },
-                    modifier = Modifier
-                        .border(BorderStroke(1.dp, Color.Black))
-                        .width(columnWidth)
-                        .background(Color.LightGray)
-                ) {
-                    Text(column.title)
-                }
-            }
-        }
-    }
+    var orderByColumn = mutableStateOf(0)
+    var reversedOrder = mutableStateOf(false)
 
     fun makeTableCells(item: T, saveFunction: () -> Unit): Map<ObjectFields, TableCell> {
         return transaction { columns.associate { it.field to TableCell(it.getterGenerator(item), saveFunction) } }
     }
 
     val comparator: Comparator<Table<T>.TableRow>
-        get() = if (reversedOrder)
-            columns[orderByColumn].comparator.reversed()
+        get() = if (reversedOrder.value)
+            columns[orderByColumn.value].comparator.reversed()
         else
-            columns[orderByColumn].comparator
+            columns[orderByColumn.value].comparator
 }
 
-fun <T> TableHeader(tableHeader: TableHeader<T>) {
+@Composable
+fun <T> draw(tableHeader: TableHeader<T>) {
+    var rowSize by remember { mutableStateOf(IntSize.Zero) }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .onSizeChanged {
+                rowSize = it
+            },
+        horizontalArrangement = Arrangement.SpaceAround
+    ) {
+        val columnsCount = tableHeader.columns.count { it.visible }
 
+        val columnWidth = if (tableHeader.deleteButton)
+            ((rowSize.width - tableDeleteButtonWidth) / columnsCount).dp
+        else
+            (rowSize.width / columnsCount).dp
+        if (tableHeader.deleteButton)
+            Box(modifier = Modifier.width(tableDeleteButtonWidth.dp))
+
+        tableHeader.columns.forEachIndexed { index, column ->
+            if (!column.visible)
+                return@forEachIndexed
+            TextButton(
+                onClick = {
+                    if (tableHeader.orderByColumn.value == index)
+                        tableHeader.reversedOrder.value = !tableHeader.reversedOrder.value
+                    tableHeader.orderByColumn.value = index
+                },
+                modifier = Modifier
+                    .border(BorderStroke(1.dp, Color.Black))
+                    .width(columnWidth)
+                    .background(Color.LightGray)
+            ) {
+                Text(column.title)
+            }
+        }
+    }
 }

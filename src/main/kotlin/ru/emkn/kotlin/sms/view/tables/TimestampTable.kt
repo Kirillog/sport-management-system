@@ -1,3 +1,4 @@
+/*
 package ru.emkn.kotlin.sms.view.tables
 
 import ru.emkn.kotlin.sms.ObjectFields
@@ -64,3 +65,4 @@ class TimestampTable : Table<Timestamp>() {
 
     override val creatingState = GUI.State.CreateTimestamp
 }
+*/

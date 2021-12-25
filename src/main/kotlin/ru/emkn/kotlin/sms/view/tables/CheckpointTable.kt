@@ -11,8 +11,11 @@ import ru.emkn.kotlin.sms.view.PathChooser
 
 class CheckpointTable : Table<Checkpoint>() {
 
-    private val checkpoints
-        get() = transaction { Checkpoint.all().toList() }
+
+    private val checkpoints: List<Checkpoint>
+        get() {
+            return transaction { Checkpoint.all().toList() }
+        }
 
     override val header = TableHeader(listOf(
         TableColumn<Checkpoint>(
@@ -50,14 +53,15 @@ class CheckpointTable : Table<Checkpoint>() {
 
         override fun deleteAction() {
             Deleter.deleteCheckpoint(id)
+            state = State.Outdated
         }
     }
 
     override val creatingState = GUI.State.CreateCheckpoint
-    override val loadAction: (GUI) -> Unit = {
+    override val loadAction = {
         val checkpointsFile = PathChooser("Choose checkpoints", ".csv", "Checkpoints").choose()
         CompetitionController.loadCheckpoints(checkpointsFile?.toPath())
-        it.reload()
+        state = State.Outdated
     }
 
     override val rows: List<TableRow>
