@@ -88,7 +88,7 @@ fun <T> draw(tableRow: Table<T>.TableRow) {
             .onSizeChanged {
                 rowSize = it
             },
-        horizontalArrangement = Arrangement.SpaceAround,
+        horizontalArrangement = Arrangement.Start,
         verticalAlignment = Alignment.CenterVertically
     ) {
         if (tableRow.header.deleteButton)

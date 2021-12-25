@@ -75,7 +75,7 @@ fun <T> draw(tableHeader: TableHeader<T>) {
             .onSizeChanged {
                 rowSize = it
             },
-        horizontalArrangement = Arrangement.SpaceAround
+        horizontalArrangement = Arrangement.Start
     ) {
         val columnsCount = tableHeader.columns.count { it.visible }
 
