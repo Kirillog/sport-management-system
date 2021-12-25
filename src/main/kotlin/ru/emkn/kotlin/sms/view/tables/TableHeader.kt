@@ -20,8 +20,8 @@ import ru.emkn.kotlin.sms.ObjectFields
 data class TableColumn<T>(
     val title: String,
     val field: ObjectFields,
-    val visible: Boolean,
-    val readOnly: Boolean,
+    var visible: Boolean,
+    var readOnly: Boolean,
     val comparator: Comparator<Table<T>.TableRow>,
     val getterGenerator: (T) -> (() -> String)
 )
@@ -35,6 +35,28 @@ class TableHeader<T>(val columns: List<TableColumn<T>>, val deleteButton: Boolea
 
     fun makeTableCells(item: T, saveFunction: () -> Unit): Map<ObjectFields, TableCell> {
         return transaction { columns.associate { it.field to TableCell(it.getterGenerator(item), saveFunction) } }
+    }
+
+    fun setVisibility(columnType: ObjectFields, visible: Boolean) {
+        val column = columns.firstOrNull { it.field == columnType }
+            ?: throw IllegalStateException("column $columnType doesn't exists")
+        column.visible = visible
+    }
+
+    fun setVisibility(visible: Boolean) {
+        for (column in columns)
+            column.visible = visible
+    }
+
+    fun setReadOnly(columnType: ObjectFields, readOnly: Boolean) {
+        val column = columns.firstOrNull { it.field == columnType }
+            ?: throw IllegalStateException("column $columnType doesn't exists")
+        column.readOnly = readOnly
+    }
+
+    fun setReadOnly(readOnly: Boolean) {
+        for (column in columns)
+            column.readOnly = readOnly
     }
 
     val comparator: Comparator<Table<T>.TableRow>
