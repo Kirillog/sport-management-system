@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import com.xenomachina.text.term.columnize
 import ru.emkn.kotlin.sms.ObjectFields
 import ru.emkn.kotlin.sms.view.ActionButton
 import ru.emkn.kotlin.sms.view.GUI
@@ -41,7 +42,7 @@ abstract class Table<T> {
         abstract val id: Int
 
         open val changes: Map<ObjectFields, String>
-            get() = header.columns.filter { it.visible }.associate {
+            get() = header.visibleColumns.associate {
                 val cell = cells[it.field] ?: throw IllegalStateException("Cell of ${it.field} not exists")
                 it.field to cell.shownText.value
             }
@@ -59,6 +60,14 @@ abstract class Table<T> {
             val cell = cells[field] ?: throw NoSuchElementException("No field $field in cell")
             return cell.getText()
         }
+
+        fun checkFilter(): Boolean {
+            for (column in header.visibleColumns) {
+                if (column.filterString.value !in getData(column.field))
+                    return false
+            }
+            return true
+        }
     }
 
     abstract val header: TableHeader<T>
@@ -66,7 +75,7 @@ abstract class Table<T> {
 
     var state by mutableStateOf(State.Updated)
 
-    open var addButton: Boolean = false
+    open var addButton: Boolean = true
     open val creatingState: GUI.State? = null
     open val loadAction: () -> Unit = {}
 
@@ -144,9 +153,12 @@ fun <F> draw(gui: GUI, table: Table<F>) {
                 }
             }
             draw(table.header)
-            table.rows.sortedWith(table.header.comparator).forEach {
-                draw(it)
-            }
+            table.rows
+                .sortedWith(table.header.comparator)
+                .filter { it.checkFilter() }
+                .forEach {
+                    draw(it)
+                }
         }
     }
 }

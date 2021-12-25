@@ -4,6 +4,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.*
@@ -14,6 +15,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import mu.KotlinLogging
 import org.jetbrains.exposed.sql.transactions.transaction
+import ru.emkn.kotlin.sms.MAX_TEXT_FIELD_SIZE
 import ru.emkn.kotlin.sms.ObjectFields
 
 
@@ -24,7 +26,9 @@ data class TableColumn<T>(
     var readOnly: Boolean,
     val comparator: Comparator<Table<T>.TableRow>,
     val getterGenerator: (T) -> (() -> String)
-)
+) {
+    var filterString = mutableStateOf("")
+}
 
 private val logger = KotlinLogging.logger {}
 
@@ -32,6 +36,9 @@ class TableHeader<T>(val columns: List<TableColumn<T>>, val deleteButton: Boolea
 
     var orderByColumn = mutableStateOf(0)
     var reversedOrder = mutableStateOf(false)
+
+    val visibleColumns
+        get() = columns.filter { it.visible }
 
     fun makeTableCells(item: T, saveFunction: () -> Unit): Map<ObjectFields, TableCell> {
         return transaction { columns.associate { it.field to TableCell(it.getterGenerator(item), saveFunction) } }
@@ -69,39 +76,60 @@ class TableHeader<T>(val columns: List<TableColumn<T>>, val deleteButton: Boolea
 @Composable
 fun <T> draw(tableHeader: TableHeader<T>) {
     var rowSize by remember { mutableStateOf(IntSize.Zero) }
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .onSizeChanged {
-                rowSize = it
-            },
-        horizontalArrangement = Arrangement.Start
-    ) {
-        val columnsCount = tableHeader.columns.count { it.visible }
-
-        val columnWidth = if (tableHeader.deleteButton)
-            ((rowSize.width - tableDeleteButtonWidth) / columnsCount).dp
-        else
-            (rowSize.width / columnsCount).dp
+    Row {
+        // space for delete button
         if (tableHeader.deleteButton)
             Box(modifier = Modifier.width(tableDeleteButtonWidth.dp))
-
-        tableHeader.columns.forEachIndexed { index, column ->
-            if (!column.visible)
-                return@forEachIndexed
-            TextButton(
-                onClick = {
-                    if (tableHeader.orderByColumn.value == index)
-                        tableHeader.reversedOrder.value = !tableHeader.reversedOrder.value
-                    tableHeader.orderByColumn.value = index
-                },
-                modifier = Modifier
-                    .border(BorderStroke(1.dp, Color.Black))
-                    .width(columnWidth)
-                    .background(Color.LightGray)
+        // header and filters
+        Column {
+            val columnsCount = tableHeader.visibleColumns.size
+            val columnWidth = if (tableHeader.deleteButton)
+                ((rowSize.width - tableDeleteButtonWidth) / columnsCount).dp
+            else
+                (rowSize.width / columnsCount).dp
+            // filter fields
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Start
             ) {
-                Text(column.title)
+                tableHeader.visibleColumns.forEach { column ->
+                    BasicTextField(
+                        value = column.filterString.value,
+                        modifier = Modifier
+                            .border(BorderStroke(1.dp, Color.Black))
+                            .width(columnWidth),
+                        onValueChange = {
+                            column.filterString.value = it.replace("\n", "").take(MAX_TEXT_FIELD_SIZE)
+                        })
+                }
+            }
+            // header
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .onSizeChanged {
+                        rowSize = it
+                    },
+                horizontalArrangement = Arrangement.Start
+            ) {
+                tableHeader.visibleColumns.forEachIndexed { index, column ->
+                    TextButton(
+                        onClick = {
+                            if (tableHeader.orderByColumn.value == index)
+                                tableHeader.reversedOrder.value = !tableHeader.reversedOrder.value
+                            tableHeader.orderByColumn.value = index
+                        },
+                        modifier = Modifier
+                            .border(BorderStroke(1.dp, Color.Black))
+                            .width(columnWidth)
+                            .background(Color.LightGray)
+                    ) {
+                        Text(column.title)
+                    }
+                }
             }
         }
     }
+
+
 }
