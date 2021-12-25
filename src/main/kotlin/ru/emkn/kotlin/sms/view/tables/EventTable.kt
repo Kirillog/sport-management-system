@@ -38,7 +38,8 @@ class EventTable : Table<Event>() {
                 }
             )
         ),
-        deleteButton = false
+        deleteButton = false,
+        filtering = false
     )
 
     inner class EventTableRow(private val event: Event) : TableRow() {

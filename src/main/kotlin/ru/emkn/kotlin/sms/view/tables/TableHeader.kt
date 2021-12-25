@@ -32,7 +32,7 @@ data class TableColumn<T>(
 
 private val logger = KotlinLogging.logger {}
 
-class TableHeader<T>(val columns: List<TableColumn<T>>, val deleteButton: Boolean) {
+class TableHeader<T>(val columns: List<TableColumn<T>>, val deleteButton: Boolean, val filtering: Boolean = true) {
 
     var orderByColumn = mutableStateOf(0)
     var reversedOrder = mutableStateOf(false)
@@ -88,19 +88,21 @@ fun <T> draw(tableHeader: TableHeader<T>) {
             else
                 (rowSize.width / columnsCount).dp
             // filter fields
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Start
-            ) {
-                tableHeader.visibleColumns.forEach { column ->
-                    BasicTextField(
-                        value = column.filterString.value,
-                        modifier = Modifier
-                            .border(BorderStroke(1.dp, Color.Black))
-                            .width(columnWidth),
-                        onValueChange = {
-                            column.filterString.value = it.replace("\n", "").take(MAX_TEXT_FIELD_SIZE)
-                        })
+            if (tableHeader.filtering) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Start
+                ) {
+                    tableHeader.visibleColumns.forEach { column ->
+                        BasicTextField(
+                            value = column.filterString.value,
+                            modifier = Modifier
+                                .border(BorderStroke(1.dp, Color.Black))
+                                .width(columnWidth),
+                            onValueChange = {
+                                column.filterString.value = it.replace("\n", "").take(MAX_TEXT_FIELD_SIZE)
+                            })
+                    }
                 }
             }
             // header
