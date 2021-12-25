@@ -18,13 +18,13 @@ class EventTable : Table<Event>() {
     override val header = TableHeader(
         listOf(
             TableColumn<Event>(
-                "Название",
+                "Name",
                 ObjectFields.Name, visible = true, readOnly = false,
                 comparator = TableComparing.compareByString(ObjectFields.Name),
                 getterGenerator = { { it.name } }
             ),
             TableColumn<Event>(
-                "Дата",
+                "Date",
                 ObjectFields.Date,
                 visible = true, readOnly = false,
                 comparator = TableComparing.compareByLocalDate(ObjectFields.Date),

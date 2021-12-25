@@ -40,13 +40,18 @@ class FileLoader(path: Path, val fileType: FileType) : Loader {
 
     override fun loadGroups(): Set<Group> {
         val groups = getReader(file).groups() ?: error()
-        return groups.mapNotNull {
+        var lastError: Exception? = null
+        val result = groups.mapNotNull {
             try {
                 Creator.createGroupFrom(it)
             } catch (err: IllegalArgumentException) {
+                logger.warn { err.message }
+                lastError = err
                 null
             }
         }.toSet()
+        lastError?.let { throw it }
+        return result
     }
 
     override fun loadRoutes(): Set<Route> {

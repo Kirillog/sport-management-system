@@ -10,6 +10,7 @@ import ru.emkn.kotlin.sms.io.Loader
 import ru.emkn.kotlin.sms.io.Saver
 import ru.emkn.kotlin.sms.model.Checkpoint
 import ru.emkn.kotlin.sms.model.Competition
+import ru.emkn.kotlin.sms.model.Competition.loadGroups
 import ru.emkn.kotlin.sms.model.Route
 import ru.emkn.kotlin.sms.model.Team
 import java.io.File
@@ -19,7 +20,6 @@ import kotlin.io.path.extension
 enum class State {
     EMPTY,
     CREATED,
-    ANNOUNCED,
     REGISTER_OUT,
     TOSSED,
     FINISHED
@@ -56,45 +56,16 @@ object CompetitionController {
 
     fun loadRoutes(path: Path?) = load(path, State.CREATED) { loadRoutes(it) }
 
-    fun announce() {
-        if (state != State.CREATED) throw IllegalStateException("Before announce state must be CREATED NOT $state")
-        transaction {
-            if (Route.all().empty() || Checkpoint.all().empty())
-                throw IllegalStateException("Fill routes and checkpoints before announce")
-        }
-        state = State.ANNOUNCED
-    }
+    fun loadGroups(path: Path?) = load(path, State.CREATED) { loadGroups(it) }
 
-    fun registerFromPath(group: Path, team: Path) {
-        val groupLoader = getLoader(group)
-        val teamLoader = getLoader(team)
-        register(groupLoader, teamLoader)
-    }
-
-    private fun register(groupLoader: Loader, teamLoader: Loader) {
-        require(state == State.ANNOUNCED)
-        transaction {
-            Competition.loadGroups(groupLoader)
-            Competition.loadTeams(teamLoader)
-        }
-        state = State.REGISTER_OUT
-    }
+    fun loadTeams(path: Path?) = load(path, State.CREATED) { loadTeams(it) }
 
     fun toss() {
-        require(state == State.REGISTER_OUT)
+        require(state == State.CREATED)
         transaction {
             Competition.toss()
         }
         state = State.TOSSED
-    }
-
-    fun registerResultsFromPath(checkPoints: Path) {
-        require(state == State.TOSSED)
-        transaction {
-            val checkPointLoader = getLoader(checkPoints)
-            Competition.loadDump(checkPointLoader)
-        }
-        state = State.FINISHED
     }
 
     fun calculateResult() {

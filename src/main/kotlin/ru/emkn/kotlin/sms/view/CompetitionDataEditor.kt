@@ -8,51 +8,76 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import ru.emkn.kotlin.sms.view.tables.CheckpointTable
-import ru.emkn.kotlin.sms.view.tables.EventTable
-import ru.emkn.kotlin.sms.view.tables.draw
+import com.sksamuel.hoplite.parsePeriod
+import ru.emkn.kotlin.sms.model.ParticipantTable
+import ru.emkn.kotlin.sms.view.tables.*
 
 object CompetitionDataEditor {
     enum class EditCompetitionState {
         EventEditing,
         CheckpointsEditing,
-        RoutesEditing
+        RoutesEditing,
+        TeamsEditing,
+        GroupsEditing,
+        ParticipantsEditing
     }
-
-
     var state = mutableStateOf(EditCompetitionState.EventEditing)
 }
 
 @Composable
 fun drawCompetitionDataEditor(gui: GUI) {
-
     val eventTable = remember { EventTable() }
     val checkpointTable = remember { CheckpointTable() }
+    val routeTable = remember { RouteTable() }
+    val teamTable = remember { TeamTable() }
+    val groupTable = remember { GroupTable() }
+    val participantTable = remember { ParticipantsTable() }
+
     Column {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceAround
         ) {
             draw(
-                ActionButton("events") {
+                ActionButton("Events") {
                     CompetitionDataEditor.state.value = CompetitionDataEditor.EditCompetitionState.EventEditing
                 }
             )
             draw(
-                ActionButton("checkpoints") {
+                ActionButton("Checkpoints") {
                     CompetitionDataEditor.state.value = CompetitionDataEditor.EditCompetitionState.CheckpointsEditing
                 }
             )
             draw(
                 ActionButton("Routes") {
-                    TODO()
+                    CompetitionDataEditor.state.value = CompetitionDataEditor.EditCompetitionState.RoutesEditing
+                }
+            )
+            draw(
+                ActionButton("Participants") {
+                    CompetitionDataEditor.state.value = CompetitionDataEditor.EditCompetitionState.ParticipantsEditing
+                }
+            )
+            draw(
+                ActionButton("Teams") {
+                    CompetitionDataEditor.state.value = CompetitionDataEditor.EditCompetitionState.TeamsEditing
+                }
+            )
+            draw(
+                ActionButton("Groups") {
+                    CompetitionDataEditor.state.value = CompetitionDataEditor.EditCompetitionState.GroupsEditing
                 }
             )
         }
-        when (CompetitionDataEditor.state.value) {
-            CompetitionDataEditor.EditCompetitionState.EventEditing -> draw(gui, eventTable)
-            CompetitionDataEditor.EditCompetitionState.CheckpointsEditing -> draw(gui, checkpointTable)
-            CompetitionDataEditor.EditCompetitionState.RoutesEditing -> TODO()
-        }
+        draw(gui,
+            when (CompetitionDataEditor.state.value) {
+                CompetitionDataEditor.EditCompetitionState.EventEditing -> eventTable
+                CompetitionDataEditor.EditCompetitionState.CheckpointsEditing -> checkpointTable
+                CompetitionDataEditor.EditCompetitionState.RoutesEditing -> TODO()
+                CompetitionDataEditor.EditCompetitionState.ParticipantsEditing -> participantTable
+                CompetitionDataEditor.EditCompetitionState.TeamsEditing -> teamTable
+                CompetitionDataEditor.EditCompetitionState.GroupsEditing -> groupTable
+            }
+        )
     }
 }

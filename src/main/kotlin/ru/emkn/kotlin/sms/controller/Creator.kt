@@ -97,7 +97,9 @@ object Creator {
             val amountOfCheckpoint = convert<Int?>(values[ObjectFields.Amount])
             val checkPoints = convert<List<Checkpoint>>(values[ObjectFields.CheckPoints])
             // val checkPoints = convert(values[ObjectFields.CheckPoints] ?: "", typeOf<List<Checkpoint>>()) as List<Checkpoint>
-            val route = Route.create(routeName, checkPoints, routeType, amountOfCheckpoint ?: checkPoints.size)
+            val route = transaction {
+                Route.create(routeName, checkPoints, routeType, amountOfCheckpoint ?: checkPoints.size)
+            }
             Competition.add(route)
             logger.debug { "Route was successfully created" }
             return route
@@ -119,11 +121,13 @@ object Creator {
                 throw IllegalArgumentException("Cannot find group $groupName")
             if (!Team.checkByName(teamName))
                 throw IllegalArgumentException("Cannot find team $teamName")
-            val participant = if (CompetitionController.state == State.TOSSED) {
-                val startTime = convert<LocalTime>(values[ObjectFields.StartTime])
-                Participant.create(name, surname, birthdayYear, groupName, teamName, startTime, grade)
-            } else {
-                Participant.create(name, surname, birthdayYear, groupName, teamName, grade)
+            val participant = transaction {
+                if (CompetitionController.state == State.TOSSED) {
+                    val startTime = convert<LocalTime>(values[ObjectFields.StartTime])
+                    Participant.create(name, surname, birthdayYear, groupName, teamName, startTime, grade)
+                } else {
+                    Participant.create(name, surname, birthdayYear, groupName, teamName, grade)
+                }
             }
             Competition.add(participant)
             logger.debug { "Participant was successfully created" }
@@ -141,7 +145,9 @@ object Creator {
             val routeName = convert<String>(values[ObjectFields.RouteName])
             if (!Route.checkByName(routeName))
                 throw IllegalArgumentException("Cannot find route $routeName")
-            val group = Group.create(name, resultType, routeName)
+            val group = transaction {
+                Group.create(name, resultType, routeName)
+            }
             Competition.add(group)
             logger.debug { "Group was successfully created" }
             return group
@@ -154,7 +160,9 @@ object Creator {
     fun createTeamFrom(values: Map<ObjectFields, String>): Team {
         try {
             val teamName = convert<String>(values[ObjectFields.Name])
-            val team = Team.create(teamName)
+            val team = transaction {
+                Team.create(teamName)
+            }
             Competition.add(team)
             logger.debug { "Team was successfully created" }
             return team
@@ -185,7 +193,9 @@ object Creator {
             val participantId = convert<Int>(values[ObjectFields.ID])
             val time = convert<LocalTime>(values[ObjectFields.Time])
             val checkpointName = convert<String>(values[ObjectFields.Name])
-            val timestamp = Timestamp.create(time, checkpointName, participantId)
+            val timestamp = transaction {
+                Timestamp.create(time, checkpointName, participantId)
+            }
             Competition.add(timestamp)
             logger.debug { "Timestamp was successfully created" }
             return timestamp
