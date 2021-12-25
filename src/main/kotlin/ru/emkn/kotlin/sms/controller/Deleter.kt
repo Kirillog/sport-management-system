@@ -13,7 +13,7 @@ object Deleter {
         transaction {
             ParticipantTable.deleteWhere { ParticipantTable.id eq id }
             TossTable.deleteWhere { TossTable.participantID eq id }
-            PersonalResultTable.deleteWhere { ParticipantTable.id eq id }
+            PersonalResultTable.deleteWhere { PersonalResultTable.participantID eq id }
             TimestampTable.deleteWhere { TimestampTable.id eq id }
         }
         logger.info { "Participant with id $id was deleted" }
