@@ -20,44 +20,40 @@ import ru.emkn.kotlin.sms.maxTextLength
 import ru.emkn.kotlin.sms.view.TopAppBar
 
 
-class TableCell(val getText: () -> String, private val saveText: () -> Unit = {}) {
+data class TableCell(val getText: () -> String, val saveText: () -> Unit = {}) {
 
-    lateinit var shownText: MutableState<String>
-        private set
+    var shownText: MutableState<String> = mutableStateOf(getText())
+}
 
+@Composable
+@OptIn(ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class)
+fun draw(tableCell: TableCell, width: Dp, readOnly: Boolean) {
+    val backgroundColor = remember { mutableStateOf(Color.White) }
 
-    @Composable
-    @OptIn(ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class)
-    fun draw(width: Dp, readOnly: Boolean) {
-        if (!this::shownText.isInitialized)
-            shownText = mutableStateOf(getText())
-
-        var backgroundColor = remember { mutableStateOf(Color.White) }
-
-        BasicTextField(shownText.value,
-            modifier = Modifier
-                .border(BorderStroke(1.dp, Color.Black))
-                .width(width)
-                .onPreviewKeyEvent {
-                    if (it.type == KeyEventType.KeyDown && it.key == Key.Enter) {
-                        try {
-                            saveText()
-                            backgroundColor.value = Color.White
-                            TopAppBar.setMessage("Saved")
-                        } catch (e: Exception) {
-                            TopAppBar.setMessage(e.message ?: "Undefined error")
-                        }
+    BasicTextField(
+        tableCell.shownText.value,
+        modifier = Modifier
+            .border(BorderStroke(1.dp, Color.Black))
+            .width(width)
+            .onPreviewKeyEvent {
+                if (it.type == KeyEventType.KeyDown && it.key == Key.Enter) {
+                    try {
+                        tableCell.saveText()
+                        backgroundColor.value = Color.White
+                        TopAppBar.setMessage("Saved")
+                    } catch (e: Exception) {
+                        TopAppBar.setMessage(e.message ?: "Undefined error")
                     }
-                    false
-                }.background(backgroundColor.value),
-            onValueChange = {
-                val newText = it.replace("\n", "").take(maxTextLength)
-                if (newText != shownText.value) {
-                    shownText.value = newText
-                    backgroundColor.value = Color.LightGray
                 }
-            },
-            readOnly = readOnly
-        )
-    }
+                false
+            }.background(backgroundColor.value),
+        onValueChange = {
+            val newText = it.replace("\n", "").take(maxTextLength)
+            if (newText != tableCell.shownText.value) {
+                tableCell.shownText.value = newText
+                backgroundColor.value = Color.LightGray
+            }
+        },
+        readOnly = readOnly
+    )
 }

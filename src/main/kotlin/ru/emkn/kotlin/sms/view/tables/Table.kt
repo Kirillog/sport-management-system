@@ -99,8 +99,12 @@ fun <T> draw(tableRow: Table<T>.TableRow) {
 
         for (columnHeader in tableRow.header.columns) {
             if (columnHeader.visible)
-                tableRow.cells[columnHeader.field]?.draw(cellWidth, columnHeader.readOnly)
-                    ?: throw IllegalStateException("Cell of ${columnHeader.field} not exists")
+                draw(
+                    tableRow.cells[columnHeader.field]
+                        ?: throw IllegalStateException("Cell of ${columnHeader.field} not exists"),
+                    cellWidth,
+                    columnHeader.readOnly
+                )
         }
     }
 }
