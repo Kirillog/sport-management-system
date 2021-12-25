@@ -30,11 +30,18 @@ private val logger = KotlinLogging.logger {}
 
 class TableHeader<T>(val columns: List<TableColumn<T>>, val deleteButton: Boolean) {
 
-    var orderByColumn = mutableStateOf(0)
+    var orderByColumn = mutableStateOf(run {
+        val index = columns.indexOfFirst { it.visible }
+        if (index == -1)
+            throw IllegalStateException("There is no visible columns")
+        index
+    })
     var reversedOrder = mutableStateOf(false)
 
     fun makeTableCells(item: T, saveFunction: () -> Unit): Map<ObjectFields, TableCell> {
-        return transaction { columns.associate { it.field to TableCell(it.getterGenerator(item), saveFunction) } }
+        return transaction {
+            columns.filter { it.visible }.associate { it.field to TableCell(it.getterGenerator(item), saveFunction) }
+        }
     }
 
     val comparator: Comparator<Table<T>.TableRow>

@@ -15,10 +15,10 @@ object CompetitionDataEditor {
         EventEditing,
         CheckpointsEditing,
         RoutesEditing,
-        ParticipantsEditing,
+        TeamsEditing,
+        GroupsEditing,
+        ParticipantsEditing
     }
-
-
     var state = mutableStateOf(EditCompetitionState.EventEditing)
 }
 
@@ -27,8 +27,11 @@ fun drawCompetitionDataEditor(gui: GUI) {
 
     val eventTable = remember { EventTable() }
     val checkpointTable = remember { CheckpointTable() }
-    val routesTable = remember { RouteTable() }
+    val routeTable = remember { RouteTable() }
+    val teamTable = remember { TeamTable() }
+    val groupTable = remember { GroupTable() }
     val participantTable = remember { ParticipantsTable() }
+
     Column {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -54,13 +57,27 @@ fun drawCompetitionDataEditor(gui: GUI) {
                     CompetitionDataEditor.state.value = CompetitionDataEditor.EditCompetitionState.ParticipantsEditing
                 }
             )
+            draw(
+                ActionButton("Teams") {
+                    CompetitionDataEditor.state.value = CompetitionDataEditor.EditCompetitionState.TeamsEditing
+                }
+            )
+            draw(
+                ActionButton("Groups") {
+                    CompetitionDataEditor.state.value = CompetitionDataEditor.EditCompetitionState.GroupsEditing
+                }
+            )
         }
-        when (CompetitionDataEditor.state.value) {
-            CompetitionDataEditor.EditCompetitionState.EventEditing -> draw(gui, eventTable)
-            CompetitionDataEditor.EditCompetitionState.CheckpointsEditing -> draw(gui, checkpointTable)
-            CompetitionDataEditor.EditCompetitionState.RoutesEditing -> draw(gui, routesTable)
-            CompetitionDataEditor.EditCompetitionState.ParticipantsEditing -> draw(gui, participantTable)
-            else -> TODO()
-        }
+        draw(gui,
+            when (CompetitionDataEditor.state.value) {
+                CompetitionDataEditor.EditCompetitionState.EventEditing -> eventTable
+                CompetitionDataEditor.EditCompetitionState.CheckpointsEditing -> checkpointTable
+                CompetitionDataEditor.EditCompetitionState.RoutesEditing -> routeTable
+                CompetitionDataEditor.EditCompetitionState.ParticipantsEditing -> participantTable
+                CompetitionDataEditor.EditCompetitionState.TeamsEditing -> teamTable
+                CompetitionDataEditor.EditCompetitionState.GroupsEditing -> groupTable
+                else -> TODO()
+            }
+        )
     }
 }

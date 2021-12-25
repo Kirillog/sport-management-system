@@ -10,7 +10,7 @@ import ru.emkn.kotlin.sms.view.GUI
 class ParticipantsTable : Table<Participant>() {
 
     private val participants
-        get() = transaction { Participant.all() }
+        get() = transaction { Participant.all().toList() }
 
     override val header = TableHeader(listOf(
         TableColumn<Participant>(

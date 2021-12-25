@@ -19,4 +19,6 @@ class PersonalResultByWeight(group: Group) : PersonalResult(group) {
         penalty = tempPenalty
     }
 
+    override fun toString() = "Weight"
+
 }

@@ -24,7 +24,7 @@ class EventTable : Table<Event>() {
                 getterGenerator = { { it.name } }
             ),
             TableColumn<Event>(
-                "Data",
+                "Date",
                 ObjectFields.Date,
                 visible = true, readOnly = false,
                 comparator = TableComparing.compareByLocalDate(ObjectFields.Date),

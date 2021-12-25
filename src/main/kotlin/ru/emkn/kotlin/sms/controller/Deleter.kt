@@ -1,7 +1,6 @@
 package ru.emkn.kotlin.sms.controller
 
 import mu.KotlinLogging
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.emkn.kotlin.sms.model.*

@@ -26,7 +26,6 @@ class GUI {
         CreateTimestamp,
         CheckDataBaseState,
         EditAnnounceData,
-        EditRegisterData
     }
 
     var state = mutableStateOf(State.LoadOrCreateDataBase)
@@ -48,7 +47,6 @@ class GUI {
         pushState(
             when (CompetitionController.getControllerState()) {
                 ru.emkn.kotlin.sms.controller.State.CREATED -> State.EditAnnounceData
-                ru.emkn.kotlin.sms.controller.State.ANNOUNCED -> State.EditRegisterData
                 else -> TODO()
             }
         )

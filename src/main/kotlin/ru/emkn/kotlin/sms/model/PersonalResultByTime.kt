@@ -12,4 +12,6 @@ class PersonalResultByTime(override val group: Group) : PersonalResult(group) {
         }
         penalty = tempPenalty
     }
+
+    override fun toString(): String = "Time"
 }
