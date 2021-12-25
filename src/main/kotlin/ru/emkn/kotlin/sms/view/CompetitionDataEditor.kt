@@ -8,15 +8,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import ru.emkn.kotlin.sms.view.tables.CheckpointTable
-import ru.emkn.kotlin.sms.view.tables.EventTable
-import ru.emkn.kotlin.sms.view.tables.draw
+import ru.emkn.kotlin.sms.view.tables.*
 
 object CompetitionDataEditor {
     enum class EditCompetitionState {
         EventEditing,
         CheckpointsEditing,
-        RoutesEditing
+        RoutesEditing,
+        ParticipantsEditing,
     }
 
 
@@ -28,31 +27,40 @@ fun drawCompetitionDataEditor(gui: GUI) {
 
     val eventTable = remember { EventTable() }
     val checkpointTable = remember { CheckpointTable() }
+    val routesTable = remember { RouteTable() }
+    val participantTable = remember { ParticipantsTable() }
     Column {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceAround
         ) {
             draw(
-                ActionButton("events") {
+                ActionButton("Events") {
                     CompetitionDataEditor.state.value = CompetitionDataEditor.EditCompetitionState.EventEditing
                 }
             )
             draw(
-                ActionButton("checkpoints") {
+                ActionButton("Checkpoints") {
                     CompetitionDataEditor.state.value = CompetitionDataEditor.EditCompetitionState.CheckpointsEditing
                 }
             )
             draw(
                 ActionButton("Routes") {
-                    TODO()
+                    CompetitionDataEditor.state.value = CompetitionDataEditor.EditCompetitionState.RoutesEditing
+                }
+            )
+            draw(
+                ActionButton("Participants") {
+                    CompetitionDataEditor.state.value = CompetitionDataEditor.EditCompetitionState.ParticipantsEditing
                 }
             )
         }
         when (CompetitionDataEditor.state.value) {
             CompetitionDataEditor.EditCompetitionState.EventEditing -> draw(gui, eventTable)
             CompetitionDataEditor.EditCompetitionState.CheckpointsEditing -> draw(gui, checkpointTable)
-            CompetitionDataEditor.EditCompetitionState.RoutesEditing -> TODO()
+            CompetitionDataEditor.EditCompetitionState.RoutesEditing -> draw(gui, routesTable)
+            CompetitionDataEditor.EditCompetitionState.ParticipantsEditing -> draw(gui, participantTable)
+            else -> TODO()
         }
     }
 }
