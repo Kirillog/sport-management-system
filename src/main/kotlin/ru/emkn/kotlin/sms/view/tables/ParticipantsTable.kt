@@ -1,20 +1,21 @@
 package ru.emkn.kotlin.sms.view.tables
 
+import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.emkn.kotlin.sms.ObjectFields
 import ru.emkn.kotlin.sms.controller.Deleter
 import ru.emkn.kotlin.sms.controller.Editor
-import ru.emkn.kotlin.sms.model.Participant
+import ru.emkn.kotlin.sms.model.*
+import ru.emkn.kotlin.sms.model.GroupTable
+import ru.emkn.kotlin.sms.model.TeamTable
 import ru.emkn.kotlin.sms.view.GUI
 import java.time.LocalTime
-import ru.emkn.kotlin.sms.model.TeamTable
-import ru.emkn.kotlin.sms.model.GroupTable
-import ru.emkn.kotlin.sms.model.ParticipantTable
 
 fun Participant.Companion.getPrint(): List<ParticipantPrint> {
     val teamById = TeamTable.selectAll().associate { it[TeamTable.id] to it[TeamTable.name] }
     val groupById = GroupTable.selectAll().associate { it[GroupTable.id] to it[GroupTable.name] }
+    val startTimeById = TossTable.selectAll().associate { it[TossTable.participantID] to it[TossTable.startTime] }
 
     return Participant.all().map {
         ParticipantPrint(
@@ -25,7 +26,7 @@ fun Participant.Companion.getPrint(): List<ParticipantPrint> {
             it.grade,
             groupById[it.groupID] ?: throw IllegalStateException("Team with id for participant doesnt exist"),
             teamById[it.teamID] ?: throw IllegalStateException("Group with id for participant doesnt exist"),
-            LocalTime.MIDNIGHT,
+            startTimeById[it.id],
             LocalTime.NOON,
             it
         )
@@ -40,8 +41,8 @@ data class ParticipantPrint(
     val grade: String?,
     val groupName: String,
     val teamName: String,
-    val startTime: LocalTime,
-    val finishTime: LocalTime,
+    val startTime: LocalTime?,
+    val finishTime: LocalTime?,
     val entry: Participant
 )
 
