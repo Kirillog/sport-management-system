@@ -13,7 +13,7 @@ enum class MenuState(val text: String = "") {
     Blocked("Next"),
     Preparing("Toss"),
     Tossed("Result"),
-    Result,
+    Result("Next"),
 }
 
 
@@ -66,8 +66,8 @@ fun drawMenuBar(gui: GUI, frame: FrameWindowScope, bottomBar: BottomAppBar) {
                     when (text) {
                         "Toss" ->
                             StateSwitcher.doToss(gui, bottomBar)
-                        "Result" -> TODO()
-//                        StateSwitcher.doResult(gui, bottomBar)
+                        "Result" ->
+                            StateSwitcher.doResulted(gui, bottomBar)
                         else ->
                             throw IllegalStateException("Wrong menu state")
                     }
@@ -80,8 +80,8 @@ fun drawMenuBar(gui: GUI, frame: FrameWindowScope, bottomBar: BottomAppBar) {
                     when (text) {
                         "Result" ->
                             StateSwitcher.undoToss(gui, bottomBar)
-                        "Finished" -> TODO()
-//                        StateSwitcher.undoResult(gui, bottomBar)
+                        "Finished" ->
+                            StateSwitcher.undoResulted(gui, bottomBar)
                         else ->
                             throw IllegalStateException("Wrong menu state")
                     }

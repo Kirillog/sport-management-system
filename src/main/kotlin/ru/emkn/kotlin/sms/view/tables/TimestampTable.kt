@@ -8,6 +8,7 @@ import ru.emkn.kotlin.sms.controller.Editor
 import ru.emkn.kotlin.sms.model.Timestamp
 import ru.emkn.kotlin.sms.view.GUI
 import ru.emkn.kotlin.sms.view.PathChooser
+import javax.swing.JFileChooser
 
 class TimestampTable : Table<Timestamp>() {
 

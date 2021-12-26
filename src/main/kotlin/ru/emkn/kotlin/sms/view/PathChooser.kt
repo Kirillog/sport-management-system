@@ -5,11 +5,11 @@ import javax.swing.JFileChooser
 import javax.swing.filechooser.FileFilter
 
 class PathChooser(private val title: String, val extension: String, val description: String) {
-    fun choose(): File? {
+    fun choose(mode: Int = JFileChooser.FILES_ONLY): File? {
         val fileChooser = JFileChooser(File("."))
         fileChooser.isAcceptAllFileFilterUsed = false
         fileChooser.dialogType = JFileChooser.OPEN_DIALOG
-        fileChooser.fileSelectionMode = JFileChooser.FILES_ONLY
+        fileChooser.fileSelectionMode = mode
         fileChooser.dialogTitle = title
 
         val fileFilter = MyFileFilter(extension, "$description (*$extension)")

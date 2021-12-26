@@ -13,12 +13,26 @@ object StateSwitcher {
         AppTopBar.buttons.first { it.text == "Timestamps" }.visible = true
     }
 
+    fun setResulted(gui: GUI) {
+        gui.tables.forEach {
+            it.header.setVisibility(true)
+        }
+    }
+
+    fun setUnResulted(gui: GUI) {
+        gui.teamTable.header.setVisibility(ObjectFields.ResultType, false)
+        gui.participantsTable.header.setVisibility(ObjectFields.FinishTime, false)
+        gui.participantsTable.header.setVisibility(ObjectFields.Penalty, false)
+        gui.participantsTable.header.setVisibility(ObjectFields.PlaceInGroup, false)
+        gui.participantsTable.header.setVisibility(ObjectFields.DeltaFromLeader, false)
+    }
+
     fun setUnTossed(gui: GUI) {
         gui.tables.forEach {
             it.header.setReadOnly(false)
         }
         gui.participantsTable.header.setVisibility(ObjectFields.StartTime, false)
-        AppTopBar.buttons.first { it.text == "Timestamps" }.visible = true
+        AppTopBar.buttons.first { it.text == "Timestamps" }.visible = false
 
     }
 
@@ -32,7 +46,21 @@ object StateSwitcher {
     fun undoToss(gui: GUI, bottomBar: BottomAppBar) {
         setUnTossed(gui)
         CompetitionController.undoToss()
-        bottomBar.setMessage("")
+        bottomBar.setMessage("Rollback")
+        gui.popState()
+    }
+
+    fun doResulted(gui: GUI, bottomBar: BottomAppBar) {
+        setResulted(gui)
+        CompetitionController.result()
+        bottomBar.setMessage("Results calculated")
+        gui.pushState(GUI.State.ShowResults)
+    }
+
+    fun undoResulted(gui: GUI, bottomBar: BottomAppBar) {
+        setUnResulted(gui)
+        CompetitionController.undoResult()
+        bottomBar.setMessage("Rollback")
         gui.popState()
     }
 

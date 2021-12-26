@@ -39,7 +39,8 @@ class GUI {
         // other states
         InitialWindow(Blocked),
         EditAnnounceData(Preparing),
-        EditRuntimeDump(Tossed)
+        EditRuntimeDump(Tossed),
+        ShowResults(Result)
     }
 
     var state = mutableStateOf(State.InitialWindow)

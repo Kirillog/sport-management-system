@@ -9,6 +9,8 @@ import ru.emkn.kotlin.sms.io.FileSaver
 import ru.emkn.kotlin.sms.io.Loader
 import ru.emkn.kotlin.sms.io.Saver
 import ru.emkn.kotlin.sms.model.Competition
+import ru.emkn.kotlin.sms.model.PersonalResultTable
+import ru.emkn.kotlin.sms.model.TeamResultTable
 import ru.emkn.kotlin.sms.model.TossTable
 import java.io.File
 import java.nio.file.Path
@@ -74,11 +76,21 @@ object CompetitionController {
         state = State.CREATED
     }
 
-    fun calculateResult() {
-        require(state == State.FINISHED)
+    fun result() {
+        require(state == State.TOSSED)
         transaction {
             Competition.calculateResult()
         }
+        state = State.FINISHED
+    }
+
+    fun undoResult() {
+        require(state == State.FINISHED)
+        transaction {
+            PersonalResultTable.deleteAll()
+            TeamResultTable.deleteAll()
+        }
+        state = State.TOSSED
     }
 
     fun getLoader(path: Path): Loader {
