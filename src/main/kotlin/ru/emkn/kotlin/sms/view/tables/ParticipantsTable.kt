@@ -1,19 +1,57 @@
 package ru.emkn.kotlin.sms.view.tables
 
+import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.emkn.kotlin.sms.ObjectFields
 import ru.emkn.kotlin.sms.controller.Deleter
 import ru.emkn.kotlin.sms.controller.Editor
 import ru.emkn.kotlin.sms.model.Participant
 import ru.emkn.kotlin.sms.view.GUI
+import java.time.LocalTime
+import ru.emkn.kotlin.sms.model.TeamTable
+import ru.emkn.kotlin.sms.model.GroupTable
+import ru.emkn.kotlin.sms.model.ParticipantTable
 
-class ParticipantsTable : Table<Participant>() {
+fun Participant.Companion.getPrint(): List<ParticipantPrint> {
+    val teamById = TeamTable.selectAll().associate { it[TeamTable.id] to it[TeamTable.name] }
+    val groupById = GroupTable.selectAll().associate { it[GroupTable.id] to it[GroupTable.name] }
+
+    return Participant.all().map {
+        ParticipantPrint(
+            it.id.value,
+            it.name,
+            it.surname,
+            it.birthdayYear,
+            it.grade,
+            groupById[it.groupID] ?: throw IllegalStateException("Team with id for participant doesnt exist"),
+            teamById[it.teamID] ?: throw IllegalStateException("Group with id for participant doesnt exist"),
+            LocalTime.MIDNIGHT,
+            LocalTime.NOON,
+            it
+        )
+    }
+}
+
+data class ParticipantPrint(
+    val id: Int,
+    val name: String,
+    val surname: String,
+    val birthdayYear: Int,
+    val grade: String?,
+    val groupName: String,
+    val teamName: String,
+    val startTime: LocalTime,
+    val finishTime: LocalTime,
+    val entry: Participant
+)
+
+class ParticipantsTable : Table<ParticipantPrint>() {
 
     private val participants
-        get() = transaction { Participant.all().toList() }
+        get() = transaction { Participant.getPrint() }
 
     override val header = TableHeader(listOf(
-        TableColumn<Participant>(
+        TableColumn<ParticipantPrint>(
             "ID",
             ObjectFields.ID,
             visible = true, readOnly = true,
@@ -39,7 +77,7 @@ class ParticipantsTable : Table<Participant>() {
             ObjectFields.Group,
             visible = true, readOnly = false,
             comparator = TableComparing.compareByString(ObjectFields.Group),
-            getterGenerator = { { it.group.name } }
+            getterGenerator = { { it.groupName } }
         ),
         TableColumn(
             "Birthday Year",
@@ -60,7 +98,7 @@ class ParticipantsTable : Table<Participant>() {
             ObjectFields.Team,
             visible = true, readOnly = false,
             comparator = TableComparing.compareByString(ObjectFields.Team),
-            getterGenerator = { { it.team.name } }
+            getterGenerator = { { it.teamName } }
         ),
         TableColumn(
             "Start time",
@@ -71,12 +109,12 @@ class ParticipantsTable : Table<Participant>() {
         )
     ), deleteButton = true)
 
-    inner class ParticipantTableRow(private val participant: Participant) : TableRow() {
+    inner class ParticipantTableRow(private val participant: ParticipantPrint) : TableRow() {
 
         override val cells = header.makeTableCells(participant, ::saveChanges)
 
         override fun saveChanges() {
-            Editor.editParticipant(participant, changes)
+            Editor.editParticipant(participant.entry, changes)
         }
 
         override fun deleteAction() {
@@ -84,7 +122,7 @@ class ParticipantsTable : Table<Participant>() {
             state = State.Outdated
         }
 
-        override val id: Int = participant.id.value
+        override val id: Int = participant.id
     }
 
     override val rows

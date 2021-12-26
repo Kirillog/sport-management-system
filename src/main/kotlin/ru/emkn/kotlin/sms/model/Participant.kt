@@ -113,8 +113,8 @@ class Participant(id: EntityID<Int>) : IntEntity(id), SingleLineWritable {
 
     val timestamps by Timestamp referrersOn TimestampTable.participantID
 
-    private var groupID by ParticipantTable.groupID
-    private var teamID by ParticipantTable.teamID
+    var groupID by ParticipantTable.groupID
+    var teamID by ParticipantTable.teamID
 
     val way: List<Timestamp>
         get() = timestamps.toList()

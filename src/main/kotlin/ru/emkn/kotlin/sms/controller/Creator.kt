@@ -76,9 +76,9 @@ object Creator {
 
     fun createEventFrom(values: Map<ObjectFields, String>): Event {
         try {
-            val eventName = convert<String>(values[ObjectFields.Name])
-            val data = convert<LocalDate>(values[ObjectFields.Date])
             val event = transaction {
+                val eventName = convert<String>(values[ObjectFields.Name])
+                val data = convert<LocalDate>(values[ObjectFields.Date])
                 Event.create(eventName, data)
             }
             Competition.event = event
@@ -92,12 +92,11 @@ object Creator {
 
     fun createRouteFrom(values: Map<ObjectFields, String>): Route {
         try {
-            val routeName = convert<String>(values[ObjectFields.Name])
-            val routeType = convert<RouteType>(english[values[ObjectFields.Type]])
-            val amountOfCheckpoint = convert<Int?>(values[ObjectFields.Amount])
-            val checkPoints = convert<List<Checkpoint>>(values[ObjectFields.CheckPoints])
-            // val checkPoints = convert(values[ObjectFields.CheckPoints] ?: "", typeOf<List<Checkpoint>>()) as List<Checkpoint>
             val route = transaction {
+                val routeName = convert<String>(values[ObjectFields.Name])
+                val routeType = convert<RouteType>(english[values[ObjectFields.Type]])
+                val amountOfCheckpoint = convert<Int?>(values[ObjectFields.Amount])
+                val checkPoints = convert<List<Checkpoint>>(values[ObjectFields.CheckPoints])
                 Route.create(routeName, checkPoints, routeType, amountOfCheckpoint ?: checkPoints.size)
             }
             Competition.add(route)
@@ -111,17 +110,17 @@ object Creator {
 
     fun createParticipantFrom(values: Map<ObjectFields, String>): Participant {
         try {
-            val name = convert<String>(values[ObjectFields.Name])
-            val surname = convert<String>(values[ObjectFields.Surname])
-            val birthdayYear = convert<Int>(values[ObjectFields.BirthdayYear])
-            val grade = convert<String?>(values[ObjectFields.Grade])
-            val groupName = convert<String>(values[ObjectFields.Group])
-            val teamName = convert<String>(values[ObjectFields.Team])
-            if (!Group.checkByName(groupName))
-                throw IllegalArgumentException("Cannot find group $groupName")
-            if (!Team.checkByName(teamName))
-                throw IllegalArgumentException("Cannot find team $teamName")
             val participant = transaction {
+                val name = convert<String>(values[ObjectFields.Name])
+                val surname = convert<String>(values[ObjectFields.Surname])
+                val birthdayYear = convert<Int>(values[ObjectFields.BirthdayYear])
+                val grade = convert<String?>(values[ObjectFields.Grade])
+                val groupName = convert<String>(values[ObjectFields.Group])
+                val teamName = convert<String>(values[ObjectFields.Team])
+                if (!Group.checkByName(groupName))
+                    throw IllegalArgumentException("Cannot find group $groupName")
+                if (!Team.checkByName(teamName))
+                    throw IllegalArgumentException("Cannot find team $teamName")
                 if (CompetitionController.state == State.TOSSED) {
                     val startTime = convert<LocalTime>(values[ObjectFields.StartTime])
                     Participant.create(name, surname, birthdayYear, groupName, teamName, startTime, grade)
@@ -140,12 +139,12 @@ object Creator {
 
     fun createGroupFrom(values: Map<ObjectFields, String>): Group {
         try {
-            val name = convert<String>(values[ObjectFields.Name])
-            val resultType = convert<ResultType>(english[values[ObjectFields.ResultType]])
-            val routeName = convert<String>(values[ObjectFields.RouteName])
-            if (!Route.checkByName(routeName))
-                throw IllegalArgumentException("Cannot find route $routeName")
             val group = transaction {
+                val name = convert<String>(values[ObjectFields.Name])
+                val resultType = convert<ResultType>(english[values[ObjectFields.ResultType]])
+                val routeName = convert<String>(values[ObjectFields.RouteName])
+                if (!Route.checkByName(routeName))
+                    throw IllegalArgumentException("Cannot find route $routeName")
                 Group.create(name, resultType, routeName)
             }
             Competition.add(group)
@@ -159,8 +158,8 @@ object Creator {
 
     fun createTeamFrom(values: Map<ObjectFields, String>): Team {
         try {
-            val teamName = convert<String>(values[ObjectFields.Name])
             val team = transaction {
+                val teamName = convert<String>(values[ObjectFields.Name])
                 Team.create(teamName)
             }
             Competition.add(team)
@@ -174,13 +173,13 @@ object Creator {
 
     fun createCheckPointFrom(values: Map<ObjectFields, String>): Checkpoint {
         try {
-            val name = convert<String>(values[ObjectFields.Name])
-            val weight = convert<Int>(values[ObjectFields.Weight])
             val checkpoint = transaction {
+                val name = convert<String>(values[ObjectFields.Name])
+                val weight = convert<Int>(values[ObjectFields.Weight])
                 Checkpoint.create(name, weight)
             }
             Competition.add(checkpoint)
-            logger.debug { "Checkpoint $name was successfully created" }
+            logger.debug { "Checkpoint was successfully created" }
             return checkpoint
         } catch (err: IllegalArgumentException) {
             logger.debug { "Cannot create checkpoint" }
@@ -190,10 +189,10 @@ object Creator {
 
     fun createTimeStampFrom(values: Map<ObjectFields, String>): Timestamp {
         try {
-            val participantId = convert<Int>(values[ObjectFields.ID])
-            val time = convert<LocalTime>(values[ObjectFields.Time])
-            val checkpointName = convert<String>(values[ObjectFields.Name])
             val timestamp = transaction {
+                val participantId = convert<Int>(values[ObjectFields.ID])
+                val time = convert<LocalTime>(values[ObjectFields.Time])
+                val checkpointName = convert<String>(values[ObjectFields.Name])
                 Timestamp.create(time, checkpointName, participantId)
             }
             Competition.add(timestamp)

@@ -15,13 +15,13 @@ object Editor {
 
     fun editParticipant(participant: Participant, values: Map<ObjectFields, String>) {
         try {
-            val name = convert<String>(values[ObjectFields.Name])
-            val surname = convert<String>(values[ObjectFields.Surname])
-            val birthdayYear = convert<Int>(values[ObjectFields.BirthdayYear])
-            val grade = convert<String?>(values[ObjectFields.Grade])
-            val groupName = convert<String>(values[ObjectFields.Group])
-            val teamName = convert<String>(values[ObjectFields.Team])
             transaction {
+                val name = convert<String>(values[ObjectFields.Name])
+                val surname = convert<String>(values[ObjectFields.Surname])
+                val birthdayYear = convert<Int>(values[ObjectFields.BirthdayYear])
+                val grade = convert<String?>(values[ObjectFields.Grade])
+                val groupName = convert<String>(values[ObjectFields.Group])
+                val teamName = convert<String>(values[ObjectFields.Team])
                 if (!Group.checkByName(groupName))
                     throw IllegalArgumentException("Cannot find group $groupName")
                 if (!Team.checkByName(teamName))
@@ -86,8 +86,8 @@ object Editor {
     fun editRoute(route: Route, values: Map<ObjectFields, String>) {
         try {
             val routeName = convert<String>(values[ObjectFields.Name])
-            val checkPoints = convert<List<Checkpoint>>(values[ObjectFields.CheckPoints])
             transaction {
+                val checkPoints = convert<List<Checkpoint>>(values[ObjectFields.CheckPoints])
                 route.change(routeName, checkPoints)
             }
             logger.info { "Route was successfully edited" }
