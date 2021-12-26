@@ -167,7 +167,9 @@ fun <F> draw(gui: GUI, bottomAppBar: BottomAppBar, table: Table<F>) {
                     ActionButton("Export to csv") {
                         PathChooser("Save to csv table...", ".csv", "Csv table").choose()?.let { file ->
                             val writer = Writer(file, FileType.CSV)
-                            writer.add(table)
+                            transaction {
+                                writer.add(table)
+                            }
                             writer.write()
                             bottomAppBar.setMessage("File was successfully saved to $file")
                         } ?: bottomAppBar.setMessage("File not selected")
