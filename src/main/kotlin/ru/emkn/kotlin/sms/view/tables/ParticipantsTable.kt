@@ -16,6 +16,7 @@ fun Participant.Companion.getPrint(): List<ParticipantPrint> {
     val teamById = TeamTable.selectAll().associate { it[TeamTable.id] to it[TeamTable.name] }
     val groupById = GroupTable.selectAll().associate { it[GroupTable.id] to it[GroupTable.name] }
     val startTimeById = TossTable.selectAll().associate { it[TossTable.participantID] to it[TossTable.startTime] }
+    val resultById = PersonalResultTable.selectAll().associateBy { it[TossTable.participantID] }
 
     return Participant.all().map {
         ParticipantPrint(
@@ -27,7 +28,10 @@ fun Participant.Companion.getPrint(): List<ParticipantPrint> {
             groupById[it.groupID] ?: throw IllegalStateException("Team with id for participant doesnt exist"),
             teamById[it.teamID] ?: throw IllegalStateException("Group with id for participant doesnt exist"),
             startTimeById[it.id],
-            LocalTime.NOON,
+            resultById[it.id]?.get(PersonalResultTable.finishTime),
+            resultById[it.id]?.get(PersonalResultTable.penalty),
+            resultById[it.id]?.get(PersonalResultTable.placeInGroup),
+            resultById[it.id]?.get(PersonalResultTable.deltaFromLeader),
             it
         )
     }
@@ -43,6 +47,9 @@ data class ParticipantPrint(
     val teamName: String,
     val startTime: LocalTime?,
     val finishTime: LocalTime?,
+    val penalty: Int?,
+    val placeInGroup: Int?,
+    val deltaFromLeader: Int?,
     val entry: Participant
 )
 
@@ -107,6 +114,34 @@ class ParticipantsTable : Table<ParticipantPrint>() {
             visible = false, readOnly = false,
             comparator = TableComparing.compareByLocalTime(ObjectFields.StartTime),
             getterGenerator = { { it.startTime.toString() } }
+        ),
+        TableColumn(
+            "Finish time",
+            ObjectFields.FinishTime,
+            visible = false, readOnly = false,
+            comparator = TableComparing.compareByLocalTime(ObjectFields.FinishTime),
+            getterGenerator = { { it.finishTime.toString() } }
+        ),
+        TableColumn(
+            "Penalty",
+            ObjectFields.Penalty,
+            visible = false, readOnly = true,
+            comparator = TableComparing.compareByInt(ObjectFields.Penalty),
+            getterGenerator = { { it.penalty.toString() } }
+        ),
+        TableColumn(
+            "Place in group",
+            ObjectFields.PlaceInGroup,
+            visible = false, readOnly = true,
+            comparator = TableComparing.compareByInt(ObjectFields.PlaceInGroup),
+            getterGenerator = { { it.placeInGroup.toString() } }
+        ),
+        TableColumn(
+            "Delta from group leader",
+            ObjectFields.DeltaFromLeader,
+            visible = false, readOnly = true,
+            comparator = TableComparing.compareByInt(ObjectFields.DeltaFromLeader),
+            getterGenerator = { { it.deltaFromLeader.toString() } }
         )
     ), deleteButton = true)
 

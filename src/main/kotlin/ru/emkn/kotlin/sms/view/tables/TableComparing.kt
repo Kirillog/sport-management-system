@@ -38,7 +38,10 @@ class TableComparing {
             text.toIntOrNull() ?: throw IllegalStateException("Can't represent $text as Int")
         }
 
-
+        fun <T> compareByLong(field: ObjectFields) = compareBy<Table<T>.TableRow> {
+            val text = it.getData(field)
+            text.toLongOrNull() ?: throw IllegalStateException("Can't represent $text as Int")
+        }
     }
 }
 
