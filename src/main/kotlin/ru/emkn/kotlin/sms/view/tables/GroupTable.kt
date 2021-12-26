@@ -6,6 +6,7 @@ import ru.emkn.kotlin.sms.controller.CompetitionController
 import ru.emkn.kotlin.sms.controller.Deleter
 import ru.emkn.kotlin.sms.controller.Editor
 import ru.emkn.kotlin.sms.model.Group
+import ru.emkn.kotlin.sms.view.GUI
 import ru.emkn.kotlin.sms.view.PathChooser
 
 class GroupTable : Table<Group>() {
@@ -52,6 +53,8 @@ class GroupTable : Table<Group>() {
             state = State.Outdated
         }
     }
+
+    override val creatingState = GUI.State.CreateGroup
 
     override val rows: List<TableRow>
         get() = group.map { GroupTableRow(it) }

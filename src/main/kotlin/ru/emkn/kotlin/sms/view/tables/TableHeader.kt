@@ -83,17 +83,17 @@ class TableHeader<T>(val columns: List<TableColumn<T>>, val deleteButton: Boolea
 @Composable
 fun <T> draw(tableHeader: TableHeader<T>) {
     var rowSize by remember { mutableStateOf(IntSize.Zero) }
-    Row {
+    Row(
+//        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Start
+    ) {
         // space for delete button
         if (tableHeader.deleteButton)
             Box(modifier = Modifier.width(tableDeleteButtonWidth.dp))
         // header and filters
         Column {
             val columnsCount = tableHeader.visibleColumns.size
-            val columnWidth = if (tableHeader.deleteButton)
-                ((rowSize.width - tableDeleteButtonWidth) / columnsCount).dp
-            else
-                (rowSize.width / columnsCount).dp
+            val columnWidth = (rowSize.width / columnsCount).dp
             // filter fields
             if (tableHeader.filtering) {
                 Row(

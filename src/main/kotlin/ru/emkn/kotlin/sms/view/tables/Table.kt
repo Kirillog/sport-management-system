@@ -17,6 +17,7 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.xenomachina.text.term.columnize
+import org.jetbrains.exposed.sql.transactions.transaction
 import ru.emkn.kotlin.sms.ObjectFields
 import ru.emkn.kotlin.sms.view.ActionButton
 import ru.emkn.kotlin.sms.view.GUI
@@ -30,8 +31,6 @@ abstract class Table<T> {
     enum class State {
         Updated, Outdated
     }
-
-    open fun update() {}
 
     abstract inner class TableRow {
 
@@ -157,12 +156,14 @@ fun <F> draw(gui: GUI, table: Table<F>) {
                 }
             }
             draw(table.header)
-            table.rows
-                .sortedWith(table.header.comparator)
-                .filter { it.checkFilter() }
-                .forEach {
-                    draw(it)
-                }
+
+            transaction {
+                table.rows
+                    .sortedWith(table.header.comparator)
+                    .filter { it.checkFilter() }
+            }.forEach {
+                draw(it)
+            }
         }
     }
 }

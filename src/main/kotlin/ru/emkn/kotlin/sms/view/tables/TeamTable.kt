@@ -6,6 +6,7 @@ import ru.emkn.kotlin.sms.controller.CompetitionController
 import ru.emkn.kotlin.sms.controller.Deleter
 import ru.emkn.kotlin.sms.controller.Editor
 import ru.emkn.kotlin.sms.model.Team
+import ru.emkn.kotlin.sms.view.GUI
 import ru.emkn.kotlin.sms.view.PathChooser
 
 class TeamTable : Table<Team>() {
@@ -41,6 +42,7 @@ class TeamTable : Table<Team>() {
         }
     }
 
+    override val creatingState = GUI.State.CreateTeam
 
     override val rows: List<TableRow>
         get() = team.map { TeamTableRow(it) }

@@ -8,32 +8,28 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import com.sun.nio.sctp.IllegalReceiveException
 import ru.emkn.kotlin.sms.controller.CompetitionController
-import ru.emkn.kotlin.sms.view.creators.CheckpointCreator
-import ru.emkn.kotlin.sms.view.creators.EventCreator
-import ru.emkn.kotlin.sms.view.creators.ParticipantCreator
-import ru.emkn.kotlin.sms.view.creators.RoutesCreator
-import ru.emkn.kotlin.sms.view.creators.draw
+import ru.emkn.kotlin.sms.view.creators.*
 import java.io.File
 
-//TODO: сделать честную переотрисовку нашего окна.
 class GUI {
 
     enum class State {
-        LoadOrCreateDataBase,
-        ShowParticipants,
+        // create states
         CreateParticipant,
+        CreateTeam,
         CreateCheckpoint,
         CreateRoute,
         CreateTimestamp,
         CreateEvent,
+        CreateGroup,
+        // other states
+        LoadOrCreateDataBase,
         CheckDataBaseState,
         EditAnnounceData,
     }
 
     var state = mutableStateOf(State.LoadOrCreateDataBase)
     private val statesStack = mutableListOf(state.value)
-
-    // TODO routes table
 
     fun pushState(newState: State) {
         state.value = newState
@@ -80,18 +76,20 @@ fun chooseFileAndProcess(
 @Composable
 private fun app() {
     val gui = remember { GUI() }
-    println(gui.state.value)
     Column {
         TopAppBar.draw()
         when (gui.state.value) {
             GUI.State.LoadOrCreateDataBase -> loadOrCreateDataBase(gui)
             GUI.State.EditAnnounceData -> drawCompetitionDataEditor(gui)
             GUI.State.CheckDataBaseState -> gui.pushDataBaseState()
+            // create actions
             GUI.State.CreateParticipant -> draw(gui, ParticipantCreator())
             GUI.State.CreateCheckpoint -> draw(gui, CheckpointCreator())
             GUI.State.CreateRoute -> draw(gui, RoutesCreator())
             GUI.State.CreateEvent -> draw(gui, EventCreator())
-            GUI.State.CreateTimestamp -> TODO()
+            GUI.State.CreateTeam -> draw(gui, TeamCreator())
+            GUI.State.CreateTimestamp -> draw(gui, TimestampCreator())
+            GUI.State.CreateGroup -> draw(gui, GroupCreator())
             else -> throw IllegalReceiveException("Forbidden state of GUI")
         }
     }
