@@ -130,4 +130,5 @@ class ParticipantsTable : Table<ParticipantPrint>() {
         get() = participants.map { ParticipantTableRow(it) }
 
     override val creatingState = GUI.State.CreateParticipant
+    override var loadButton = false
 }

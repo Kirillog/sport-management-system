@@ -16,7 +16,7 @@ class GUI {
 
     val participantsTable = ParticipantsTable()
     val eventTable = EventTable()
-    val routeTable = GroupTable()
+    val routeTable = RouteTable()
     val teamTable = TeamTable()
     val groupTable = GroupTable()
     val checkpointTable = CheckpointTable()
@@ -86,6 +86,7 @@ fun mainContent() {
                 GUI.State.CreateRoute -> draw(gui, bottomBar, RoutesCreator())
                 GUI.State.CreateEvent -> draw(gui, bottomBar, EventCreator())
                 GUI.State.CreateTimestamp -> draw(gui, bottomBar, TimestampCreator())
+                GUI.State.CreateTeam -> draw(gui, bottomBar, TeamCreator())
                 GUI.State.EditRuntimeDump -> {
                     StateSwitcher.setTossed(gui)
                     drawTables(gui, bottomBar)
