@@ -16,9 +16,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import com.xenomachina.text.term.columnize
+import org.jetbrains.exposed.sql.transactions.transaction
 import ru.emkn.kotlin.sms.ObjectFields
 import ru.emkn.kotlin.sms.view.ActionButton
 import ru.emkn.kotlin.sms.view.GUI
+import ru.emkn.kotlin.sms.view.TopAppBar
 import ru.emkn.kotlin.sms.view.draw
 
 const val tableDeleteButtonWidth = 10
@@ -29,8 +32,6 @@ abstract class Table<T> {
         Updated, Outdated
     }
 
-    open fun update() {}
-
     abstract inner class TableRow {
 
         val header
@@ -40,7 +41,7 @@ abstract class Table<T> {
         abstract val id: Int
 
         open val changes: Map<ObjectFields, String>
-            get() = header.columns.filter { it.visible }.associate {
+            get() = header.visibleColumns.associate {
                 val cell = cells[it.field] ?: throw IllegalStateException("Cell of ${it.field} not exists")
                 it.field to cell.shownText.value
             }
@@ -58,6 +59,14 @@ abstract class Table<T> {
             val cell = cells[field] ?: throw NoSuchElementException("No field $field in cell")
             return cell.getText()
         }
+
+        fun checkFilter(): Boolean {
+            for (column in header.visibleColumns) {
+                if (column.filterString.value !in getData(column.field))
+                    return false
+            }
+            return true
+        }
     }
 
     abstract val header: TableHeader<T>
@@ -65,8 +74,17 @@ abstract class Table<T> {
 
     var state by mutableStateOf(State.Updated)
 
+    open var addButton: Boolean = true
     open val creatingState: GUI.State? = null
     open val loadAction: () -> Unit = {}
+
+    fun load() {
+        try {
+            loadAction()
+        } catch (e: Exception) {
+            TopAppBar.setMessage(e.message ?: "undefined error")
+        }
+    }
 }
 
 @Composable
@@ -78,7 +96,7 @@ fun <T> draw(tableRow: Table<T>.TableRow) {
             .onSizeChanged {
                 rowSize = it
             },
-        horizontalArrangement = Arrangement.SpaceAround,
+        horizontalArrangement = Arrangement.Start,
         verticalAlignment = Alignment.CenterVertically
     ) {
         if (tableRow.header.deleteButton)
@@ -110,34 +128,41 @@ fun <T> draw(tableRow: Table<T>.TableRow) {
 }
 
 @Composable
-fun <F, T : Table<F>> draw(gui: GUI, table: T) {
+fun <F> draw(gui: GUI, table: Table<F>) {
     if (table.state == Table.State.Outdated)
         table.state = Table.State.Updated
     Column {
-        draw(table.header)
         Column(
             modifier = Modifier.verticalScroll(rememberScrollState())
         ) {
-            table.rows.sortedWith(table.header.comparator).forEach {
-                draw(it)
-            }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceAround
-            ) {
-                val createState = table.creatingState
-                draw(
-                    ActionButton("Load") {
-                        table.loadAction()
-                    }
-                )
-                if (createState != null) {
+            Box(modifier = Modifier.border(BorderStroke(1.dp, Color.Black))) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceAround
+                ) {
+                    val createState = table.creatingState
                     draw(
-                        ActionButton("Add") {
-                            gui.pushState(createState)
+                        ActionButton("Load") {
+                            table.load()
                         }
                     )
+                    if (createState != null && table.addButton) {
+                        draw(
+                            ActionButton("Add") {
+                                gui.pushState(createState)
+                            }
+                        )
+                    }
                 }
+            }
+            draw(table.header)
+
+            transaction {
+                table.rows
+                    .sortedWith(table.header.comparator)
+                    .filter { it.checkFilter() }
+            }.forEach {
+                draw(it)
             }
         }
     }
