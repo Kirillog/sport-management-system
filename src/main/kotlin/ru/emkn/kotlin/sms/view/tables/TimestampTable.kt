@@ -8,6 +8,7 @@ import ru.emkn.kotlin.sms.controller.Editor
 import ru.emkn.kotlin.sms.model.Timestamp
 import ru.emkn.kotlin.sms.view.GUI
 import ru.emkn.kotlin.sms.view.PathChooser
+import java.time.format.DateTimeFormatter
 import javax.swing.JFileChooser
 
 class TimestampTable : Table<Timestamp>() {
@@ -21,21 +22,21 @@ class TimestampTable : Table<Timestamp>() {
             ObjectFields.Time,
             visible = true, readOnly = false,
             comparator = TableComparing.compareByLocalTime(ObjectFields.Time),
-            getterGenerator = { { it.time.toString() } }
+            getterGenerator = { { it.time.format(DateTimeFormatter.ISO_LOCAL_TIME) } }
         ),
         TableColumn(
             "Checkpoint",
             ObjectFields.Name,
             visible = true, readOnly = false,
             comparator = TableComparing.compareByString(ObjectFields.Name),
-            getterGenerator = { { it.checkpoint.toString() } }
+            getterGenerator = { { it.checkpoint.name } }
         ),
         TableColumn(
             "Participant",
             ObjectFields.ID,
             visible = true, readOnly = false,
             comparator = TableComparing.compareByString(ObjectFields.ID),
-            getterGenerator = { { it.participant.toString() } }
+            getterGenerator = { { it.participant.id.toString() } }
         )
     ), deleteButton = true)
 

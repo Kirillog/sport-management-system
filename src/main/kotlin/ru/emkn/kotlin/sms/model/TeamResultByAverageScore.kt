@@ -14,7 +14,7 @@ class TeamResultByAverageScore : TeamResult {
 
     override fun calculate() {
         val tempScore: MutableMap<Team, Long> = mutableMapOf()
-        Competition.teams.forEach { team ->
+        Team.all().forEach { team ->
             tempScore[team] = team.members.sumOf {
                 if (it.positionInGroup == null)
                     0

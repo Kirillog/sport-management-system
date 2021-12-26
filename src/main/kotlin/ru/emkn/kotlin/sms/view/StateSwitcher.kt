@@ -37,29 +37,29 @@ object StateSwitcher {
     }
 
     fun doToss(gui: GUI, bottomBar: BottomAppBar) {
-        setTossed(gui)
         CompetitionController.toss()
+        setTossed(gui)
         bottomBar.setMessage("Tossed completed")
         gui.pushState(GUI.State.EditRuntimeDump)
     }
 
     fun undoToss(gui: GUI, bottomBar: BottomAppBar) {
-        setUnTossed(gui)
         CompetitionController.undoToss()
+        setUnTossed(gui)
         bottomBar.setMessage("Rollback")
         gui.popState()
     }
 
     fun doResulted(gui: GUI, bottomBar: BottomAppBar) {
-        setResulted(gui)
         CompetitionController.result()
+        setResulted(gui)
         bottomBar.setMessage("Results calculated")
         gui.pushState(GUI.State.ShowResults)
     }
 
     fun undoResulted(gui: GUI, bottomBar: BottomAppBar) {
-        setUnResulted(gui)
         CompetitionController.undoResult()
+        setUnResulted(gui)
         bottomBar.setMessage("Rollback")
         gui.popState()
     }

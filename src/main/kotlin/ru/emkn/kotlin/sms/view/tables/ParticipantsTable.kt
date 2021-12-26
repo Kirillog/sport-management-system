@@ -1,6 +1,5 @@
 package ru.emkn.kotlin.sms.view.tables
 
-import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.emkn.kotlin.sms.ObjectFields
@@ -16,7 +15,7 @@ fun Participant.Companion.getPrint(): List<ParticipantPrint> {
     val teamById = TeamTable.selectAll().associate { it[TeamTable.id] to it[TeamTable.name] }
     val groupById = GroupTable.selectAll().associate { it[GroupTable.id] to it[GroupTable.name] }
     val startTimeById = TossTable.selectAll().associate { it[TossTable.participantID] to it[TossTable.startTime] }
-    val resultById = PersonalResultTable.selectAll().associateBy { it[TossTable.participantID] }
+    val resultById = PersonalResultTable.selectAll().associateBy { it[PersonalResultTable.participantID] }
 
     return Participant.all().map {
         ParticipantPrint(

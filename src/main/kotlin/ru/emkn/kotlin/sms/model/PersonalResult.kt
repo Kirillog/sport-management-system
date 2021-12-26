@@ -26,6 +26,7 @@ abstract class PersonalResult(open val group: Group) {
     private fun fillPositions() {
         val tempPositionInGroup = mutableMapOf<Participant, PositionInGroup>()
         val sortedGroup = sortBeforeSaving()
+        if (sortedGroup.isEmpty()) return
         val leaderPenalty = penalty[sortedGroup[0]]
         sortedGroup.forEachIndexed { place, participant ->
             tempPositionInGroup[participant] = PositionInGroup(

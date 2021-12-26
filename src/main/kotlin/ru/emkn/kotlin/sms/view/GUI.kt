@@ -60,9 +60,10 @@ class GUI {
     fun pushDataBaseState() {
         pushState(
             when (CompetitionController.getControllerState()) {
+                ru.emkn.kotlin.sms.controller.State.EMPTY -> State.InitialWindow
                 ru.emkn.kotlin.sms.controller.State.CREATED -> State.EditAnnounceData
                 ru.emkn.kotlin.sms.controller.State.TOSSED -> State.EditRuntimeDump
-                else -> TODO()
+                ru.emkn.kotlin.sms.controller.State.FINISHED -> State.ShowResults
             }
         )
     }
@@ -80,6 +81,10 @@ fun mainContent() {
                     StateSwitcher.setUnTossed(gui)
                     drawTables(gui, bottomBar)
                 }
+                GUI.State.ShowResults -> {
+                    StateSwitcher.setResulted(gui)
+                    drawTables(gui, bottomBar)
+                }
                 GUI.State.CreateParticipant -> draw(gui, bottomBar, ParticipantCreator())
                 GUI.State.CreateCheckpoint -> draw(gui, bottomBar, CheckpointCreator())
                 GUI.State.CreateRoute -> draw(gui, bottomBar, RoutesCreator())
@@ -88,6 +93,7 @@ fun mainContent() {
                 GUI.State.CreateTeam -> draw(gui, bottomBar, TeamCreator())
                 GUI.State.EditRuntimeDump -> {
                     StateSwitcher.setTossed(gui)
+                    StateSwitcher.setUnResulted(gui)
                     drawTables(gui, bottomBar)
                 }
                 else -> throw IllegalReceiveException("Forbidden state of GUI")
