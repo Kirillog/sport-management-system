@@ -16,13 +16,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import com.xenomachina.text.term.columnize
 import org.jetbrains.exposed.sql.transactions.transaction
+import ru.emkn.kotlin.sms.FileType
 import ru.emkn.kotlin.sms.ObjectFields
-import ru.emkn.kotlin.sms.view.ActionButton
-import ru.emkn.kotlin.sms.view.GUI
-import ru.emkn.kotlin.sms.view.TopAppBar
-import ru.emkn.kotlin.sms.view.draw
+import ru.emkn.kotlin.sms.io.Writer
+import ru.emkn.kotlin.sms.view.*
+import java.io.File
 
 const val tableDeleteButtonWidth = 10
 
@@ -45,6 +44,7 @@ abstract class Table<T> {
                 val cell = cells[it.field] ?: throw IllegalStateException("Cell of ${it.field} not exists")
                 it.field to cell.shownText.value
             }
+
 
         fun delete() {
             if (!header.deleteButton)
@@ -77,6 +77,12 @@ abstract class Table<T> {
     open var addButton: Boolean = true
     open val creatingState: GUI.State? = null
     open val loadAction: () -> Unit = {}
+
+    val sortedFilteredRows
+        get() = transaction {
+            rows.sortedWith(header.comparator)
+                .filter { it.checkFilter() }
+        }
 
     fun load() {
         try {
@@ -153,15 +159,21 @@ fun <F> draw(gui: GUI, table: Table<F>) {
                             }
                         )
                     }
+                    draw(
+                        ActionButton("Export to csv") {
+                            PathChooser("Save to csv table...", ".csv", "Csv table").choose()?.let { file ->
+                                val writer = Writer(file, FileType.CSV)
+                                writer.add(table)
+                                writer.write()
+                                TopAppBar.setMessage("File was successfully saved to $file")
+                            } ?: TopAppBar.setMessage("File not selected")
+                        }
+                    )
                 }
             }
             draw(table.header)
 
-            transaction {
-                table.rows
-                    .sortedWith(table.header.comparator)
-                    .filter { it.checkFilter() }
-            }.forEach {
+            table.sortedFilteredRows.forEach {
                 draw(it)
             }
         }
