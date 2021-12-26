@@ -24,7 +24,7 @@ enum class ResultType(val russian: String) {
 object GroupTable : IntIdTable("groups") {
     var name: Column<String> = varchar("name", MAX_TEXT_FIELD_SIZE)
     val routeID: Column<EntityID<Int>> = reference("routes", RouteTable)
-//    val resultType: Column<ResultType> = enumerationByName("resultType", MAX_TEXT_FIELD_SIZE, ResultType::class)
+    val resultType: Column<ResultType> = enumerationByName("resultType", MAX_TEXT_FIELD_SIZE, ResultType::class)
 }
 
 /**
@@ -44,13 +44,14 @@ class Group(id: EntityID<Int>) : IntEntity(id), MultilineWritable {
             return Group.new {
                 this.name = name
                 this.route = route
+                this.resultType = ResultType.TIME
             }
         }
 
         fun create(name: String, resultType: ResultType, routeName: String): Group {
             return Group.new {
                 this.name = name
-                this.personalResult = resultType.implementation(this)
+                this.resultType = resultType
                 this.routeID = RouteTable.select { RouteTable.name eq routeName }.first()[RouteTable.id]
             }
         }
@@ -60,8 +61,9 @@ class Group(id: EntityID<Int>) : IntEntity(id), MultilineWritable {
     val members by Participant referrersOn ParticipantTable.groupID
     var routeID by GroupTable.routeID
 
-//    var resultType by GroupTable.resultType
-    var personalResult: PersonalResult = PersonalResultByTime(this)
+    var resultType by GroupTable.resultType
+    val personalResult: PersonalResult
+        get() = resultType.implementation(this)
 
     var route: Route
         get() = Route[routeID]
@@ -69,9 +71,10 @@ class Group(id: EntityID<Int>) : IntEntity(id), MultilineWritable {
             routeID = RouteTable.select { RouteTable.id eq route.id }.first()[RouteTable.id]
         }
 
-    fun change(name: String, route: Route) {
+    fun change(name: String, resultType: ResultType, route: Route) {
         this.name = name
         this.route = route
+        this.resultType = resultType
     }
 
     override fun toString() = this.name

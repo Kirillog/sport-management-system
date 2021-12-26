@@ -53,7 +53,7 @@ class Route(id: EntityID<Int>) : IntEntity(id), SingleLineWritable {
     var amountOfCheckpoint by RouteTable.checkpointAmount
     var type by RouteTable.type
 
-    fun change(name: String, checkpoints: List<Checkpoint>) {
+    fun change(name: String, checkpoints: List<Checkpoint>, routeType: RouteType) {
         this.name = name
         this.amountOfCheckpoint = checkpoints.size
         this.type = routeType

@@ -43,7 +43,8 @@ object Editor {
             transaction {
                 val name = convert<String>(values[ObjectFields.Name])
                 val route = convert<Route>(values[ObjectFields.RouteName])
-                group.change(name, route)
+                val resultType = convert<ResultType>(values[ObjectFields.ResultType])
+                group.change(name, resultType, route)
             }
             logger.info { "Group was successfully edited" }
         } catch (err: Exception) {
@@ -82,10 +83,11 @@ object Editor {
 
     fun editRoute(route: Route, values: Map<ObjectFields, String>) {
         try {
-            val routeName = convert<String>(values[ObjectFields.Name])
             transaction {
+                val routeName = convert<String>(values[ObjectFields.Name])
                 val checkPoints = convert<List<Checkpoint>>(values[ObjectFields.CheckPoints])
-                route.change(routeName, checkPoints)
+                val routeType = convert<RouteType>(values[ObjectFields.Type])
+                route.change(routeName, checkPoints, routeType)
             }
             logger.info { "Route was successfully edited" }
         } catch (err: IllegalArgumentException) {
