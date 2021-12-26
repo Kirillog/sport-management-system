@@ -52,20 +52,35 @@ class GUI {
         statesStack.add(newState)
     }
 
+    fun pushStates(statesList: List<State>) {
+        require(statesList.isNotEmpty()) { "Empty states list" }
+        statesStack.addAll(statesList)
+        state.value = statesList.last()
+    }
+
     fun popState() {
         statesStack.removeLast()
         state.value = statesStack.lastOrNull() ?: throw IllegalStateException("GUI stack error")
     }
 
     fun pushDataBaseState() {
-        pushState(
-            when (CompetitionController.getControllerState()) {
-                ru.emkn.kotlin.sms.controller.State.EMPTY -> State.InitialWindow
-                ru.emkn.kotlin.sms.controller.State.CREATED -> State.EditAnnounceData
-                ru.emkn.kotlin.sms.controller.State.TOSSED -> State.EditRuntimeDump
-                ru.emkn.kotlin.sms.controller.State.FINISHED -> State.ShowResults
-            }
-        )
+        when (CompetitionController.getControllerState()) {
+            ru.emkn.kotlin.sms.controller.State.EMPTY -> State.InitialWindow
+            ru.emkn.kotlin.sms.controller.State.CREATED -> pushState(State.EditAnnounceData)
+            ru.emkn.kotlin.sms.controller.State.TOSSED -> pushStates(
+                listOf(
+                    State.EditAnnounceData,
+                    State.EditRuntimeDump
+                )
+            )
+            ru.emkn.kotlin.sms.controller.State.FINISHED -> pushStates(
+                listOf(
+                    State.EditAnnounceData,
+                    State.EditRuntimeDump,
+                    State.ShowResults
+                )
+            )
+        }
     }
 }
 

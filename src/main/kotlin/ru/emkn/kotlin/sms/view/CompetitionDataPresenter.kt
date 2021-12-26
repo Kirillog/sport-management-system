@@ -5,9 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.TopAppBar
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import ru.emkn.kotlin.sms.view.tables.draw
 
@@ -22,31 +20,31 @@ object CompetitionDataPresenter {
         Timestamps
     }
 
-    var state = mutableStateOf(Table.Event)
+    var state by mutableStateOf(Table.Event)
 }
 
 object AppTopBar {
     val buttons = listOf(
         ActionButton("Events") {
-            CompetitionDataPresenter.state.value = CompetitionDataPresenter.Table.Event
+            CompetitionDataPresenter.state = CompetitionDataPresenter.Table.Event
         },
         ActionButton("Checkpoints") {
-            CompetitionDataPresenter.state.value = CompetitionDataPresenter.Table.Checkpoints
+            CompetitionDataPresenter.state = CompetitionDataPresenter.Table.Checkpoints
         },
         ActionButton("Routes") {
-            CompetitionDataPresenter.state.value = CompetitionDataPresenter.Table.Routes
+            CompetitionDataPresenter.state = CompetitionDataPresenter.Table.Routes
         },
         ActionButton("Participants") {
-            CompetitionDataPresenter.state.value = CompetitionDataPresenter.Table.Participants
+            CompetitionDataPresenter.state = CompetitionDataPresenter.Table.Participants
         },
         ActionButton("Teams") {
-            CompetitionDataPresenter.state.value = CompetitionDataPresenter.Table.Teams
+            CompetitionDataPresenter.state = CompetitionDataPresenter.Table.Teams
         },
         ActionButton("Groups") {
-            CompetitionDataPresenter.state.value = CompetitionDataPresenter.Table.Groups
+            CompetitionDataPresenter.state = CompetitionDataPresenter.Table.Groups
         },
         ActionButton("Timestamps", visible = false) {
-            CompetitionDataPresenter.state.value = CompetitionDataPresenter.Table.Timestamps
+            CompetitionDataPresenter.state = CompetitionDataPresenter.Table.Timestamps
         }
     )
 }
@@ -80,7 +78,7 @@ fun drawTables(gui: GUI, bottomAppBar: BottomAppBar) {
         bottomAppBar.setMessage("You should load events -> checkpoints -> routes -> groups -> teams")
         draw(
             gui, bottomAppBar,
-            when (CompetitionDataPresenter.state.value) {
+            when (CompetitionDataPresenter.state) {
                 CompetitionDataPresenter.Table.Event -> eventTable
                 CompetitionDataPresenter.Table.Checkpoints -> checkpointTable
                 CompetitionDataPresenter.Table.Routes -> routeTable

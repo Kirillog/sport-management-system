@@ -13,7 +13,7 @@ enum class MenuState(val text: String = "") {
     Blocked("Next"),
     Preparing("Toss"),
     Tossed("Result"),
-    Result("Next"),
+    Result("Finished"),
 }
 
 

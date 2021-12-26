@@ -17,6 +17,7 @@ object StateSwitcher {
         gui.tables.forEach {
             it.header.setVisibility(true)
         }
+        gui.timestampTable.header.setReadOnly(true)
     }
 
     fun setUnResulted(gui: GUI) {
@@ -25,9 +26,12 @@ object StateSwitcher {
         gui.participantsTable.header.setVisibility(ObjectFields.Penalty, false)
         gui.participantsTable.header.setVisibility(ObjectFields.PlaceInGroup, false)
         gui.participantsTable.header.setVisibility(ObjectFields.DeltaFromLeader, false)
+        gui.timestampTable.header.setReadOnly(false)
     }
 
     fun setUnTossed(gui: GUI) {
+        if (CompetitionDataPresenter.state == CompetitionDataPresenter.Table.Timestamps)
+            CompetitionDataPresenter.state = CompetitionDataPresenter.Table.Event
         gui.tables.forEach {
             it.header.setReadOnly(false)
         }
