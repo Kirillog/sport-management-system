@@ -59,7 +59,9 @@ class TimestampTable : Table<Timestamp>() {
 
     override val creatingState = GUI.State.CreateTimestamp
     override val loadAction = {
-        val timestamps = PathChooser("Choose timestamps", "", "Timestamps").choose()
+        val timestamps = PathChooser("Choose folder with timestamps or single file", "", "Timestamps").choose(
+            JFileChooser.FILES_AND_DIRECTORIES
+        )
         CompetitionController.loadTimestamps(timestamps?.toPath())
         state = State.Outdated
     }

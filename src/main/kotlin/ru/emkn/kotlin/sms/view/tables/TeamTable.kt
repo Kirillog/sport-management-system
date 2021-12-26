@@ -55,7 +55,9 @@ class TeamTable : Table<Team>() {
         get() = team.map { TeamTableRow(it) }
 
     override val loadAction = {
-        val selectedFile = PathChooser("Choose application folder ", "", "Application folder").choose()
+        val selectedFile = PathChooser("Choose application folder or single file", "", "Application folder").choose(
+            JFileChooser.FILES_AND_DIRECTORIES
+        )
         CompetitionController.loadTeams(selectedFile?.toPath())
         state = State.Outdated
     }
