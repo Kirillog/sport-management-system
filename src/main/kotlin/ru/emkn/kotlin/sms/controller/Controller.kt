@@ -60,6 +60,8 @@ object CompetitionController {
 
     fun loadTeams(path: Path?) = load(path, State.CREATED) { loadTeams(it) }
 
+    fun loadTimestamp(path: Path?) = load(path, State.TOSSED) { loadTimestamps(it)}
+
     fun toss() {
         require(state == State.CREATED)
         transaction {

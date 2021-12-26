@@ -38,6 +38,10 @@ object Competition {
         loader.loadRoutes()
     }
 
+    fun loadTimestamps(loader: Loader) {
+        loader.loadTimestamps()
+    }
+
     fun add(route: Route) {
         routes.add(route)
     }
