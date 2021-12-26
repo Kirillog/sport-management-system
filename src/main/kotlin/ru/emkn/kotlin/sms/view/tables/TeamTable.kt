@@ -24,11 +24,12 @@ class TeamTable : Table<Team>() {
                 comparator = TableComparing.compareByString(ObjectFields.Name),
                 getterGenerator = { { it.name } }
             ),
-/*            TableColumn<Team>(
-                "Result",
+            TableColumn<Team>(
+                "Score",
                 ObjectFields.ResultType, visible = false, readOnly = true,
-                comparator = TableComparing
-            )*/
+                comparator = TableComparing.compareByLong(ObjectFields.ResultType),
+                getterGenerator = { { it.score.toString() } }
+            )
         ),
         deleteButton = true
     )

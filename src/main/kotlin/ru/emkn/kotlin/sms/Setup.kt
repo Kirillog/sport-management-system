@@ -90,5 +90,9 @@ enum class ObjectFields {
     ResultType,
     Full,
     Selective,
+    Penalty,
+    DeltaFromLeader,
+    FinishTime,
+    PlaceInGroup
 }
 

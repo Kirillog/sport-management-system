@@ -1,6 +1,8 @@
 package ru.emkn.kotlin.sms.view
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
@@ -54,8 +56,10 @@ fun drawAppTopBar() {
     TopAppBar(
         modifier = Modifier.fillMaxWidth(),
     ) {
-        AppTopBar.buttons.forEach {
-            draw(it)
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
+            AppTopBar.buttons.forEach {
+                draw(it)
+            }
         }
     }
 }

@@ -84,6 +84,7 @@ fun mainContent() {
                 GUI.State.CreateRoute -> draw(gui, bottomBar, RoutesCreator())
                 GUI.State.CreateEvent -> draw(gui, bottomBar, EventCreator())
                 GUI.State.CreateTimestamp -> draw(gui, bottomBar, TimestampCreator())
+                GUI.State.CreateTeam -> draw(gui, bottomBar, TeamCreator())
                 GUI.State.EditRuntimeDump -> {
                     StateSwitcher.setTossed(gui)
                     drawTables(gui, bottomBar)

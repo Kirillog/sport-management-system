@@ -75,6 +75,7 @@ abstract class Table<T> {
     open var addButton: Boolean = true
     open val creatingState: GUI.State? = null
     open val loadAction: () -> Unit = {}
+    open var loadButton: Boolean = true
 
     val sortedFilteredRows
         get() = transaction {
@@ -148,11 +149,13 @@ fun <F> draw(gui: GUI, bottomAppBar: BottomAppBar, table: Table<F>) {
                 horizontalArrangement = Arrangement.SpaceAround
             ) {
                 val createState = table.creatingState
-                draw(
-                    ActionButton("Load") {
-                        table.load(bottomAppBar)
-                    }
-                )
+                if (table.loadButton) {
+                    draw(
+                        ActionButton("Load") {
+                            table.load(bottomAppBar)
+                        }
+                    )
+                }
                 if (createState != null && table.addButton) {
                     draw(
                         ActionButton("Add") {
