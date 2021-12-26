@@ -1,7 +1,10 @@
 package ru.emkn.kotlin.sms.view.creators
 
-import androidx.compose.foundation.*
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.runtime.*
@@ -16,63 +19,65 @@ import ru.emkn.kotlin.sms.maxTextLength
 import ru.emkn.kotlin.sms.view.ActionButton
 import ru.emkn.kotlin.sms.view.GUI
 import ru.emkn.kotlin.sms.view.TopAppBar
+import ru.emkn.kotlin.sms.view.draw
 
 data class ItemCreatorInputField(
     val title: String,
     val field: ObjectFields,
     var data: MutableState<String> = mutableStateOf("")
-) {
-    @Composable
-    fun draw(width: Dp) {
+)
 
-        TextField(data.value,
-            modifier = Modifier
-                .border(BorderStroke(1.dp, Color.Black))
-                .width(width),
-            onValueChange = {
-                data.value = it.replace("\n", "").take(maxTextLength)
-            },
-            label = { Text(title) }
-        )
-    }
+@Composable
+fun draw(inputFieldCreator: ItemCreatorInputField, width: Dp) {
+
+    TextField(inputFieldCreator.data.value,
+        modifier = Modifier
+            .border(BorderStroke(1.dp, Color.Black))
+            .width(width),
+        onValueChange = {
+            inputFieldCreator.data.value = it.replace("\n", "").take(maxTextLength)
+        },
+        label = { Text(inputFieldCreator.title) }
+    )
 }
 
 abstract class ItemCreator<T> {
     abstract val fields: List<ItemCreatorInputField>
 
-    private fun create() {
+    abstract fun createAction(input: Map<ObjectFields, String>)
+
+    fun create(gui: GUI) {
         try {
             createAction(input)
-            GUI.popState()
+            gui.popState()
         } catch (e: Exception) {
-            TopAppBar.setMessage(e.message ?: "Undefined error");
+            TopAppBar.setMessage(e.message ?: "Undefined error")
         }
     }
 
-    private fun cancel() {
-        GUI.popState()
+    fun cancel(gui: GUI) {
+        gui.popState()
     }
-
-    abstract fun createAction(input: Map<ObjectFields, String>)
 
     open val input: Map<ObjectFields, String>
         get() = fields.associate { it.field to it.data.value }
+}
 
-    @Composable
-    open fun draw() {
-        var columnSize by remember { mutableStateOf(IntSize.Zero) }
 
-        Column(modifier = Modifier
-            .fillMaxWidth()
-            .onSizeChanged {
-                columnSize = it
-            }
-        ) {
-            for (field in fields) {
-                field.draw(columnSize.width.dp)
-            }
-            ActionButton("Create", ::create).draw()
-            ActionButton("Cancel", ::cancel).draw()
+@Composable
+fun <T> draw(gui: GUI, creator: ItemCreator<T>) {
+    var columnSize by remember { mutableStateOf(IntSize.Zero) }
+
+    Column(modifier = Modifier
+        .fillMaxWidth()
+        .onSizeChanged {
+            columnSize = it
         }
+    ) {
+        for (field in creator.fields) {
+            draw(field, columnSize.width.dp)
+        }
+        draw(ActionButton("Create") { creator.create(gui) })
+        draw(ActionButton("Cancel") { creator.cancel(gui) })
     }
 }

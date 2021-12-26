@@ -19,8 +19,8 @@ object TeamTable : IntIdTable("teams") {
  */
 class Team(id: EntityID<Int>) : IntEntity(id), MultilineWritable, SingleLineWritable {
     companion object : IntEntityClass<Team>(TeamTable) {
-        fun formatterForApplications(team: Team) = listOf(
-            listOf(team.name) + listOf(
+        fun formatterForApplications(team: Team): List<List<Any?>> {
+            return listOf(listOf(team.name)) + listOf(
                 listOf(
                     "Имя",
                     "Фамилия",
@@ -28,8 +28,8 @@ class Team(id: EntityID<Int>) : IntEntity(id), MultilineWritable, SingleLineWrit
                     "Группа",
                     "Разр."
                 )
-            ) + team.members.map(Participant::formatterParticipantForApplications)
-        )
+            ) + team.members.toList().map(Participant::formatterParticipantForApplications)
+        }
 
         fun findByName(name: String): Team {
             return Team.find { TeamTable.name eq name }.first()
@@ -48,7 +48,7 @@ class Team(id: EntityID<Int>) : IntEntity(id), MultilineWritable, SingleLineWrit
     val members by Participant referrersOn ParticipantTable.teamID
 
     val score
-        get() = TeamResultTable.select { TeamResultTable.teamID eq id}.first()[TeamResultTable.score]
+        get() = TeamResultTable.select { TeamResultTable.teamID eq id }.first()[TeamResultTable.score]
 
     fun change(name: String) {
         this.name = name
@@ -72,4 +72,19 @@ class Team(id: EntityID<Int>) : IntEntity(id), MultilineWritable, SingleLineWrit
     )
 
     override fun toString() = this.name
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as Team
+
+        if (name != other.name) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return name.hashCode()
+    }
+
 }

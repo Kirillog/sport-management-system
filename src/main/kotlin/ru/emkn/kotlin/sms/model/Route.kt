@@ -10,9 +10,9 @@ import org.jetbrains.exposed.sql.insert
 import ru.emkn.kotlin.sms.MAX_TEXT_FIELD_SIZE
 import ru.emkn.kotlin.sms.io.SingleLineWritable
 
-enum class RouteType {
-    FULL,
-    SELECTIVE
+enum class RouteType(val russian: String) {
+    FULL("Полный"),
+    SELECTIVE("Выборочный")
 }
 
 object RouteTable : IntIdTable("routes") {
@@ -49,7 +49,7 @@ class Route(id: EntityID<Int>) : IntEntity(id), SingleLineWritable {
     }
 
     var name by RouteTable.name
-    var checkPoints by Checkpoint via RouteCheckpointsTable
+    var checkpoints by Checkpoint via RouteCheckpointsTable
     var amountOfCheckpoint by RouteTable.checkpointAmount
     var type by RouteTable.type
 
@@ -68,12 +68,40 @@ class Route(id: EntityID<Int>) : IntEntity(id), SingleLineWritable {
     fun checkCorrectness(timestamps: List<Timestamp>): Boolean =
         when (type) {
             RouteType.FULL ->
-                checkPoints.toList() == timestamps.map { it.checkpoint }
+                checkpoints.toList() == timestamps.map { it.checkpoint }
             RouteType.SELECTIVE ->
-                checkPoints.toSet() == timestamps.map { it.checkpoint }.toSet()
+                checkpoints.toSet() == timestamps.map { it.checkpoint }.toSet()
         }
 
-    override fun toLine(): List<String?> = listOf(name) + checkPoints.map { it.id.toString() }
+    override fun toLine(): List<Any?> {
+        val amount = if (type == RouteType.FULL)
+            null
+        else
+            amountOfCheckpoint
+        return listOf(name, type.russian, amount) + checkpoints.map { it.name }
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as Route
+
+        if (name != other.name) return false
+        if (checkpoints.toSet() != other.checkpoints.toSet()) return false
+        if (amountOfCheckpoint != other.amountOfCheckpoint) return false
+        if (type != other.type) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = name.hashCode()
+        result = 31 * result + checkpoints.toSet().hashCode()
+        result = 31 * result + amountOfCheckpoint
+        result = 31 * result + type.hashCode()
+        return result
+    }
 }
 
 object RouteCheckpointsTable : IntIdTable("route_checkpoints") {
@@ -87,7 +115,7 @@ object CheckpointTable : IntIdTable("checkpoints") {
     val name: Column<String> = varchar("name", MAX_TEXT_FIELD_SIZE)
 }
 
-class Checkpoint(id: EntityID<Int>) : IntEntity(id) {
+class Checkpoint(id: EntityID<Int>) : IntEntity(id), SingleLineWritable {
     companion object : IntEntityClass<Checkpoint>(CheckpointTable) {
         fun create(name: String, weight: Int): Checkpoint =
             Checkpoint.new {
@@ -96,8 +124,12 @@ class Checkpoint(id: EntityID<Int>) : IntEntity(id) {
             }
 
 
-        fun findByName(name: String): Checkpoint =
-            Checkpoint.find { CheckpointTable.name eq name }.first()
+        fun findByName(name: String): Checkpoint {
+            return Checkpoint.find { CheckpointTable.name eq name }.let {
+                if (it.empty()) throw IllegalStateException("No checkpoint with name $name")
+                else it.first()
+            }
+        }
 
         fun checkByName(name: String): Boolean =
             !Checkpoint.find { CheckpointTable.name eq name }.empty()
@@ -108,13 +140,21 @@ class Checkpoint(id: EntityID<Int>) : IntEntity(id) {
     var routes by Route via RouteCheckpointsTable
 
     fun addToRoute(route: Route) {
-        val positionInRoute = route.checkPoints.toList().size
+        val positionInRoute = route.checkpoints.toList().size
         RouteCheckpointsTable.insert {
             it[this.checkpoint] = this@Checkpoint.id
             it[this.route] = route.id
             it[this.positionInRoute] = positionInRoute
         }
     }
+
+     fun change(name: String, weight: Int) {
+         this.name = name
+         this.weight = weight
+     }
+
+    override fun toLine(): List<Any?> =
+        listOf(name, weight)
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

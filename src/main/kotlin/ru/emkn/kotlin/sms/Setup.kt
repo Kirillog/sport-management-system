@@ -2,6 +2,7 @@ package ru.emkn.kotlin.sms
 
 import com.xenomachina.argparser.ArgParser
 import com.xenomachina.argparser.default
+import ru.emkn.kotlin.sms.controller.StateTable
 import ru.emkn.kotlin.sms.model.*
 
 const val MAX_TEXT_FIELD_SIZE = 127
@@ -17,6 +18,7 @@ enum class Target {
 }
 
 val DB_TABLES = listOf(
+    EventTable,
     RouteCheckpointsTable,
     TossTable,
     PersonalResultTable,
@@ -26,29 +28,8 @@ val DB_TABLES = listOf(
     ParticipantTable,
     GroupTable,
     RouteTable,
-    TeamTable
-)
-
-
-val headers = mapOf(
-    "Название группы" to ObjectFields.Name,
-    "Группа" to ObjectFields.Group,
-    "Фамилия" to ObjectFields.Surname,
-    "Имя" to ObjectFields.Name,
-    "Результат" to ObjectFields.ResultType,
-    "Тип" to ObjectFields.Type,
-    "Количество К/П" to ObjectFields.Amount,
-    "Название" to ObjectFields.Name,
-    "Г.р." to ObjectFields.BirthdayYear,
-    "Разр." to ObjectFields.Grade,
-    "Дистанция" to ObjectFields.RouteName,
-    "Команда" to ObjectFields.Team,
-    "Дата" to ObjectFields.Date,
-    "Номер" to ObjectFields.ID,
-    "Время старта" to ObjectFields.StartTime,
-    "Время" to ObjectFields.Time,
-    "Номер К/П" to ObjectFields.Name,
-    "Стоимость" to ObjectFields.Weight
+    TeamTable,
+    StateTable
 )
 
 val english = mapOf(

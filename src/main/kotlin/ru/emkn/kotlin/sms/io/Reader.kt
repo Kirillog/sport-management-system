@@ -1,7 +1,7 @@
 package ru.emkn.kotlin.sms.io
 
+import ru.emkn.kotlin.sms.ObjectFields
 import ru.emkn.kotlin.sms.model.*
-import java.io.File
 import java.time.LocalTime
 
 /**
@@ -9,48 +9,48 @@ import java.time.LocalTime
  *
  * All methods return `null` if data could not be read.
  */
-abstract class Reader(protected val file: File) {
+interface Reader {
     /**
      * [Team] located in [file].
      *
      * Returns `null` if data has incorrect format.
      */
-    abstract fun team(): Team?
+    fun team(): List<Map<ObjectFields, String>>?
 
     /**
      * [Group] located in [file].
      *
      * Returns `null` if data has incorrect format.
      */
-    abstract fun groups(): Set<Group>?
+    fun groups(): List<Map<ObjectFields, String>>?
 
     /**
      * [Route] list located in [file].
      *
      * Returns `null` if data has incorrect format.
      */
-    abstract fun courses(): Set<Route>?
+    fun courses(): List<Map<ObjectFields, String>>?
 
     /**
      * [Event] list located in [file].
      *
      * Returns `null` if data has incorrect format.
      */
-    abstract fun event(): Event?
+    fun event(): List<Map<ObjectFields, String>>?
 
     /**
      * [Timestamp] list located in [file].
      *
      * Returns `null` if data has incorrect format.
      */
-    abstract fun timestamps(): Set<Timestamp>?
+    fun timestamps(): List<Map<ObjectFields, String>>?
 
     /**
      * Map from [Participant] to [LocalTime] list located in [file].
      *
      * Returns `null` if data has incorrect format.
      */
-    abstract fun toss(): Unit?
+    fun toss(): List<Map<ObjectFields, String>>?
 
-    abstract fun checkPoints(): Set<Checkpoint>?
+    fun checkPoints(): List<Map<ObjectFields, String>>?
 }

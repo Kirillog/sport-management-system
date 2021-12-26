@@ -4,6 +4,8 @@ import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.javatime.time
 import org.jetbrains.exposed.sql.select
 import java.time.LocalTime
@@ -53,4 +55,31 @@ class Timestamp(id: EntityID<Int>) : IntEntity(id) {
             participantID =
                 ParticipantTable.select { ParticipantTable.id eq participant.id }.first()[ParticipantTable.id]
         }
+
+    fun change(time: LocalTime, participantID: Int, checkpointName: String) {
+        this.time = time
+        this.participantID = EntityID(participantID, ParticipantTable)
+        this.checkpointID = Checkpoint.findByName(checkpointName).id
+
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as Timestamp
+
+        if (time != other.time) return false
+        if (checkpointID != other.checkpointID) return false
+        if (participantID != other.participantID) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = time.hashCode()
+        result = 31 * result + checkpointID.hashCode()
+        result = 31 * result + participantID.hashCode()
+        return result
+    }
 }

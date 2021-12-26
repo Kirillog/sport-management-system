@@ -1,8 +1,7 @@
-import org.jetbrains.exposed.sql.Database
-import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.emkn.kotlin.sms.FileType
 import ru.emkn.kotlin.sms.controller.CompetitionController
+import ru.emkn.kotlin.sms.controller.State
 import ru.emkn.kotlin.sms.io.MultilineWritable
 import ru.emkn.kotlin.sms.io.Writer
 import ru.emkn.kotlin.sms.model.*
@@ -12,6 +11,17 @@ import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import kotlin.io.path.Path
 import kotlin.random.Random
+
+fun CompetitionController.groupsAndTossFromPath(group: Path, toss: Path) {
+    state = State.TOSSED
+    val groupLoader = getLoader(group)
+    val tossLoader = getLoader(toss)
+    transaction {
+        Competition.loadGroups(groupLoader)
+        Competition.toss(tossLoader)
+        Competition.teams.addAll(Team.all().toSet())
+    }
+}
 
 
 data class CheckPointsProtocol(val checkPoint: Checkpoint, val protocol: List<Timestamp>) :
@@ -30,96 +40,70 @@ data class ParticipantsProtocol(val participant: Participant, val protocol: List
     }
 }
 
-fun generateParticipantsProtocol(
+fun Generator.generateParticipantsProtocol(
     participant: Participant,
     route: Route,
     maxFinishTime: LocalTime,
     random: Random
 ): ParticipantsProtocol {
-    val startTime = participant.startTime
-    val startSeconds = startTime.toSecondOfDay()
-    val maxFinishSeconds: Int = maxFinishTime.toSecondOfDay()
-    val times = listOf(startTime) + List(route.checkPoints.toList().size - 1) {
-        val randomTime = random.nextInt(startSeconds, maxFinishSeconds)
-        LocalTime.ofSecondOfDay(randomTime.toLong())
-    }.sorted()
+    return transaction {
+        val startTime = participant.startTime
+        val startSeconds = startTime.toSecondOfDay()
+        val maxFinishSeconds: Int = maxFinishTime.toSecondOfDay()
+        val times = listOf(startTime) + List(route.checkpoints.toList().size - 1) {
+            val randomTime = random.nextInt(startSeconds, maxFinishSeconds)
+            LocalTime.ofSecondOfDay(randomTime.toLong())
+        }.sorted()
 
-    return ParticipantsProtocol(
-        participant,
-        route.checkPoints.zip(times) { checkpoint, time -> Timestamp.create(time, checkpoint.id, participant.id) }
-    )
+        ParticipantsProtocol(
+            participant,
+            route.checkpoints.zip(times) { checkpoint, time -> Timestamp.create(time, checkpoint.id, participant.id) }
+        )
+    }
 }
 
-fun convertParticipantProtocolsIntoCheckPointProtocols(participantProtocols: List<ParticipantsProtocol>): List<CheckPointsProtocol> {
+private fun convertParticipantProtocolsIntoCheckPointProtocols(participantProtocols: List<ParticipantsProtocol>): List<CheckPointsProtocol> {
     return participantProtocols.flatMap { it.protocol }
         .groupBy { it.checkpoint }
         .map { CheckPointsProtocol(it.key, it.value) }
 }
 
-fun generateCheckPointProtocols(
+fun Generator.generateCheckPointProtocols(
     competitionPath: Path,
     protocolsDir: Path,
     random: Random = Random(0)
 ): List<CheckPointsProtocol> {
-    CompetitionController.announceFromPath(
-        event = competitionPath.resolve("input/event.csv"),
-        checkpoints = competitionPath.resolve("input/checkpoints.csv"),
-        routes = competitionPath.resolve("input/courses.csv")
-    )
+    CompetitionController.loadEvent(competitionPath.resolve("input/event.csv"))
+    CompetitionController.loadCheckpoints(competitionPath.resolve("input/checkpoints.csv"),)
+    CompetitionController.loadRoutes(competitionPath.resolve("input/courses.csv"))
+    CompetitionController.announce()
+
     CompetitionController.groupsAndTossFromPath(
         group = competitionPath.resolve("input/classes.csv"),
         toss = competitionPath.resolve("protocols/toss.csv")
     )
 
-    val participantsProtocols = mutableListOf<ParticipantsProtocol>()
-    Participant.all().forEach { participant ->
-        val course = participant.group.route
-        val protocol = generateParticipantsProtocol(participant, course, LocalTime.MAX, random)
-        participantsProtocols.add(protocol)
-    }
+    return transaction {
+        val participantsProtocols = mutableListOf<ParticipantsProtocol>()
+        Participant.all().forEach { participant ->
+            val course = participant.group.route
+            val protocol = generateParticipantsProtocol(participant, course, LocalTime.MAX, random)
+            participantsProtocols.add(protocol)
+        }
 
-    val checkPointProtocols = convertParticipantProtocolsIntoCheckPointProtocols(participantsProtocols)
-    for (protocol in checkPointProtocols) {
-        val writer = Writer(File("$protocolsDir/checkpoint${protocol.checkPoint.name}.csv"), FileType.CSV)
-        writer.add(protocol)
-        writer.write()
+        val checkPointProtocols = convertParticipantProtocolsIntoCheckPointProtocols(participantsProtocols)
+        for (protocol in checkPointProtocols) {
+            val writer = Writer(File("$protocolsDir/checkpoint${protocol.checkPoint.name}.csv"), FileType.CSV)
+            writer.add(protocol)
+            writer.write()
+        }
+        checkPointProtocols
     }
-    return checkPointProtocols
 }
 
 fun main() {
-    val random = Random(0)
-
-    Database.connect(
-        "jdbc:h2:./data/testDB", driver = "org.h2.Driver",
-        user = "scott", password = "tiger"
-    )
-
-    val dbTables = listOf(
-        ParticipantTable,
-        GroupTable,
-        TeamTable,
-        RouteTable,
-        CheckpointTable,
-        RouteCheckpointsTable,
-        TossTable,
-        TimestampTable,
-        PersonalResultTable
-    )
-
-    transaction {
-        dbTables.forEach {
-            SchemaUtils.create(it)
-//            it.deleteAll()
-        }
-    }
-
-    val protocolsDir = "competitions/competition-1/checkpoints"
-    if (!File(protocolsDir).exists()) {
-        File(protocolsDir).mkdirs()
-    }
-    transaction {
-        generateCheckPointProtocols(Path("competitions/competition-1"), Path(protocolsDir), random)
-        val t = 0
+    val path = Path("competitions/competition-1/checkpoints")
+    generate(path) {
+        generateCheckPointProtocols(Path("competitions/competition-1"), path)
     }
 }

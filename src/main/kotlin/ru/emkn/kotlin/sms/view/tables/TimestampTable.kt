@@ -1,6 +1,8 @@
+/*
 package ru.emkn.kotlin.sms.view.tables
 
 import ru.emkn.kotlin.sms.ObjectFields
+import ru.emkn.kotlin.sms.controller.Deleter
 import ru.emkn.kotlin.sms.controller.Editor
 import ru.emkn.kotlin.sms.model.Timestamp
 import ru.emkn.kotlin.sms.view.GUI
@@ -42,18 +44,19 @@ class TimestampTable : Table<Timestamp>() {
             comparator = TableComparing.compareByString(ObjectFields.ID),
             getterGenerator = { { it.participant.toString() }}
         )
-    ))
+    ), deleteButton = true)
 
     inner class TimestampTableRow(private val timestamp: Timestamp): TableRow() {
 
+        override val id = timestamp.id.value
         override val cells = header.makeTableCells(timestamp, ::saveChanges)
 
         override fun saveChanges() {
             Editor.editTimestamp(timestamp, changes)
         }
 
-        override fun deleteAction(id: Int) {
-            Editor.deleteTimestamp(id)
+        override fun deleteAction() {
+            Deleter.deleteTimestamp(id)
         }
     }
 
@@ -62,3 +65,4 @@ class TimestampTable : Table<Timestamp>() {
 
     override val creatingState = GUI.State.CreateTimestamp
 }
+*/

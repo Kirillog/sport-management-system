@@ -3,6 +3,7 @@ package ru.emkn.kotlin.sms.io
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
 import mu.KotlinLogging
 import ru.emkn.kotlin.sms.FileType
+import ru.emkn.kotlin.sms.view.tables.Table
 import java.io.File
 
 private val logger = KotlinLogging.logger {}
@@ -47,9 +48,20 @@ class Writer(private val file: File, val filetype: FileType) {
         else logger.warn { "try to write null string" }
     }
 
-    fun add(el: List<Any>) = buffer.add(el)
+    fun add(el: List<Any?>) = buffer.add(el)
 
-    fun addAll(el: List<List<Any>>) = buffer.addAll(el)
+    fun addAll(el: List<List<Any?>>) = buffer.addAll(el)
+
+    fun <T> add(table: Table<T>) {
+        this.add(table.header.visibleColumns.map {it.title})
+        table.sortedFilteredRows.forEach { row ->
+            table.header.visibleColumns.map { visibleColumn ->
+                row.cells[visibleColumn.field]?.getText?.let { it() } ?: throw IllegalStateException("Broken table")
+            }.also { data ->
+                this.add(data)
+            }
+        }
+    }
 
     fun clear() = buffer.clear()
 

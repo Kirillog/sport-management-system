@@ -9,8 +9,8 @@ import ru.emkn.kotlin.sms.model.Event
 class EventCreator : ItemCreator<Event>() {
 
     override val fields = listOf(
-        ItemCreatorInputField("Название", ObjectFields.Name),
-        ItemCreatorInputField("Дата", ObjectFields.Date)
+        ItemCreatorInputField("Name", ObjectFields.Name),
+        ItemCreatorInputField("Date", ObjectFields.Date)
     )
 
     override fun createAction(input: Map<ObjectFields, String>) {

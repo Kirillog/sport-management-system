@@ -1,97 +1,71 @@
 package ru.emkn.kotlin.sms.controller
 
-import org.jetbrains.exposed.sql.Database
-import org.jetbrains.exposed.sql.SchemaUtils
-import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.dao.id.IntIdTable
+import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.emkn.kotlin.sms.*
 import ru.emkn.kotlin.sms.io.FileLoader
 import ru.emkn.kotlin.sms.io.FileSaver
 import ru.emkn.kotlin.sms.io.Loader
 import ru.emkn.kotlin.sms.io.Saver
-import ru.emkn.kotlin.sms.model.*
+import ru.emkn.kotlin.sms.model.Checkpoint
+import ru.emkn.kotlin.sms.model.Competition
+import ru.emkn.kotlin.sms.model.Competition.loadGroups
+import ru.emkn.kotlin.sms.model.Route
+import ru.emkn.kotlin.sms.model.Team
 import java.io.File
 import java.nio.file.Path
-import kotlin.io.path.absolute
 import kotlin.io.path.extension
-import kotlin.io.path.nameWithoutExtension
 
 enum class State {
     EMPTY,
     CREATED,
-    ANNOUNCED,
     REGISTER_OUT,
     TOSSED,
     FINISHED
 }
 
+object StateTable : IntIdTable("state") {
+    val state = enumerationByName("state", MAX_TEXT_FIELD_SIZE, State::class)
+}
+
 object CompetitionController {
+
     var state: State = State.EMPTY
-
-
-    fun announceFromPath(event: Path?, checkpoints: Path?, routes: Path?) {
-        event ?: throw IllegalArgumentException("event is not chosen")
-        checkpoints ?: throw IllegalArgumentException("checkpoints are not chosen")
-        routes ?: throw IllegalArgumentException("routes are not chosen")
-
-        val eventLoader = getLoader(event)
-        val checkPoints = getLoader(checkpoints)
-        val routesLoader = getLoader(routes)
-        announce(eventLoader, checkPoints, routesLoader)
-    }
-
-    private fun announce(eventLoader: Loader, checkpointsLoader: Loader, routesLoader: Loader) {
-        require(state == State.CREATED)
-        transaction {
-            Competition.loadEvent(eventLoader)
-            Competition.loadCheckpoints(checkpointsLoader)
-            Competition.loadRoutes(routesLoader)
+        set(state) {
+            field = state
+            transaction {
+                StateTable.deleteAll()
+                StateTable.insert {
+                    it[this.state] = state
+                }
+            }
         }
-        state = State.ANNOUNCED
-    }
 
-    fun registerFromPath(group: Path, team: Path) {
-        val groupLoader = getLoader(group)
-        val teamLoader = getLoader(team)
-        register(groupLoader, teamLoader)
-    }
-
-    private fun register(groupLoader: Loader, teamLoader: Loader) {
-        require(state == State.ANNOUNCED)
+    private fun load(path: Path?, trueState: State, loadFunc: Competition.(Loader) -> Unit) {
+        path ?: throw IllegalArgumentException("path is not chosen")
+        if (state != trueState) throw IllegalStateException("For this load state must be $trueState")
         transaction {
-            Competition.loadGroups(groupLoader)
-            Competition.loadTeams(teamLoader)
+            Competition.loadFunc(getLoader(path))
         }
-        state = State.REGISTER_OUT
     }
+
+    fun loadEvent(path: Path?) = load(path, State.CREATED) { loadEvent(it) }
+
+    fun loadCheckpoints(path: Path?) = load(path, State.CREATED) { loadCheckpoints(it) }
+
+    fun loadRoutes(path: Path?) = load(path, State.CREATED) { loadRoutes(it) }
+
+    fun loadGroups(path: Path?) = load(path, State.CREATED) { loadGroups(it) }
+
+    fun loadTeams(path: Path?) = load(path, State.CREATED) { loadTeams(it) }
 
     fun toss() {
-        require(state == State.REGISTER_OUT)
+        require(state == State.CREATED)
         transaction {
             Competition.toss()
         }
         state = State.TOSSED
-    }
-
-    fun groupsAndTossFromPath(group: Path, toss: Path) {
-        require(state == State.ANNOUNCED)
-        state = State.TOSSED
-        val groupLoader = getLoader(group)
-        val tossLoader = getLoader(toss)
-        transaction {
-            Competition.loadGroups(groupLoader)
-            Competition.toss(tossLoader)
-            Competition.teams.addAll(Team.all().toSet())
-        }
-    }
-
-    fun registerResultsFromPath(checkPoints: Path) {
-        require(state == State.TOSSED)
-        transaction {
-            val checkPointLoader = getLoader(checkPoints)
-            Competition.loadDump(checkPointLoader)
-        }
-        state = State.FINISHED
     }
 
     fun calculateResult() {
@@ -101,10 +75,10 @@ object CompetitionController {
         }
     }
 
-    private fun getLoader(path: Path): Loader {
+    fun getLoader(path: Path): Loader {
         return when (path.extension) {
-            "csv" -> FileLoader(path)
-            "" -> FileLoader(path)
+            "csv" -> FileLoader(path, FileType.CSV)
+            "" -> FileLoader(path, FileType.CSV)
             else -> throw IllegalStateException("Unsupported file format for $path")
         }
     }
@@ -129,25 +103,6 @@ object CompetitionController {
     }
 
     fun getControllerState() = state
-
-    private fun getDBState(): State {
-        var res: State = State.CREATED
-
-        transaction {
-            if (!Checkpoint.all().empty()) {
-                res = State.ANNOUNCED
-            } else if (!Group.all().empty()) {
-                res = State.REGISTER_OUT
-            } else if (!TossTable.selectAll().empty()) {
-                res = State.TOSSED
-            } else if (!PersonalResultTable.selectAll().empty()) {
-                res = State.FINISHED
-            }
-        }
-
-        state = res
-        return res
-    }
 
     fun createDB(file: File?) {
         if (file == null) throw IllegalArgumentException("File was not chosen")
@@ -174,9 +129,8 @@ object CompetitionController {
             DB_TABLES.forEach {
                 SchemaUtils.create(it)
             }
+            val query = StateTable.selectAll()
+            state = if (query.empty()) State.CREATED else query.first()[StateTable.state]
         }
-        getDBState()
     }
 }
-
-

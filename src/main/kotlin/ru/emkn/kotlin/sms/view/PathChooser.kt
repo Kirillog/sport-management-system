@@ -20,7 +20,7 @@ class PathChooser(private val title: String, val extension: String, val descript
             return if (fileFilter.accept(fileChooser.selectedFile))
                 fileChooser.selectedFile
             else
-                File("${fileChooser.selectedFile.absolutePath}.${fileFilter.extension}")
+                File("${fileChooser.selectedFile.absolutePath}${fileFilter.extension}")
         }
         return null
     }

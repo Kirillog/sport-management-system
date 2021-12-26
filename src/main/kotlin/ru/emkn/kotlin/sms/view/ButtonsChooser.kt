@@ -8,19 +8,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 
-class ButtonsChooser(private val question: String, private val buttons: List<ActionButton>) {
+data class ButtonsChooser(val question: String, val buttons: List<ActionButton>)
 
-    @Composable
-    fun draw() {
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(question)
-            for (button in buttons) {
-                button.draw()
-            }
+@Composable
+fun draw(buttonsChooser: ButtonsChooser) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(buttonsChooser.question)
+        for (button in buttonsChooser.buttons) {
+            draw(button)
         }
     }
 }
