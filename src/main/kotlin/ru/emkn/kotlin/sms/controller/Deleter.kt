@@ -1,7 +1,9 @@
 package ru.emkn.kotlin.sms.controller
 
 import mu.KotlinLogging
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.deleteWhere
+import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.emkn.kotlin.sms.model.*
 
@@ -46,6 +48,9 @@ object Deleter {
         transaction {
             val route = Route.findById(id) ?: throw IllegalStateException("No route with such id $id")
             RouteCheckpointsTable.deleteWhere { RouteCheckpointsTable.route eq route.id }
+            GroupTable.select(GroupTable.routeID eq id).forEach {
+                deleteGroup(it[GroupTable.id].value)
+            }
             route.delete()
         }
         logger.info { "Route with id $id was deleted" }
