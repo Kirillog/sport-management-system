@@ -17,8 +17,8 @@ import androidx.compose.ui.unit.dp
 import ru.emkn.kotlin.sms.ObjectFields
 import ru.emkn.kotlin.sms.maxTextLength
 import ru.emkn.kotlin.sms.view.ActionButton
+import ru.emkn.kotlin.sms.view.BottomAppBar
 import ru.emkn.kotlin.sms.view.GUI
-import ru.emkn.kotlin.sms.view.TopAppBar
 import ru.emkn.kotlin.sms.view.draw
 
 data class ItemCreatorInputField(
@@ -46,12 +46,12 @@ abstract class ItemCreator<T> {
 
     abstract fun createAction(input: Map<ObjectFields, String>)
 
-    fun create(gui: GUI) {
+    fun create(gui: GUI, bottomAppBar: BottomAppBar) {
         try {
             createAction(input)
             gui.popState()
         } catch (e: Exception) {
-            TopAppBar.setMessage(e.message ?: "Undefined error")
+            bottomAppBar.setMessage(e.message ?: "Undefined error")
         }
     }
 
@@ -65,7 +65,7 @@ abstract class ItemCreator<T> {
 
 
 @Composable
-fun <T> draw(gui: GUI, creator: ItemCreator<T>) {
+fun <T> draw(gui: GUI, bottomAppBar: BottomAppBar, creator: ItemCreator<T>) {
     var columnSize by remember { mutableStateOf(IntSize.Zero) }
 
     Column(modifier = Modifier
@@ -77,7 +77,7 @@ fun <T> draw(gui: GUI, creator: ItemCreator<T>) {
         for (field in creator.fields) {
             draw(field, columnSize.width.dp)
         }
-        draw(ActionButton("Create") { creator.create(gui) })
+        draw(ActionButton("Create") { creator.create(gui, bottomAppBar) })
         draw(ActionButton("Cancel") { creator.cancel(gui) })
     }
 }

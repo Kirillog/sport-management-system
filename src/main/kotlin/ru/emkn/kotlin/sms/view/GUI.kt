@@ -1,19 +1,21 @@
 package ru.emkn.kotlin.sms.view
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import com.sun.nio.sctp.IllegalReceiveException
 import ru.emkn.kotlin.sms.controller.CompetitionController
 import ru.emkn.kotlin.sms.view.creators.*
+import ru.emkn.kotlin.sms.view.tables.ParticipantsTable
 import java.io.File
+
 
 class GUI {
 
+    val participantsTable = ParticipantsTable()
+
     enum class State {
+        InitialWindow,
         // create states
         CreateParticipant,
         CreateTeam,
@@ -23,13 +25,14 @@ class GUI {
         CreateEvent,
         CreateGroup,
         // other states
-        LoadOrCreateDataBase,
         CheckDataBaseState,
         EditAnnounceData,
+        EditRuntimeDump
     }
 
-    var state = mutableStateOf(State.LoadOrCreateDataBase)
+    var state = mutableStateOf(State.InitialWindow)
     private val statesStack = mutableListOf(state.value)
+
 
     fun pushState(newState: State) {
         state.value = newState
@@ -54,12 +57,29 @@ class GUI {
 fun mainContent() {
     application {
         Window(onCloseRequest = ::exitApplication, title = "Sport Management System") {
-            app()
+            val gui = remember { GUI() }
+            val bottomBar = remember { BottomAppBar() }
+            println(gui.state.value)
+            drawMenuBar(gui, this, bottomBar)
+            when (gui.state.value) {
+                GUI.State.InitialWindow -> drawInvitationMessage(bottomBar)
+                GUI.State.EditAnnounceData -> drawTable(gui, bottomBar)
+                GUI.State.CheckDataBaseState -> gui.pushDataBaseState()
+                GUI.State.CreateParticipant -> draw(gui, bottomBar, ParticipantCreator())
+                GUI.State.CreateCheckpoint -> draw(gui, bottomBar, CheckpointCreator())
+                GUI.State.CreateRoute -> draw(gui, bottomBar, RoutesCreator())
+                GUI.State.CreateEvent -> draw(gui, bottomBar, EventCreator())
+                GUI.State.CreateTimestamp -> draw(gui, bottomBar, TimestampCreator())
+                GUI.State.EditRuntimeDump -> draw(gui, bottomBar, gui.participantsTable)
+                else -> throw IllegalReceiveException("Forbidden state of GUI")
+            }
+            draw(bottomBar)
         }
     }
 }
 
 fun chooseFileAndProcess(
+    bottomAppBar: BottomAppBar,
     chooserTitle: String,
     chooserFileExtension: String,
     chooserFileDescription: String,
@@ -69,49 +89,10 @@ fun chooseFileAndProcess(
     try {
         action(file)
     } catch (e: Exception) {
-        TopAppBar.setMessage(e.message ?: "Undefined error")
+        bottomAppBar.setMessage(e.message ?: "Undefined error")
     }
 }
 
-@Composable
-private fun app() {
-    val gui = remember { GUI() }
-    Column {
-        TopAppBar.draw()
-        when (gui.state.value) {
-            GUI.State.LoadOrCreateDataBase -> loadOrCreateDataBase(gui)
-            GUI.State.EditAnnounceData -> drawCompetitionDataEditor(gui)
-            GUI.State.CheckDataBaseState -> gui.pushDataBaseState()
-            // create actions
-            GUI.State.CreateParticipant -> draw(gui, ParticipantCreator())
-            GUI.State.CreateCheckpoint -> draw(gui, CheckpointCreator())
-            GUI.State.CreateRoute -> draw(gui, RoutesCreator())
-            GUI.State.CreateEvent -> draw(gui, EventCreator())
-            GUI.State.CreateTeam -> draw(gui, TeamCreator())
-            GUI.State.CreateTimestamp -> draw(gui, TimestampCreator())
-            GUI.State.CreateGroup -> draw(gui, GroupCreator())
-            else -> throw IllegalReceiveException("Forbidden state of GUI")
-        }
-    }
-}
-
-@Composable
-private fun loadOrCreateDataBase(gui: GUI) {
-    draw(
-        LoadOrCreate(
-            question = "Load database or create new one?",
-            loadTitle = "select database file",
-            createTitle = "choose path for new database",
-            loadAction = {
-                CompetitionController.connectDB(it)
-                gui.pushDataBaseState()
-            },
-            createAction = {
-                CompetitionController.createDB(it)
-                gui.pushState(GUI.State.EditAnnounceData)
-            },
-            fileExtension = ".mv.db",
-            fileExtensionDescription = "Database"
-        )
-    )
+private fun drawInvitationMessage(bottomAppBar: BottomAppBar) {
+    bottomAppBar.setMessage("You should to load or create database to see something")
 }

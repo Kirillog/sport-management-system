@@ -17,7 +17,7 @@ import androidx.compose.ui.input.key.*
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import ru.emkn.kotlin.sms.maxTextLength
-import ru.emkn.kotlin.sms.view.TopAppBar
+import ru.emkn.kotlin.sms.view.BottomAppBar
 
 
 data class TableCell(val getText: () -> String, val saveText: () -> Unit = {}) {
@@ -27,7 +27,7 @@ data class TableCell(val getText: () -> String, val saveText: () -> Unit = {}) {
 
 @Composable
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class)
-fun draw(tableCell: TableCell, width: Dp, readOnly: Boolean) {
+fun draw(tableCell: TableCell, width: Dp, readOnly: Boolean, bottomAppBar: BottomAppBar) {
     val backgroundColor = remember { mutableStateOf(Color.White) }
 
     BasicTextField(
@@ -40,9 +40,9 @@ fun draw(tableCell: TableCell, width: Dp, readOnly: Boolean) {
                     try {
                         tableCell.saveText()
                         backgroundColor.value = Color.White
-                        TopAppBar.setMessage("Saved")
+                        bottomAppBar.setMessage("Saved")
                     } catch (e: Exception) {
-                        TopAppBar.setMessage(e.message ?: "Undefined error")
+                        bottomAppBar.setMessage(e.message ?: "Undefined error")
                     }
                 }
                 false

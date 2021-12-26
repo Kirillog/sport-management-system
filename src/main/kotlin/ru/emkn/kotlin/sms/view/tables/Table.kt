@@ -21,7 +21,6 @@ import ru.emkn.kotlin.sms.FileType
 import ru.emkn.kotlin.sms.ObjectFields
 import ru.emkn.kotlin.sms.io.Writer
 import ru.emkn.kotlin.sms.view.*
-import java.io.File
 
 const val tableDeleteButtonWidth = 10
 
@@ -44,7 +43,6 @@ abstract class Table<T> {
                 val cell = cells[it.field] ?: throw IllegalStateException("Cell of ${it.field} not exists")
                 it.field to cell.shownText.value
             }
-
 
         fun delete() {
             if (!header.deleteButton)
@@ -84,17 +82,19 @@ abstract class Table<T> {
                 .filter { it.checkFilter() }
         }
 
-    fun load() {
+    fun load(bottomAppBar: BottomAppBar) {
         try {
             loadAction()
         } catch (e: Exception) {
-            TopAppBar.setMessage(e.message ?: "undefined error")
+            bottomAppBar.setMessage(e.message ?: "undefined error")
         }
     }
 }
 
 @Composable
-fun <T> draw(tableRow: Table<T>.TableRow) {
+fun <T> draw(tableRow: Table<T>.TableRow, bottomAppBar: BottomAppBar) {
+    if (tableRow.header.state == TableHeader.State.Outdated)
+        tableRow.header.state = TableHeader.State.Updated
     var rowSize by remember { mutableStateOf(IntSize.Zero) }
     Row(
         modifier = Modifier
@@ -127,55 +127,56 @@ fun <T> draw(tableRow: Table<T>.TableRow) {
                     tableRow.cells[columnHeader.field]
                         ?: throw IllegalStateException("Cell of ${columnHeader.field} not exists"),
                     cellWidth,
-                    columnHeader.readOnly
+                    columnHeader.readOnly,
+                    bottomAppBar
                 )
         }
     }
 }
 
 @Composable
-fun <F> draw(gui: GUI, table: Table<F>) {
+fun <F> draw(gui: GUI, bottomAppBar: BottomAppBar, table: Table<F>) {
     if (table.state == Table.State.Outdated)
         table.state = Table.State.Updated
-    Column {
-        Column(
-            modifier = Modifier.verticalScroll(rememberScrollState())
-        ) {
-            Box(modifier = Modifier.border(BorderStroke(1.dp, Color.Black))) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceAround
-                ) {
-                    val createState = table.creatingState
-                    draw(
-                        ActionButton("Load") {
-                            table.load()
-                        }
-                    )
-                    if (createState != null && table.addButton) {
-                        draw(
-                            ActionButton("Add") {
-                                gui.pushState(createState)
-                            }
-                        )
+
+    Column(
+        modifier = Modifier.verticalScroll(rememberScrollState())
+    ) {
+        Box(modifier = Modifier.border(BorderStroke(1.dp, Color.Black))) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceAround
+            ) {
+                val createState = table.creatingState
+                draw(
+                    ActionButton("Load") {
+                        table.load(bottomAppBar)
                     }
+                )
+                if (createState != null && table.addButton) {
                     draw(
-                        ActionButton("Export to csv") {
-                            PathChooser("Save to csv table...", ".csv", "Csv table").choose()?.let { file ->
-                                val writer = Writer(file, FileType.CSV)
-                                writer.add(table)
-                                writer.write()
-                                TopAppBar.setMessage("File was successfully saved to $file")
-                            } ?: TopAppBar.setMessage("File not selected")
+                        ActionButton("Add") {
+                            gui.pushState(createState)
                         }
                     )
                 }
-            }
-            draw(table.header)
-
-            table.sortedFilteredRows.forEach {
-                draw(it)
+                draw(
+                    ActionButton("Export to csv") {
+                        PathChooser("Save to csv table...", ".csv", "Csv table").choose()?.let { file ->
+                            val writer = Writer(file, FileType.CSV)
+                            writer.add(table)
+                            writer.write()
+                            bottomAppBar.setMessage("File was successfully saved to $file")
+                        } ?: bottomAppBar.setMessage("File not selected")
+                    }
+                )
             }
         }
+        draw(table.header)
+
+        table.sortedFilteredRows.forEach {
+            draw(it, bottomAppBar)
+        }
+        Box(Modifier.height(BottomAppBar.height))
     }
 }

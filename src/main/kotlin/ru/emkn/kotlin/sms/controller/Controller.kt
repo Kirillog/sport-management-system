@@ -8,11 +8,7 @@ import ru.emkn.kotlin.sms.io.FileLoader
 import ru.emkn.kotlin.sms.io.FileSaver
 import ru.emkn.kotlin.sms.io.Loader
 import ru.emkn.kotlin.sms.io.Saver
-import ru.emkn.kotlin.sms.model.Checkpoint
 import ru.emkn.kotlin.sms.model.Competition
-import ru.emkn.kotlin.sms.model.Competition.loadGroups
-import ru.emkn.kotlin.sms.model.Route
-import ru.emkn.kotlin.sms.model.Team
 import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.extension
@@ -20,7 +16,6 @@ import kotlin.io.path.extension
 enum class State {
     EMPTY,
     CREATED,
-    REGISTER_OUT,
     TOSSED,
     FINISHED
 }
@@ -60,7 +55,7 @@ object CompetitionController {
 
     fun loadTeams(path: Path?) = load(path, State.CREATED) { loadTeams(it) }
 
-    fun loadTimestamp(path: Path?) = load(path, State.TOSSED) { loadTimestamps(it)}
+    fun loadTimestamps(path: Path?) = load(path, State.TOSSED) { loadTimestamps(it) }
 
     fun toss() {
         require(state == State.CREATED)

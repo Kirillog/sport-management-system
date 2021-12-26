@@ -34,6 +34,12 @@ private val logger = KotlinLogging.logger {}
 
 class TableHeader<T>(val columns: List<TableColumn<T>>, val deleteButton: Boolean, val filtering: Boolean = true) {
 
+    enum class State {
+        Updated, Outdated
+    }
+
+    var state by mutableStateOf(State.Updated)
+
     var orderByColumn = mutableStateOf(run {
         val index = columns.indexOfFirst { it.visible }
         if (index == -1)
@@ -82,6 +88,8 @@ class TableHeader<T>(val columns: List<TableColumn<T>>, val deleteButton: Boolea
 
 @Composable
 fun <T> draw(tableHeader: TableHeader<T>) {
+    if (tableHeader.state == TableHeader.State.Outdated)
+        tableHeader.state = TableHeader.State.Updated
     var rowSize by remember { mutableStateOf(IntSize.Zero) }
     Row(
 //        modifier = Modifier.fillMaxWidth(),

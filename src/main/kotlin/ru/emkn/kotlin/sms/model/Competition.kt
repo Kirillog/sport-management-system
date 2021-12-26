@@ -2,7 +2,6 @@ package ru.emkn.kotlin.sms.model
 
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.emkn.kotlin.sms.io.Loader
-import java.time.LocalDate
 
 
 /**
@@ -75,8 +74,8 @@ object Competition {
         event = loader.loadEvent()
     }
 
-    fun loadDump(loader: Loader) {
-        RuntimeDump.addAllTimestamps(loader.loadTimestamps())
+    fun loadTimestamps(loader: Loader) {
+        timestamps.addAll(loader.loadTimestamps())
     }
 
     fun toss() {

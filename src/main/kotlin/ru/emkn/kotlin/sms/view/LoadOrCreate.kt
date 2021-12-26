@@ -19,20 +19,10 @@ fun draw(loader: LoadOrCreate) {
         question = loader.question,
         listOf(
             ActionButton("Load") {
-                chooseFileAndProcess(
-                    loader.loadTitle,
-                    loader.fileExtension,
-                    loader.fileExtensionDescription,
-                    loader.loadAction
-                )
+
             },
             ActionButton("Create") {
-                chooseFileAndProcess(
-                    loader.createTitle,
-                    loader.fileExtension,
-                    loader.fileExtensionDescription,
-                    loader.createAction
-                )
+
             }
         )
     ))

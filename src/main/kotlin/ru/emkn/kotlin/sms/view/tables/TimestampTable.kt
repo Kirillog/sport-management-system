@@ -1,30 +1,22 @@
-/*
 package ru.emkn.kotlin.sms.view.tables
 
+import org.jetbrains.exposed.sql.transactions.transaction
 import ru.emkn.kotlin.sms.ObjectFields
+import ru.emkn.kotlin.sms.controller.CompetitionController
 import ru.emkn.kotlin.sms.controller.Deleter
 import ru.emkn.kotlin.sms.controller.Editor
 import ru.emkn.kotlin.sms.model.Timestamp
 import ru.emkn.kotlin.sms.view.GUI
-import ru.emkn.kotlin.sms.view.creators.ItemCreator
-import ru.emkn.kotlin.sms.view.creators.TimestampCreator
+import ru.emkn.kotlin.sms.view.PathChooser
 
 class TimestampTable : Table<Timestamp>() {
 
     private val timestamps
-        get() = Timestamp.all()
+        get() = transaction { Timestamp.all() }
 
-    //TODO: решить конфликт имён
     override val header = TableHeader(listOf(
         TableColumn<Timestamp>(
-        "ID",
-            ObjectFields.ID,
-            visible = false, readOnly = true,
-            comparator = TableComparing.compareByInt(ObjectFields.ID),
-            getterGenerator = { { it.id.toString() } }
-        ),
-        TableColumn(
-        "Time",
+            "Time",
             ObjectFields.Time,
             visible = true, readOnly = false,
             comparator = TableComparing.compareByLocalTime(ObjectFields.Time),
@@ -42,11 +34,11 @@ class TimestampTable : Table<Timestamp>() {
             ObjectFields.ID,
             visible = true, readOnly = false,
             comparator = TableComparing.compareByString(ObjectFields.ID),
-            getterGenerator = { { it.participant.toString() }}
+            getterGenerator = { { it.participant.toString() } }
         )
     ), deleteButton = true)
 
-    inner class TimestampTableRow(private val timestamp: Timestamp): TableRow() {
+    inner class TimestampTableRow(private val timestamp: Timestamp) : TableRow() {
 
         override val id = timestamp.id.value
         override val cells = header.makeTableCells(timestamp, ::saveChanges)
@@ -57,6 +49,7 @@ class TimestampTable : Table<Timestamp>() {
 
         override fun deleteAction() {
             Deleter.deleteTimestamp(id)
+            state = State.Outdated
         }
     }
 
@@ -64,5 +57,9 @@ class TimestampTable : Table<Timestamp>() {
         get() = timestamps.map { TimestampTableRow(it) }
 
     override val creatingState = GUI.State.CreateTimestamp
+    override val loadAction = {
+        val timestamps = PathChooser("Choose timestamps", "", "Timestamps").choose()
+        CompetitionController.loadTimestamps(timestamps?.toPath())
+        state = State.Outdated
+    }
 }
-*/
