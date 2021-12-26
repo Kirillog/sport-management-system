@@ -1,7 +1,6 @@
 package ru.emkn.kotlin.sms.view
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyShortcut
@@ -9,11 +8,20 @@ import androidx.compose.ui.window.FrameWindowScope
 import androidx.compose.ui.window.MenuBar
 import ru.emkn.kotlin.sms.controller.CompetitionController
 
+enum class MenuState(val text: String = "") {
+    Hided,
+    Blocked("Next"),
+    Preparing("Toss"),
+    Tossed("Result"),
+    Result,
+}
+
+
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun drawMenuBar(gui: GUI, frame: FrameWindowScope, bottomBar: BottomAppBar) {
     val stages = listOf("Toss", "Results", "Finished")
-    val stageIndex = mutableStateOf(0)
+    val menuState = gui.state.value.menuState
     val loader = LoadOrCreate(
         question = "Load database or create new one?",
         loadTitle = "select database file",
@@ -52,42 +60,35 @@ fun drawMenuBar(gui: GUI, frame: FrameWindowScope, bottomBar: BottomAppBar) {
         }
 
         Menu("Navigate", mnemonic = 'T') {
-            val text = stages[stageIndex.value]
-            Item(text, onClick = {
-                when (text) {
-                    "Toss" ->
-                        StateSwitcher.doToss(gui, bottomBar)
-                    "Result" -> TODO()
+            val text = menuState.text
+            Item(
+                text, onClick = {
+                    when (text) {
+                        "Toss" ->
+                            StateSwitcher.doToss(gui, bottomBar)
+                        "Result" -> TODO()
 //                        StateSwitcher.doResult(gui, bottomBar)
-                }
-                stageIndex.value++
-            }, shortcut = KeyShortcut(Key.T, ctrl = true), enabled = stageIndex.value < 2)
-            Item("Rollback", onClick = {
-                when (text) {
-                    "Result" ->
-                        StateSwitcher.undoToss(gui, bottomBar)
-                    "Finished" -> TODO()
-//                        StateSwitcher.undoResult(gui, bottomBar)
-                }
-                stageIndex.value--
-            }, enabled = stageIndex.value > 0)
-        }
-/*        Menu("Actions", mnemonic = 'A') {
-            CheckboxItem(
-                "Advanced settings",
-                checked = isSubmenuShowing,
-                onCheckedChange = {
-                    isSubmenuShowing = !isSubmenuShowing
-                }
+                        else ->
+                            throw IllegalStateException("Wrong menu state")
+                    }
+                }, shortcut = KeyShortcut(Key.Y, ctrl = true), enabled = menuState >= MenuState.Preparing
+                        && menuState <= MenuState.Tossed
             )
-            if (isSubmenuShowing) {
-                Menu("Settings") {
-                    Item("Setting 1", onClick = { })
-                    Item("Setting 2", onClick = { })
-                }
-            }
-            Separator()
-            Item("About", onClick = { })
-        }*/
+            Item(
+                "Rollback",
+                onClick = {
+                    when (text) {
+                        "Result" ->
+                            StateSwitcher.undoToss(gui, bottomBar)
+                        "Finished" -> TODO()
+//                        StateSwitcher.undoResult(gui, bottomBar)
+                        else ->
+                            throw IllegalStateException("Wrong menu state")
+                    }
+                },
+                shortcut = KeyShortcut(Key.Z, ctrl = true),
+                enabled = menuState >= MenuState.Tossed && menuState <= MenuState.Result
+            )
+        }
     }
 }

@@ -10,6 +10,7 @@ object StateSwitcher {
             it.header.setReadOnly(true)
         }
         gui.participantsTable.header.setVisibility(ObjectFields.StartTime, true)
+        AppTopBar.buttons.first { it.text == "Timestamps" }.visible = true
     }
 
     fun setUnTossed(gui: GUI) {
@@ -17,12 +18,14 @@ object StateSwitcher {
             it.header.setReadOnly(false)
         }
         gui.participantsTable.header.setVisibility(ObjectFields.StartTime, false)
+        AppTopBar.buttons.first { it.text == "Timestamps" }.visible = true
+
     }
 
     fun doToss(gui: GUI, bottomBar: BottomAppBar) {
         setTossed(gui)
         CompetitionController.toss()
-        bottomBar.setMessage("Tossed competed")
+        bottomBar.setMessage("Tossed completed")
         gui.pushState(GUI.State.EditRuntimeDump)
     }
 

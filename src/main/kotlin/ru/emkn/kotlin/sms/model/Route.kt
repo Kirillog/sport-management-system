@@ -55,6 +55,8 @@ class Route(id: EntityID<Int>) : IntEntity(id), SingleLineWritable {
 
     fun change(name: String, checkpoints: List<Checkpoint>) {
         this.name = name
+        this.amountOfCheckpoint = checkpoints.size
+        this.type = routeType
         RouteCheckpointsTable.deleteWhere { RouteCheckpointsTable.route eq this@Route.id }
         checkpoints.forEachIndexed { index, checkpoint ->
             RouteCheckpointsTable.insert {

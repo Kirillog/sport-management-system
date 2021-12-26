@@ -7,6 +7,7 @@ import androidx.compose.ui.window.application
 import com.sun.nio.sctp.IllegalReceiveException
 import ru.emkn.kotlin.sms.controller.CompetitionController
 import ru.emkn.kotlin.sms.controller.State
+import ru.emkn.kotlin.sms.view.MenuState.*
 import ru.emkn.kotlin.sms.view.creators.*
 import ru.emkn.kotlin.sms.view.tables.*
 import java.io.File
@@ -16,7 +17,7 @@ class GUI {
 
     val participantsTable = ParticipantsTable()
     val eventTable = EventTable()
-    val routeTable = GroupTable()
+    val routeTable = RouteTable()
     val teamTable = TeamTable()
     val groupTable = GroupTable()
     val checkpointTable = CheckpointTable()
@@ -24,22 +25,21 @@ class GUI {
 
     val tables = listOf(participantsTable, eventTable, routeTable, teamTable, groupTable, checkpointTable)
 
-    enum class State {
-        InitialWindow,
+    enum class State(val menuState: MenuState) {
 
         // create states
-        CreateParticipant,
-        CreateTeam,
-        CreateCheckpoint,
-        CreateRoute,
-        CreateTimestamp,
-        CreateEvent,
-        CreateGroup,
+        CreateParticipant(Hided),
+        CreateTeam(Hided),
+        CreateCheckpoint(Hided),
+        CreateRoute(Hided),
+        CreateTimestamp(Hided),
+        CreateEvent(Hided),
+        CreateGroup(Hided),
 
         // other states
-        CheckDataBaseState,
-        EditAnnounceData,
-        EditRuntimeDump
+        InitialWindow(Blocked),
+        EditAnnounceData(Preparing),
+        EditRuntimeDump(Tossed)
     }
 
     var state = mutableStateOf(State.InitialWindow)
@@ -72,7 +72,6 @@ fun mainContent() {
         Window(onCloseRequest = ::exitApplication, title = "Sport Management System") {
             val gui = remember { GUI() }
             val bottomBar = remember { BottomAppBar() }
-            println(gui.state.value)
             drawMenuBar(gui, this, bottomBar)
             when (gui.state.value) {
                 GUI.State.InitialWindow -> drawInvitationMessage(bottomBar)
@@ -80,7 +79,6 @@ fun mainContent() {
                     StateSwitcher.setUnTossed(gui)
                     drawTables(gui, bottomBar)
                 }
-                GUI.State.CheckDataBaseState -> gui.pushDataBaseState()
                 GUI.State.CreateParticipant -> draw(gui, bottomBar, ParticipantCreator())
                 GUI.State.CreateCheckpoint -> draw(gui, bottomBar, CheckpointCreator())
                 GUI.State.CreateRoute -> draw(gui, bottomBar, RoutesCreator())

@@ -23,46 +23,40 @@ object CompetitionDataPresenter {
     var state = mutableStateOf(Table.Event)
 }
 
+object AppTopBar {
+    val buttons = listOf(
+        ActionButton("Events") {
+            CompetitionDataPresenter.state.value = CompetitionDataPresenter.Table.Event
+        },
+        ActionButton("Checkpoints") {
+            CompetitionDataPresenter.state.value = CompetitionDataPresenter.Table.Checkpoints
+        },
+        ActionButton("Routes") {
+            CompetitionDataPresenter.state.value = CompetitionDataPresenter.Table.Routes
+        },
+        ActionButton("Participants") {
+            CompetitionDataPresenter.state.value = CompetitionDataPresenter.Table.Participants
+        },
+        ActionButton("Teams") {
+            CompetitionDataPresenter.state.value = CompetitionDataPresenter.Table.Teams
+        },
+        ActionButton("Groups") {
+            CompetitionDataPresenter.state.value = CompetitionDataPresenter.Table.Groups
+        },
+        ActionButton("Timestamps", visible = false) {
+            CompetitionDataPresenter.state.value = CompetitionDataPresenter.Table.Timestamps
+        }
+    )
+}
+
 @Composable
 fun drawAppTopBar() {
     TopAppBar(
         modifier = Modifier.fillMaxWidth(),
     ) {
-        draw(
-            ActionButton("Events") {
-                CompetitionDataPresenter.state.value = CompetitionDataPresenter.Table.Event
-            }
-        )
-        draw(
-            ActionButton("Checkpoints") {
-                CompetitionDataPresenter.state.value = CompetitionDataPresenter.Table.Checkpoints
-            }
-        )
-        draw(
-            ActionButton("Routes") {
-                CompetitionDataPresenter.state.value = CompetitionDataPresenter.Table.Routes
-            }
-        )
-        draw(
-            ActionButton("Participants") {
-                CompetitionDataPresenter.state.value = CompetitionDataPresenter.Table.Participants
-            }
-        )
-        draw(
-            ActionButton("Teams") {
-                CompetitionDataPresenter.state.value = CompetitionDataPresenter.Table.Teams
-            }
-        )
-        draw(
-            ActionButton("Groups") {
-                CompetitionDataPresenter.state.value = CompetitionDataPresenter.Table.Groups
-            }
-        )
-        draw(
-            ActionButton("Timestamps", visible = false) {
-                CompetitionDataPresenter.state.value = CompetitionDataPresenter.Table.Timestamps
-            }
-        )
+        AppTopBar.buttons.forEach {
+            draw(it)
+        }
     }
 }
 
