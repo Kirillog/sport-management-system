@@ -22,9 +22,9 @@ enum class ResultType(val russian: String) {
 }
 
 object GroupTable : IntIdTable("groups") {
-    val name: Column<String> = varchar("name", MAX_TEXT_FIELD_SIZE)
+    var name: Column<String> = varchar("name", MAX_TEXT_FIELD_SIZE)
     val routeID: Column<EntityID<Int>> = reference("routes", RouteTable)
-    // val resultType: Column<ResultType> = enumerationByName("resultType", MAX_TEXT_FIELD_SIZE, ResultType::class)
+//    val resultType: Column<ResultType> = enumerationByName("resultType", MAX_TEXT_FIELD_SIZE, ResultType::class)
 }
 
 /**
@@ -60,18 +60,18 @@ class Group(id: EntityID<Int>) : IntEntity(id), MultilineWritable {
     val members by Participant referrersOn ParticipantTable.groupID
     var routeID by GroupTable.routeID
 
-    // var resultType by GroupTable.resultType
+//    var resultType by GroupTable.resultType
     var personalResult: PersonalResult = PersonalResultByTime(this)
 
     var route: Route
         get() = Route[routeID]
         set(route) {
-            routeID = RouteTable.select { RouteTable.id eq route.id }.first()[GroupTable.id]
+            routeID = RouteTable.select { RouteTable.id eq route.id }.first()[RouteTable.id]
         }
 
-    fun change(name: String, routeName: String) {
+    fun change(name: String, route: Route) {
         this.name = name
-        this.route = Route.findByName(routeName)
+        this.route = route
     }
 
     override fun toString() = this.name

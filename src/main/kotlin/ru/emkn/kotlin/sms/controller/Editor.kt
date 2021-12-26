@@ -41,15 +41,13 @@ object Editor {
 
     fun editGroup(group: Group, values: Map<ObjectFields, String>) {
         try {
-            val name = convert<String>(values[ObjectFields.Name])
-            val routeName = convert<String>(values[ObjectFields.RouteName])
             transaction {
-                if (!Route.checkByName(routeName))
-                    throw IllegalArgumentException("Cannot find route $routeName")
-                group.change(name, routeName)
+                val name = convert<String>(values[ObjectFields.Name])
+                val route = convert<Route>(values[ObjectFields.RouteName])
+                group.change(name, route)
             }
             logger.info { "Group was successfully edited" }
-        } catch (err: IllegalArgumentException) {
+        } catch (err: Exception) {
             logger.info { "Cannot edit group ${group.name}" }
             throw err
         }
@@ -72,8 +70,8 @@ object Editor {
 
     fun editTeam(team: Team, values: Map<ObjectFields, String>) {
         try {
-            val teamName = convert<String>(values[ObjectFields.Name])
             transaction {
+            val teamName = convert<String>(values[ObjectFields.Name])
                 team.change(teamName)
             }
             logger.info { "Team was successfully edited" }

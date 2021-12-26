@@ -38,6 +38,7 @@ object Creator {
                 }
             }
             Checkpoint::class -> Checkpoint.findByName(convert(field))
+            Route::class -> Route.findByName(convert(field))
             LocalDate::class ->
                 try {
                     val (date, month, year) = field.split(".").map(String::toInt)
