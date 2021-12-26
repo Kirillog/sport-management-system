@@ -89,6 +89,6 @@ enum class ObjectFields {
     Weight,
     ResultType,
     Full,
-    Selective
+    Selective,
 }
 

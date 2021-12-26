@@ -74,10 +74,6 @@ object Competition {
         event = loader.loadEvent()
     }
 
-    fun loadTimestamps(loader: Loader) {
-        timestamps.addAll(loader.loadTimestamps())
-    }
-
     fun toss() {
         toss.addAllParticipant()
         toss.build()

@@ -19,13 +19,6 @@ class CheckpointTable : Table<Checkpoint>() {
 
     override val header = TableHeader(listOf(
         TableColumn<Checkpoint>(
-            "ID",
-            ObjectFields.ID,
-            visible = false, readOnly = true,
-            comparator = TableComparing.compareByInt(ObjectFields.ID),
-            getterGenerator = { { it.id.toString() } }
-        ),
-        TableColumn(
             "Name",
             ObjectFields.Name,
             visible = true, readOnly = false,

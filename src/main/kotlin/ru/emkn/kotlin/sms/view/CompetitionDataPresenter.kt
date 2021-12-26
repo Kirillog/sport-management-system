@@ -7,7 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import ru.emkn.kotlin.sms.view.tables.*
+import ru.emkn.kotlin.sms.view.tables.draw
 
 object CompetitionDataPresenter {
     enum class Table {
@@ -67,15 +67,15 @@ fun drawAppTopBar() {
 }
 
 @Composable
-fun drawTable(gui: GUI, bottomAppBar: BottomAppBar) {
+fun drawTables(gui: GUI, bottomAppBar: BottomAppBar) {
 
-    val eventTable = remember { EventTable() }
-    val checkpointTable = remember { CheckpointTable() }
-    val routeTable = remember { RouteTable() }
-    val teamTable = remember { TeamTable() }
-    val groupTable = remember { GroupTable() }
+    val eventTable = remember { gui.eventTable }
+    val checkpointTable = remember { gui.checkpointTable }
+    val routeTable = remember { gui.routeTable }
+    val teamTable = remember { gui.teamTable }
+    val groupTable = remember { gui.groupTable }
     val participantTable = remember { gui.participantsTable }
-    val timestampTable = remember { TimestampTable() }
+    val timestampTable = remember { gui.timestampTable }
 
     Column {
         drawAppTopBar()
@@ -96,7 +96,3 @@ fun drawTable(gui: GUI, bottomAppBar: BottomAppBar) {
     }
 }
 
-fun toss(gui: GUI, bottomBar: BottomAppBar) {
-    gui.participantsTable.header.setReadOnly(true)
-    gui.pushState(GUI.State.EditRuntimeDump)
-}

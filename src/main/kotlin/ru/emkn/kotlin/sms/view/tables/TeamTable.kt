@@ -23,7 +23,12 @@ class TeamTable : Table<Team>() {
                 ObjectFields.Name, visible = true, readOnly = false,
                 comparator = TableComparing.compareByString(ObjectFields.Name),
                 getterGenerator = { { it.name } }
-            )
+            ),
+/*            TableColumn<Team>(
+                "Result",
+                ObjectFields.ResultType, visible = false, readOnly = true,
+                comparator = TableComparing
+            )*/
         ),
         deleteButton = true
     )

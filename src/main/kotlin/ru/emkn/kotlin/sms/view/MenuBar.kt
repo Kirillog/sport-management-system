@@ -1,6 +1,7 @@
 package ru.emkn.kotlin.sms.view
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyShortcut
@@ -8,10 +9,11 @@ import androidx.compose.ui.window.FrameWindowScope
 import androidx.compose.ui.window.MenuBar
 import ru.emkn.kotlin.sms.controller.CompetitionController
 
-
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun drawMenuBar(gui: GUI, frame: FrameWindowScope, bottomBar: BottomAppBar) {
+    val stages = listOf("Toss", "Results", "Finished")
+    val stageIndex = mutableStateOf(0)
     val loader = LoadOrCreate(
         question = "Load database or create new one?",
         loadTitle = "select database file",
@@ -50,12 +52,25 @@ fun drawMenuBar(gui: GUI, frame: FrameWindowScope, bottomBar: BottomAppBar) {
         }
 
         Menu("Navigate", mnemonic = 'T') {
-            Item("Toss", onClick = {
-                toss(gui, bottomBar)
-            }, shortcut = KeyShortcut(Key.T, ctrl = true))
-            Item("Edit", onClick = {
-                TODO()
-            })
+            val text = stages[stageIndex.value]
+            Item(text, onClick = {
+                when (text) {
+                    "Toss" ->
+                        StateSwitcher.doToss(gui, bottomBar)
+                    "Result" -> TODO()
+//                        StateSwitcher.doResult(gui, bottomBar)
+                }
+                stageIndex.value++
+            }, shortcut = KeyShortcut(Key.T, ctrl = true), enabled = stageIndex.value < 2)
+            Item("Rollback", onClick = {
+                when (text) {
+                    "Result" ->
+                        StateSwitcher.undoToss(gui, bottomBar)
+                    "Finished" -> TODO()
+//                        StateSwitcher.undoResult(gui, bottomBar)
+                }
+                stageIndex.value--
+            }, enabled = stageIndex.value > 0)
         }
 /*        Menu("Actions", mnemonic = 'A') {
             CheckboxItem(
