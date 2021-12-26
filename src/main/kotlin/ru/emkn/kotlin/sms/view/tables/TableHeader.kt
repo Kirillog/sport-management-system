@@ -121,7 +121,9 @@ fun <T> draw(tableHeader: TableHeader<T>) {
                     },
                 horizontalArrangement = Arrangement.Start
             ) {
-                tableHeader.visibleColumns.forEachIndexed { index, column ->
+                tableHeader.columns.forEachIndexed { index, column ->
+                    if (!column.visible)
+                        return@forEachIndexed
                     TextButton(
                         onClick = {
                             if (tableHeader.orderByColumn.value == index)
