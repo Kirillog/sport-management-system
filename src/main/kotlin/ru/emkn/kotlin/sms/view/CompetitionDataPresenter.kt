@@ -1,6 +1,8 @@
 package ru.emkn.kotlin.sms.view
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
@@ -28,41 +30,43 @@ fun drawAppTopBar() {
     TopAppBar(
         modifier = Modifier.fillMaxWidth(),
     ) {
-        draw(
-            ActionButton("Events") {
-                CompetitionDataPresenter.state.value = CompetitionDataPresenter.Table.Event
-            }
-        )
-        draw(
-            ActionButton("Checkpoints") {
-                CompetitionDataPresenter.state.value = CompetitionDataPresenter.Table.Checkpoints
-            }
-        )
-        draw(
-            ActionButton("Routes") {
-                CompetitionDataPresenter.state.value = CompetitionDataPresenter.Table.Routes
-            }
-        )
-        draw(
-            ActionButton("Participants") {
-                CompetitionDataPresenter.state.value = CompetitionDataPresenter.Table.Participants
-            }
-        )
-        draw(
-            ActionButton("Teams") {
-                CompetitionDataPresenter.state.value = CompetitionDataPresenter.Table.Teams
-            }
-        )
-        draw(
-            ActionButton("Groups") {
-                CompetitionDataPresenter.state.value = CompetitionDataPresenter.Table.Groups
-            }
-        )
-        draw(
-            ActionButton("Timestamps", visible = false) {
-                CompetitionDataPresenter.state.value = CompetitionDataPresenter.Table.Timestamps
-            }
-        )
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
+            draw(
+                ActionButton("Events") {
+                    CompetitionDataPresenter.state.value = CompetitionDataPresenter.Table.Event
+                }
+            )
+            draw(
+                ActionButton("Checkpoints") {
+                    CompetitionDataPresenter.state.value = CompetitionDataPresenter.Table.Checkpoints
+                }
+            )
+            draw(
+                ActionButton("Routes") {
+                    CompetitionDataPresenter.state.value = CompetitionDataPresenter.Table.Routes
+                }
+            )
+            draw(
+                ActionButton("Participants") {
+                    CompetitionDataPresenter.state.value = CompetitionDataPresenter.Table.Participants
+                }
+            )
+            draw(
+                ActionButton("Teams") {
+                    CompetitionDataPresenter.state.value = CompetitionDataPresenter.Table.Teams
+                }
+            )
+            draw(
+                ActionButton("Groups") {
+                    CompetitionDataPresenter.state.value = CompetitionDataPresenter.Table.Groups
+                }
+            )
+            draw(
+                ActionButton("Timestamps", visible = false) {
+                    CompetitionDataPresenter.state.value = CompetitionDataPresenter.Table.Timestamps
+                }
+            )
+        }
     }
 }
 

@@ -72,7 +72,6 @@ fun mainContent() {
         Window(onCloseRequest = ::exitApplication, title = "Sport Management System") {
             val gui = remember { GUI() }
             val bottomBar = remember { BottomAppBar() }
-            println(gui.state.value)
             drawMenuBar(gui, this, bottomBar)
             when (gui.state.value) {
                 GUI.State.InitialWindow -> drawInvitationMessage(bottomBar)
