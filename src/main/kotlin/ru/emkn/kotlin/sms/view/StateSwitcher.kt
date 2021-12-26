@@ -28,7 +28,7 @@ object StateSwitcher {
 
     fun undoToss(gui: GUI, bottomBar: BottomAppBar) {
         setUnTossed(gui)
-        // TODO()
+        CompetitionController.undoToss()
         bottomBar.setMessage("")
         gui.popState()
     }

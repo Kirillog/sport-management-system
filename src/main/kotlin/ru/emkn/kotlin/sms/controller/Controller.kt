@@ -9,6 +9,7 @@ import ru.emkn.kotlin.sms.io.FileSaver
 import ru.emkn.kotlin.sms.io.Loader
 import ru.emkn.kotlin.sms.io.Saver
 import ru.emkn.kotlin.sms.model.Competition
+import ru.emkn.kotlin.sms.model.TossTable
 import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.extension
@@ -63,6 +64,14 @@ object CompetitionController {
             Competition.toss()
         }
         state = State.TOSSED
+    }
+
+    fun undoToss() {
+        require(state == State.TOSSED)
+        transaction {
+            TossTable.deleteAll()
+        }
+        state = State.CREATED
     }
 
     fun calculateResult() {
