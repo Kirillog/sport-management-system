@@ -17,9 +17,8 @@ fun CompetitionController.groupsAndTossFromPath(group: Path, toss: Path) {
     val groupLoader = getLoader(group)
     val tossLoader = getLoader(toss)
     transaction {
-        Competition.loadGroups(groupLoader)
+        groupLoader.loadGroups()
         Competition.toss(tossLoader)
-        Competition.teams.addAll(Team.all().toSet())
     }
 }
 
@@ -57,7 +56,7 @@ fun Generator.generateParticipantsProtocol(
 
         ParticipantsProtocol(
             participant,
-            route.checkpoints.zip(times) { checkpoint, time -> Timestamp.create(time, checkpoint.id, participant.id) }
+            route.checkpoints.zip(times) { checkpoint, time -> Timestamp.create(time, checkpoint, participant) }
         )
     }
 }
@@ -102,8 +101,8 @@ fun Generator.generateCheckPointProtocols(
 }
 
 fun main() {
-    val path = Path("test_generator/checkpoints")
+    val path = Path("competitions/small-competition/checkpoints")
     generate(path) {
-        generateCheckPointProtocols(Path("test_generator"), path)
+        generateCheckPointProtocols(Path("competitions/small-competition"), path)
     }
 }

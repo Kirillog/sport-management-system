@@ -10,6 +10,7 @@ import ru.emkn.kotlin.sms.model.GroupTable
 import ru.emkn.kotlin.sms.model.TeamTable
 import ru.emkn.kotlin.sms.view.GUI
 import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 
 fun Participant.Companion.getPrint(): List<ParticipantPrint> {
     val teamById = TeamTable.selectAll().associate { it[TeamTable.id] to it[TeamTable.name] }
@@ -56,6 +57,12 @@ class ParticipantsTable : Table<ParticipantPrint>() {
 
     private val participants
         get() = transaction { Participant.getPrint() }
+
+    private fun correctTime(time : LocalTime?) : String =
+            if (time == null)
+                "No time"
+            else
+                time.format(DateTimeFormatter.ISO_TIME)
 
     override val header = TableHeader(listOf(
         TableColumn<ParticipantPrint>(
@@ -112,14 +119,14 @@ class ParticipantsTable : Table<ParticipantPrint>() {
             ObjectFields.StartTime,
             visible = false, readOnly = false,
             comparator = TableComparing.compareByLocalTime(ObjectFields.StartTime),
-            getterGenerator = { { it.startTime.toString() } }
+            getterGenerator = { { correctTime(it.startTime) } }
         ),
         TableColumn(
             "Finish time",
             ObjectFields.FinishTime,
             visible = false, readOnly = false,
             comparator = TableComparing.compareByLocalTime(ObjectFields.FinishTime),
-            getterGenerator = { { it.finishTime.toString() } }
+            getterGenerator = { { correctTime(it.finishTime) } }
         ),
         TableColumn(
             "Penalty",

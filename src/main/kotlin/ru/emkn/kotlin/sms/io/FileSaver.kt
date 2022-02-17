@@ -4,6 +4,7 @@ import ru.emkn.kotlin.sms.FileType
 import ru.emkn.kotlin.sms.model.Competition
 import ru.emkn.kotlin.sms.model.Group
 import ru.emkn.kotlin.sms.model.Participant
+import ru.emkn.kotlin.sms.model.Team
 import java.io.File
 
 class FileSaver(file: File) : Saver {
@@ -15,7 +16,7 @@ class FileSaver(file: File) : Saver {
             )
         )
 
-        Competition.groups.forEach { group ->
+        Group.all().forEach { group ->
             writer.add(group.name)
             val sortedGroup = group.personalResult.sort()
             sortedGroup.forEach { participant ->
@@ -34,7 +35,7 @@ class FileSaver(file: File) : Saver {
 
     override fun saveTeamResults() {
         writer.add(listOf("Номер", "Название", "Очки"))
-        val sortedTeams = Competition.teamResult.sortTeams(Competition.teams)
+        val sortedTeams = Competition.teamResult.sortTeams(Team.all().toSet())
         sortedTeams.forEachIndexed { index, team ->
             writer.add<SingleLineWritable>(team) { listOf(index + 1) + it.toLine() }
         }
