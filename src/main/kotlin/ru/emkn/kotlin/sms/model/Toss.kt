@@ -22,9 +22,9 @@ open class Toss {
 
     var state = State.PREPARING
         protected set
-    protected val participants = mutableSetOf<Participant>()
+    private val participants = mutableSetOf<Participant>()
 
-    fun addParticipant(participant: Participant) {
+    private fun addParticipant(participant: Participant) {
         require(state == State.PREPARING)
         participants.add(participant)
     }
@@ -42,7 +42,7 @@ open class Toss {
     open fun build() {
         var currentTime = LocalTime.NOON
         val deltaMinutes = 5L
-        participants.groupBy { it.group }.forEach { (groupID, members) ->
+        participants.groupBy { it.group }.forEach { (_, members) ->
             members.shuffled(Random(0)).forEach { participant ->
                 TossTable.insert {
                     it[participantID] = participant.id

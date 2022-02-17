@@ -11,7 +11,6 @@ import ru.emkn.kotlin.sms.view.PathChooser
 
 class CheckpointTable : Table<Checkpoint>() {
 
-
     private val checkpoints: List<Checkpoint>
         get() {
             return transaction { Checkpoint.all().toList() }

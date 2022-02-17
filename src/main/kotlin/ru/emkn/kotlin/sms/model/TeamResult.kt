@@ -30,7 +30,7 @@ interface TeamResult {
     fun calculate()
 
     fun saveToDB() {
-        TeamResultTable.batchInsert(score.toList(), false, false) { (team, score) ->
+        TeamResultTable.batchInsert(score.toList(), ignore = false, shouldReturnGeneratedValues = false) { (team, score) ->
             this[TeamResultTable.teamID] = team.id
             this[TeamResultTable.score] = score
         }
