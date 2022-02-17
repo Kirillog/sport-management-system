@@ -118,7 +118,6 @@ object Editor {
             transaction {
                 timestamp.change(time, participantId, checkpointName)
             }
-            Competition.add(timestamp)
             logger.debug { "Timestamp was successfully edited" }
         } catch (err: IllegalArgumentException) {
             logger.debug { "Cannot edit timestamp ${timestamp.id}" }

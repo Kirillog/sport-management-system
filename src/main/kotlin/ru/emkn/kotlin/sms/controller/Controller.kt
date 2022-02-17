@@ -8,10 +8,7 @@ import ru.emkn.kotlin.sms.io.FileLoader
 import ru.emkn.kotlin.sms.io.FileSaver
 import ru.emkn.kotlin.sms.io.Loader
 import ru.emkn.kotlin.sms.io.Saver
-import ru.emkn.kotlin.sms.model.Competition
-import ru.emkn.kotlin.sms.model.PersonalResultTable
-import ru.emkn.kotlin.sms.model.TeamResultTable
-import ru.emkn.kotlin.sms.model.TossTable
+import ru.emkn.kotlin.sms.model.*
 import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.extension
@@ -40,25 +37,25 @@ object CompetitionController {
             }
         }
 
-    private fun load(path: Path?, trueState: State, loadFunc: Competition.(Loader) -> Unit) {
+    private fun load(path: Path?, trueState: State, loadFunc: Loader.() -> Unit) {
         path ?: throw IllegalArgumentException("path is not chosen")
         if (state != trueState) throw IllegalStateException("For this load state must be $trueState")
         transaction {
-            Competition.loadFunc(getLoader(path))
+            getLoader(path).loadFunc()
         }
     }
 
-    fun loadEvent(path: Path?) = load(path, State.CREATED) { loadEvent(it) }
+    fun loadEvent(path: Path?) = load(path, State.CREATED) { loadEvent() }
 
-    fun loadCheckpoints(path: Path?) = load(path, State.CREATED) { loadCheckpoints(it) }
+    fun loadCheckpoints(path: Path?) = load(path, State.CREATED) { loadCheckpoints() }
 
-    fun loadRoutes(path: Path?) = load(path, State.CREATED) { loadRoutes(it) }
+    fun loadRoutes(path: Path?) = load(path, State.CREATED) { loadRoutes() }
 
-    fun loadGroups(path: Path?) = load(path, State.CREATED) { loadGroups(it) }
+    fun loadGroups(path: Path?) = load(path, State.CREATED) { loadGroups() }
 
-    fun loadTeams(path: Path?) = load(path, State.CREATED) { loadTeams(it) }
+    fun loadTeams(path: Path?) = load(path, State.CREATED) { loadTeams() }
 
-    fun loadTimestamps(path: Path?) = load(path, State.TOSSED) { loadTimestamps(it) }
+    fun loadTimestamps(path: Path?) = load(path, State.TOSSED) { loadTimestamps() }
 
     fun toss() {
         require(state == State.CREATED)
@@ -72,6 +69,7 @@ object CompetitionController {
         require(state == State.TOSSED)
         transaction {
             TossTable.deleteAll()
+            Competition.toss = Toss()
         }
         state = State.CREATED
     }
