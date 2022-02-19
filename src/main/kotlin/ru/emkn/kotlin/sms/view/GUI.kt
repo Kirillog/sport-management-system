@@ -14,6 +14,7 @@ import java.io.File
 
 class GUI {
 
+    // tables representing displayed data
     val participantsTable = ParticipantsTable()
     val eventTable = EventTable()
     val routeTable = RouteTable()
@@ -45,13 +46,12 @@ class GUI {
     var state = mutableStateOf(State.InitialWindow)
     private val statesStack = mutableListOf(state.value)
 
-
     fun pushState(newState: State) {
         state.value = newState
         statesStack.add(newState)
     }
 
-    fun pushStates(statesList: List<State>) {
+    private fun pushStates(statesList: List<State>) {
         require(statesList.isNotEmpty()) { "Empty states list" }
         statesStack.addAll(statesList)
         state.value = statesList.last()
@@ -67,17 +67,17 @@ class GUI {
             ru.emkn.kotlin.sms.controller.State.EMPTY -> State.InitialWindow
             ru.emkn.kotlin.sms.controller.State.CREATED -> pushState(State.EditAnnounceData)
             ru.emkn.kotlin.sms.controller.State.TOSSED -> pushStates(
-                listOf(
-                    State.EditAnnounceData,
-                    State.EditRuntimeDump
-                )
+                    listOf(
+                            State.EditAnnounceData,
+                            State.EditRuntimeDump
+                    )
             )
             ru.emkn.kotlin.sms.controller.State.FINISHED -> pushStates(
-                listOf(
-                    State.EditAnnounceData,
-                    State.EditRuntimeDump,
-                    State.ShowResults
-                )
+                    listOf(
+                            State.EditAnnounceData,
+                            State.EditRuntimeDump,
+                            State.ShowResults
+                    )
             )
         }
     }
@@ -118,11 +118,11 @@ fun mainContent() {
 }
 
 fun chooseFileAndProcess(
-    bottomAppBar: BottomAppBar,
-    chooserTitle: String,
-    chooserFileExtension: String,
-    chooserFileDescription: String,
-    action: (File?) -> Unit
+        bottomAppBar: BottomAppBar,
+        chooserTitle: String,
+        chooserFileExtension: String,
+        chooserFileDescription: String,
+        action: (File?) -> Unit
 ) {
     val file = PathChooser(chooserTitle, chooserFileExtension, chooserFileDescription).choose()
     try {

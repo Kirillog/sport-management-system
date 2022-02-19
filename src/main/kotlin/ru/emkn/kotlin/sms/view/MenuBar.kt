@@ -20,72 +20,59 @@ enum class MenuState(val text: String = "") {
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun drawMenuBar(gui: GUI, frame: FrameWindowScope, bottomBar: BottomAppBar) {
-    val stages = listOf("Toss", "Results", "Finished")
     val menuState = gui.state.value.menuState
-    val loader = LoadOrCreate(
-        question = "Load database or create new one?",
-        loadTitle = "select database file",
-        createTitle = "choose path for new database",
-        loadAction = {
-            Controller.connectDB(it)
-            gui.pushDataBaseState()
-        },
-        createAction = {
-            Controller.createDB(it)
-            gui.pushState(GUI.State.EditAnnounceData)
-        },
-        fileExtension = ".mv.db",
-        fileExtensionDescription = "Database"
-    )
     frame.MenuBar {
         Menu("Database", mnemonic = 'D') {
             Item("Load", onClick = {
                 chooseFileAndProcess(
-                    bottomBar,
-                    loader.loadTitle,
-                    loader.fileExtension,
-                    loader.fileExtensionDescription,
-                    loader.loadAction
-                )
+                        bottomBar,
+                        "select database file",
+                        ".mv.db",
+                        "Database"
+                ) {
+                    Controller.connectDB(it)
+                    gui.pushDataBaseState()
+                }
             }, shortcut = KeyShortcut(Key.L, ctrl = true))
             Item("Create", onClick = {
                 chooseFileAndProcess(
-                    bottomBar,
-                    loader.createTitle,
-                    loader.fileExtension,
-                    loader.fileExtensionDescription,
-                    loader.createAction
-                )
+                        bottomBar,
+                        "choose path for new database",
+                        ".mv.db",
+                        "Database"
+                ) {
+                    Controller.createDB(it)
+                    gui.pushState(GUI.State.EditAnnounceData)
+                }
             }, shortcut = KeyShortcut(Key.N, ctrl = true))
         }
 
         Menu("Navigate", mnemonic = 'T') {
-            val text = menuState.text
             Item(
-                text, onClick = {
-                    when (text) {
-                        "Toss" ->
-                            StateSwitcher.doToss(gui, bottomBar)
-                        "Result" ->
-                            StateSwitcher.doResulted(gui, bottomBar)
-                        else ->
-                            throw IllegalStateException("Wrong menu state")
-                    }
-                }, shortcut = KeyShortcut(Key.Y, ctrl = true), enabled = menuState >= MenuState.Preparing
-                        && menuState <= MenuState.Tossed
+                    menuState.text, onClick = {
+                when (menuState) {
+                    MenuState.Preparing ->
+                        StateSwitcher.doToss(gui, bottomBar)
+                    MenuState.Tossed ->
+                        StateSwitcher.doResulted(gui, bottomBar)
+                    else ->
+                        throw IllegalStateException("Wrong menu state")
+                }
+            }, shortcut = KeyShortcut(Key.Y, ctrl = true), enabled = menuState >= MenuState.Preparing
+                    && menuState <= MenuState.Tossed
             )
             Item(
-                "Rollback",
-                onClick = {
-                    when (text) {
-                        "Result", "Finished" ->
-                            StateSwitcher.undo(gui, bottomBar)
-                        else ->
-                            throw IllegalStateException("Wrong menu state")
-                    }
-                },
-                shortcut = KeyShortcut(Key.Z, ctrl = true),
-                enabled = menuState >= MenuState.Tossed && menuState <= MenuState.Result
+                    "Rollback",
+                    onClick = {
+                        when (menuState) {
+                            MenuState.Tossed, MenuState.Result ->
+                                StateSwitcher.undo(gui, bottomBar)
+                            else ->
+                                throw IllegalStateException("Wrong menu state")
+                        }
+                    },
+                    shortcut = KeyShortcut(Key.Z, ctrl = true),
+                    enabled = menuState >= MenuState.Tossed && menuState <= MenuState.Result
             )
         }
     }

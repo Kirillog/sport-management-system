@@ -10,9 +10,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 
 class ActionButton(
-    val text: String,
-    visible: Boolean = true,
-    val action: () -> Unit
+        val text: String,
+        visible: Boolean = true,
+        val action: () -> Unit
 ) {
     var visible by mutableStateOf(visible)
 }
@@ -21,8 +21,8 @@ class ActionButton(
 fun draw(actionButton: ActionButton) {
     if (actionButton.visible)
         Button(
-            onClick = { actionButton.action() },
-            colors = ButtonDefaults.buttonColors(backgroundColor = Color.Gray)
+                onClick = { actionButton.action() },
+                colors = ButtonDefaults.buttonColors(backgroundColor = Color.Gray)
         ) {
             Text(actionButton.text)
         }

@@ -75,10 +75,10 @@ fun Generator.generateCheckPointProtocols(
     Controller.state = State.CREATED
     Controller.loadEvent(competitionPath.resolve("input/event.csv"))
     Controller.loadCheckpoints(competitionPath.resolve("input/checkpoints.csv"),)
-    Controller.loadRoutes(competitionPath.resolve("input/courses.csv"))
+    Controller.loadRoutes(competitionPath.resolve("input/routes.csv"))
 
     Controller.groupsAndTossFromPath(
-        group = competitionPath.resolve("input/classes.csv"),
+        group = competitionPath.resolve("input/groups.csv"),
         toss = competitionPath.resolve("protocols/toss.csv")
     )
 
@@ -101,8 +101,8 @@ fun Generator.generateCheckPointProtocols(
 }
 
 fun main() {
-    val path = Path("competitions/small-competition/checkpoints")
+    val path = Path("competitions/competition-1/checkpoints")
     generate(path) {
-        generateCheckPointProtocols(Path("competitions/small-competition"), path)
+        generateCheckPointProtocols(Path("competitions/competition-1"), path)
     }
 }

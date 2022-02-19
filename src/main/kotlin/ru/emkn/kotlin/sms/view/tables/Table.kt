@@ -3,8 +3,9 @@ package ru.emkn.kotlin.sms.view.tables
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.icons.Icons
@@ -72,7 +73,7 @@ abstract class Table<T> {
 
     var state by mutableStateOf(State.Updated)
 
-    open var addButton: Boolean = true
+    open val addButton: Boolean = true
     open val creatingState: GUI.State? = null
     open val loadAction: () -> Unit = {}
     open var loadButton: Boolean = true
@@ -80,7 +81,7 @@ abstract class Table<T> {
     val sortedFilteredRows
         get() = transaction {
             rows.sortedWith(header.comparator)
-                .filter { it.checkFilter() }
+                    .filter { it.checkFilter() }
         }
 
     fun load(bottomAppBar: BottomAppBar) {
@@ -94,23 +95,21 @@ abstract class Table<T> {
 
 @Composable
 fun <T> draw(tableRow: Table<T>.TableRow, bottomAppBar: BottomAppBar) {
-    if (tableRow.header.state == TableHeader.State.Outdated)
-        tableRow.header.state = TableHeader.State.Updated
     var rowSize by remember { mutableStateOf(IntSize.Zero) }
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .onSizeChanged {
-                rowSize = it
-            },
-        horizontalArrangement = Arrangement.Start,
-        verticalAlignment = Alignment.CenterVertically
+            modifier = Modifier
+                    .fillMaxWidth()
+                    .onSizeChanged {
+                        rowSize = it
+                    },
+            horizontalArrangement = Arrangement.Start,
+            verticalAlignment = Alignment.CenterVertically
     ) {
         if (tableRow.header.deleteButton)
             Box(modifier = Modifier.border(BorderStroke(1.dp, Color.Black))) {
                 IconButton(
-                    onClick = { tableRow.delete() },
-                    modifier = Modifier.size(tableDeleteButtonWidth.dp)
+                        onClick = { tableRow.delete() },
+                        modifier = Modifier.size(tableDeleteButtonWidth.dp)
                 ) {
                     Icon(imageVector = Icons.Filled.Close, contentDescription = "Delete", tint = Color.Black)
                 }
@@ -125,11 +124,11 @@ fun <T> draw(tableRow: Table<T>.TableRow, bottomAppBar: BottomAppBar) {
         for (columnHeader in tableRow.header.columns) {
             if (columnHeader.visible)
                 draw(
-                    tableRow.cells[columnHeader.field]
-                        ?: throw IllegalStateException("Cell of ${columnHeader.field} not exists"),
-                    cellWidth,
-                    columnHeader.readOnly,
-                    bottomAppBar
+                        tableRow.cells[columnHeader.field]
+                                ?: throw IllegalStateException("Cell of ${columnHeader.field} not exists"),
+                        cellWidth,
+                        columnHeader.readOnly,
+                        bottomAppBar
                 )
         }
     }
@@ -137,51 +136,52 @@ fun <T> draw(tableRow: Table<T>.TableRow, bottomAppBar: BottomAppBar) {
 
 @Composable
 fun <F> draw(gui: GUI, bottomAppBar: BottomAppBar, table: Table<F>) {
-    if (table.state == Table.State.Outdated)
-        table.state = Table.State.Updated
-
-    Column(
-        modifier = Modifier.verticalScroll(rememberScrollState())
-    ) {
-        Box(modifier = Modifier.border(BorderStroke(1.dp, Color.Black))) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceAround
-            ) {
-                val createState = table.creatingState
-                if (table.loadButton) {
-                    draw(
-                        ActionButton("Load") {
-                            table.load(bottomAppBar)
-                        }
-                    )
-                }
-                if (createState != null && table.addButton) {
-                    draw(
-                        ActionButton("Add") {
-                            gui.pushState(createState)
-                        }
-                    )
-                }
-                draw(
-                    ActionButton("Export to csv") {
-                        PathChooser("Save to csv table...", ".csv", "Csv table").choose()?.let { file ->
-                            val writer = Writer(file, FileType.CSV)
-                            transaction {
-                                writer.add(table)
-                            }
-                            writer.write()
-                            bottomAppBar.setMessage("File was successfully saved to $file")
-                        } ?: bottomAppBar.setMessage("File not selected")
+    val lazyListState = rememberLazyListState()
+    LazyColumn(state = lazyListState) {
+        item {
+            Box(modifier = Modifier.border(BorderStroke(1.dp, Color.Black))) {
+                Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceAround
+                ) {
+                    val createState = table.creatingState
+                    if (table.loadButton) {
+                        draw(
+                                ActionButton("Load") {
+                                    table.load(bottomAppBar)
+                                }
+                        )
                     }
-                )
+                    if (createState != null && table.addButton) {
+                        draw(
+                                ActionButton("Add") {
+                                    gui.pushState(createState)
+                                }
+                        )
+                    }
+                    draw(
+                            ActionButton("Export to csv") {
+                                PathChooser("Save to csv table...", ".csv", "Csv table").choose()?.let { file ->
+                                    val writer = Writer(file, FileType.CSV)
+                                    transaction {
+                                        writer.add(table)
+                                    }
+                                    writer.write()
+                                    bottomAppBar.setMessage("File was successfully saved to $file")
+                                } ?: bottomAppBar.setMessage("File not selected")
+                            }
+                    )
+                }
             }
         }
-        draw(table.header)
-
-        table.sortedFilteredRows.forEach {
-            draw(it, bottomAppBar)
+        item {
+            draw(table.header)
         }
-        Box(Modifier.height(BottomAppBar.height))
+        items(table.sortedFilteredRows) { model ->
+            draw(model, bottomAppBar)
+        }
+        item {
+            Box(Modifier.height(BottomAppBar.height))
+        }
     }
 }

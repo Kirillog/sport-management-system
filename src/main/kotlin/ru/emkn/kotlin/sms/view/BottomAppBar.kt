@@ -32,8 +32,8 @@ class BottomAppBar {
 fun draw(bottomBar: BottomAppBar) {
     Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.fillMaxHeight()) {
         BottomAppBar(
-            modifier = Modifier.height(BottomAppBar.height),
-            backgroundColor = MaterialTheme.colors.primarySurface
+                modifier = Modifier.height(BottomAppBar.height),
+                backgroundColor = MaterialTheme.colors.primarySurface
         ) {
             Text(bottomBar.message.value)
         }

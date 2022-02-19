@@ -1,6 +1,5 @@
 package ru.emkn.kotlin.sms.view.tables
 
-import org.jetbrains.exposed.sql.transactions.transaction
 import ru.emkn.kotlin.sms.ObjectFields
 import ru.emkn.kotlin.sms.controller.Controller
 import ru.emkn.kotlin.sms.controller.Deleter
@@ -12,7 +11,7 @@ import ru.emkn.kotlin.sms.view.PathChooser
 class RouteTable : Table<Route>() {
 
     private val routes
-        get() = transaction { Route.all().toList() }
+        get() = Route.all().toList()
 
     override val header = TableHeader(listOf(
         TableColumn<Route>(

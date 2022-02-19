@@ -13,32 +13,23 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import mu.KotlinLogging
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.emkn.kotlin.sms.MAX_TEXT_FIELD_SIZE
 import ru.emkn.kotlin.sms.ObjectFields
 
 
 data class TableColumn<T>(
-    val title: String,
-    val field: ObjectFields,
-    var visible: Boolean,
-    var readOnly: Boolean,
-    val comparator: Comparator<Table<T>.TableRow>,
-    val getterGenerator: (T) -> (() -> String)
+        val title: String,
+        val field: ObjectFields,
+        var visible: Boolean,
+        var readOnly: Boolean,
+        val comparator: Comparator<Table<T>.TableRow>,
+        val getterGenerator: (T) -> (() -> String)
 ) {
     var filterString = mutableStateOf("")
 }
 
-private val logger = KotlinLogging.logger {}
-
 class TableHeader<T>(val columns: List<TableColumn<T>>, val deleteButton: Boolean, val filtering: Boolean = true) {
-
-    enum class State {
-        Updated, Outdated
-    }
-
-    var state by mutableStateOf(State.Updated)
 
     var orderByColumn = mutableStateOf(run {
         val index = columns.indexOfFirst { it.visible }
@@ -59,7 +50,7 @@ class TableHeader<T>(val columns: List<TableColumn<T>>, val deleteButton: Boolea
 
     fun setVisibility(columnType: ObjectFields, visible: Boolean) {
         val column = columns.firstOrNull { it.field == columnType }
-            ?: throw IllegalStateException("column $columnType doesn't exists")
+                ?: throw IllegalStateException("column $columnType doesn't exists")
         column.visible = visible
     }
 
@@ -70,7 +61,7 @@ class TableHeader<T>(val columns: List<TableColumn<T>>, val deleteButton: Boolea
 
     fun setReadOnly(columnType: ObjectFields, readOnly: Boolean) {
         val column = columns.firstOrNull { it.field == columnType }
-            ?: throw IllegalStateException("column $columnType doesn't exists")
+                ?: throw IllegalStateException("column $columnType doesn't exists")
         column.readOnly = readOnly
     }
 
@@ -88,12 +79,10 @@ class TableHeader<T>(val columns: List<TableColumn<T>>, val deleteButton: Boolea
 
 @Composable
 fun <T> draw(tableHeader: TableHeader<T>) {
-    if (tableHeader.state == TableHeader.State.Outdated)
-        tableHeader.state = TableHeader.State.Updated
     var rowSize by remember { mutableStateOf(IntSize.Zero) }
     Row(
 //        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.Start
+            horizontalArrangement = Arrangement.Start
     ) {
         // space for delete button
         if (tableHeader.deleteButton)
@@ -105,43 +94,43 @@ fun <T> draw(tableHeader: TableHeader<T>) {
             // filter fields
             if (tableHeader.filtering) {
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Start
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Start
                 ) {
                     tableHeader.visibleColumns.forEach { column ->
                         BasicTextField(
-                            value = column.filterString.value,
-                            modifier = Modifier
-                                .border(BorderStroke(1.dp, Color.Black))
-                                .width(columnWidth),
-                            onValueChange = {
-                                column.filterString.value = it.replace("\n", "").take(MAX_TEXT_FIELD_SIZE)
-                            })
+                                value = column.filterString.value,
+                                modifier = Modifier
+                                        .border(BorderStroke(1.dp, Color.Black))
+                                        .width(columnWidth),
+                                onValueChange = {
+                                    column.filterString.value = it.replace("\n", "").take(MAX_TEXT_FIELD_SIZE)
+                                })
                     }
                 }
             }
             // header
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .onSizeChanged {
-                        rowSize = it
-                    },
-                horizontalArrangement = Arrangement.Start
+                    modifier = Modifier
+                            .fillMaxWidth()
+                            .onSizeChanged {
+                                rowSize = it
+                            },
+                    horizontalArrangement = Arrangement.Start
             ) {
                 tableHeader.columns.forEachIndexed { index, column ->
                     if (!column.visible)
                         return@forEachIndexed
                     TextButton(
-                        onClick = {
-                            if (tableHeader.orderByColumn.value == index)
-                                tableHeader.reversedOrder.value = !tableHeader.reversedOrder.value
-                            tableHeader.orderByColumn.value = index
-                        },
-                        modifier = Modifier
-                            .border(BorderStroke(1.dp, Color.Black))
-                            .width(columnWidth)
-                            .background(Color.LightGray)
+                            onClick = {
+                                if (tableHeader.orderByColumn.value == index)
+                                    tableHeader.reversedOrder.value = !tableHeader.reversedOrder.value
+                                tableHeader.orderByColumn.value = index
+                            },
+                            modifier = Modifier
+                                    .border(BorderStroke(1.dp, Color.Black))
+                                    .width(columnWidth)
+                                    .background(Color.LightGray)
                     ) {
                         Text(column.title)
                     }

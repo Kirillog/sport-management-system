@@ -29,31 +29,30 @@ data class TableCell(val getText: () -> String, val saveText: () -> Unit = {}) {
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class)
 fun draw(tableCell: TableCell, width: Dp, readOnly: Boolean, bottomAppBar: BottomAppBar) {
     val backgroundColor = remember { mutableStateOf(Color.White) }
-
     BasicTextField(
-        tableCell.shownText.value,
-        modifier = Modifier
-            .border(BorderStroke(1.dp, Color.Black))
-            .width(width)
-            .onPreviewKeyEvent {
-                if (it.type == KeyEventType.KeyDown && it.key == Key.Enter) {
-                    try {
-                        tableCell.saveText()
-                        backgroundColor.value = Color.White
-                        bottomAppBar.setMessage("Saved")
-                    } catch (e: Exception) {
-                        bottomAppBar.setMessage(e.message ?: "Undefined error")
-                    }
+            tableCell.shownText.value,
+            modifier = Modifier
+                    .border(BorderStroke(1.dp, Color.Black))
+                    .width(width)
+                    .onPreviewKeyEvent {
+                        if (it.type == KeyEventType.KeyDown && it.key == Key.Enter) {
+                            try {
+                                tableCell.saveText()
+                                backgroundColor.value = Color.White
+                                bottomAppBar.setMessage("Saved")
+                            } catch (e: Exception) {
+                                bottomAppBar.setMessage(e.message ?: "Undefined error")
+                            }
+                        }
+                        false
+                    }.background(backgroundColor.value),
+            onValueChange = {
+                val newText = it.replace("\n", "").take(maxTextLength)
+                if (newText != tableCell.shownText.value) {
+                    tableCell.shownText.value = newText
+                    backgroundColor.value = Color.LightGray
                 }
-                false
-            }.background(backgroundColor.value),
-        onValueChange = {
-            val newText = it.replace("\n", "").take(maxTextLength)
-            if (newText != tableCell.shownText.value) {
-                tableCell.shownText.value = newText
-                backgroundColor.value = Color.LightGray
-            }
-        },
-        readOnly = readOnly
+            },
+            readOnly = readOnly
     )
 }

@@ -1,6 +1,5 @@
 package ru.emkn.kotlin.sms.view.tables
 
-import org.jetbrains.exposed.sql.transactions.transaction
 import ru.emkn.kotlin.sms.ObjectFields
 import ru.emkn.kotlin.sms.controller.Controller
 import ru.emkn.kotlin.sms.controller.Editor
@@ -12,9 +11,8 @@ import java.time.format.DateTimeFormatter
 class EventTable : Table<Event>() {
 
     private val event: List<Event>
-        get() {
-            return transaction { Event.all().toList() }
-        }
+        get() =
+            Event.all().toList()
 
     override val header = TableHeader(
         listOf(
@@ -52,9 +50,8 @@ class EventTable : Table<Event>() {
         }
     }
 
-    override var addButton: Boolean
-        get() = rows.isEmpty()
-        set(value) {}
+    override val addButton: Boolean
+        get() = sortedFilteredRows.isEmpty()
 
     override val creatingState: GUI.State = GUI.State.CreateEvent
 
