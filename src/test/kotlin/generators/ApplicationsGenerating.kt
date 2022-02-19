@@ -1,3 +1,5 @@
+package generators
+
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.emkn.kotlin.sms.FileType
 import ru.emkn.kotlin.sms.io.Writer

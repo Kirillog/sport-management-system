@@ -1,3 +1,5 @@
+package generators
+
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.emkn.kotlin.sms.FileType
 import ru.emkn.kotlin.sms.controller.Controller
@@ -12,6 +14,8 @@ import java.time.format.DateTimeFormatter
 import kotlin.io.path.Path
 import kotlin.random.Random
 
+
+//TODO: переписать на базы данных
 fun Controller.groupsAndTossFromPath(group: Path, toss: Path) {
     state = State.TOSSED
     val groupLoader = getLoader(group)
@@ -75,10 +79,10 @@ fun Generator.generateCheckPointProtocols(
     Controller.state = State.CREATED
     Controller.loadEvent(competitionPath.resolve("input/event.csv"))
     Controller.loadCheckpoints(competitionPath.resolve("input/checkpoints.csv"),)
-    Controller.loadRoutes(competitionPath.resolve("input/courses.csv"))
+    Controller.loadRoutes(competitionPath.resolve("input/routes.csv"))
 
     Controller.groupsAndTossFromPath(
-        group = competitionPath.resolve("input/classes.csv"),
+        group = competitionPath.resolve("input/groups.csv"),
         toss = competitionPath.resolve("protocols/toss.csv")
     )
 

@@ -1,3 +1,5 @@
+package generators
+
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.emkn.kotlin.sms.FileType
 import ru.emkn.kotlin.sms.io.Writer
@@ -8,13 +10,13 @@ import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.random.Random
 
-fun Generator.generateCourse(
+fun Generator.generateRoute(
     id: Int,
     checkPointList: List<Checkpoint>,
     courseLength: Int,
     random: Random
 ): Route {
-    val name = "course$id"
+    val name = "route$id"
     val checkpointsInCourse = checkPointList.toMutableList()
     checkpointsInCourse.shuffle(random)
     while (checkpointsInCourse.size > courseLength)
@@ -47,7 +49,7 @@ fun Generator.generateCheckpoints(path: Path, random: Random = Random(0), n: Int
 }
 
 
-fun Generator.generateCourses(
+fun Generator.generateRoutes(
     path: Path,
     coursesAmount: Int = 10,
     maxCheckPointsCount: Int = 10,
@@ -58,9 +60,9 @@ fun Generator.generateCourses(
         val checkPointList = generateCheckpoints(path, random, maxCheckPointsCount)
         val coursesList = List(coursesAmount) {
             val courseLength = random.nextInt(2, maxCourseLength)
-            generateCourse(it, checkPointList, courseLength, random)
+            generateRoute(it, checkPointList, courseLength, random)
         }
-        val file = path.resolve("courses.csv").toFile()
+        val file = path.resolve("routes.csv").toFile()
         val writer = Writer(file, FileType.CSV)
         val maxLength = coursesList.maxOf { it.checkpoints.count() }.toInt()
         writer.add(listOf("Название", "Тип", "Количество К/П") + List(maxLength) { "${it + 1}" })
@@ -73,6 +75,6 @@ fun Generator.generateCourses(
 fun main() {
     val path = Path("test_generator")
     generate(path) {
-        generateCourses(path)
+        generateRoutes(path)
     }
 }

@@ -1,7 +1,10 @@
+import generators.*
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.*
+import ru.emkn.kotlin.sms.DB_DRIVER
+import ru.emkn.kotlin.sms.DB_HEADER
 import ru.emkn.kotlin.sms.DB_TABLES
 import ru.emkn.kotlin.sms.FileType
 import ru.emkn.kotlin.sms.controller.Controller
@@ -32,7 +35,7 @@ internal class FileLoaderTest {
 
     @BeforeEach
     fun connect() {
-        Database.connect("jdbc:h2:./${path}/testDB", driver = "org.h2.Driver")
+        Database.connect("$DB_HEADER:./${path}/testDB", driver = DB_DRIVER)
 
         transaction {
             DB_TABLES.forEach {
@@ -71,10 +74,10 @@ internal class FileLoaderTest {
     @RepeatedTest(repetitionNumber)
     fun formCoursesListTest() {
         val currentPath = init()
-        val generatedCourses = Generator.generateCourses(currentPath)
-        val courses = loadTransaction(currentPath.resolve("courses.csv")) { loadRoutes() }
+        val generatedCourses = Generator.generateRoutes(currentPath)
+        val routes = loadTransaction(currentPath.resolve("routes.csv")) { loadRoutes() }
         transaction {
-            assertEquals(generatedCourses.toSet(), courses)
+            assertEquals(generatedCourses.toSet(), routes)
         }
         currentPath.toFile().deleteRecursively()
     }
@@ -83,7 +86,7 @@ internal class FileLoaderTest {
     fun formEmptyGroupsTest() {
         val currentPath = init()
         val generatedGroups = Generator.generateGroups(currentPath)
-        val groups = loadTransaction(currentPath.resolve("classes.csv")) { loadGroups() }
+        val groups = loadTransaction(currentPath.resolve("groups.csv")) { loadGroups() }
         transaction {
             assertEquals(generatedGroups.toSet(), groups)
         }
@@ -97,7 +100,7 @@ internal class FileLoaderTest {
         val applicationPath = init("test/applications")
         val generatedGroups = Generator.generateGroups(currentPath)
         val generatedTeams = Generator.generateApplications(applicationPath, 10, 15)
-        val groups = loadTransaction(currentPath.resolve("classes.csv")) { loadGroups() }
+        val groups = loadTransaction(currentPath.resolve("groups.csv")) { loadGroups() }
         transaction {
             assertEquals(generatedGroups.toSet(), groups)
         }
@@ -143,10 +146,10 @@ internal class FileLoaderTest {
         Controller.createDB(File("./${path}/testDB.mv.db"))
         Controller.loadEvent(initPath.resolve("event.csv"))
         Controller.loadCheckpoints(initPath.resolve("checkpoints.csv"))
-        Controller.loadRoutes(initPath.resolve("courses.csv"))
-        Controller.loadGroups(initPath.resolve("classes.csv"))
+        Controller.loadRoutes(initPath.resolve("routes.csv"))
+        Controller.loadGroups(initPath.resolve("groups.csv"))
         Controller.toss()
-        Controller.saveTossToPath(protocolPath.resolve("toss.csv"))
+        //TODO: надо ли тут чистить бд?
         Controller.state = State.EMPTY
         disconnect()
         Controller.createDB(File("./${path}/testDB.mv.db"))

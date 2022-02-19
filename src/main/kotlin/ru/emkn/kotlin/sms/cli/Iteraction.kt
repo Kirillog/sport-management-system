@@ -33,7 +33,7 @@ fun loadCompetitionMetadata(competitionDir: Path) {
     loadObjFromPath("checkpoints", competitionDir.resolve("input/checkpoints.csv"))
     loadObjFromPath("routes", competitionDir.resolve("input/routes.csv"))
     loadObjFromPath("groups", competitionDir.resolve("input/groups.csv"))
-    loadObjFromPath("teams", competitionDir.resolve("applications"))
+    loadObjFromPath("teams", competitionDir.resolve("teams"))
 }
 
 fun loadDB(file: Path) {

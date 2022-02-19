@@ -74,7 +74,7 @@ internal class CSVReaderTest {
     inner class ReadTeamTest : ReadTest {
         @Test
         override fun simple() {
-            val teamFile = resources.resolve("applications/simple.csv").toFile()
+            val teamFile = resources.resolve("teams/simple.csv").toFile()
             val team = listOf(
                 mapOf(
                     ObjectFields.Name to "Дмитрий",
@@ -99,11 +99,11 @@ internal class CSVReaderTest {
     }
 
     @Nested
-    inner class ReadCoursesTest : ReadTest {
+    inner class ReadedRoutesTest : ReadTest {
 
         @Test
         override fun simple() {
-            val coursesFile = resources.resolve("courses/simple.csv").toFile()
+            val coursesFile = resources.resolve("routes/simple.csv").toFile()
             val routes = listOf(
                 mapOf(
                     ObjectFields.Name to "МЖ9 10",

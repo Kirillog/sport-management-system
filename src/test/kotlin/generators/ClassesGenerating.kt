@@ -1,7 +1,9 @@
-
+package generators
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
+import ru.emkn.kotlin.sms.DB_DRIVER
+import ru.emkn.kotlin.sms.DB_HEADER
 import ru.emkn.kotlin.sms.DB_TABLES
 import ru.emkn.kotlin.sms.FileType
 import ru.emkn.kotlin.sms.io.Writer
@@ -30,7 +32,7 @@ fun Generator.generateGroups(
     random: Random = Random(0)
 ): List<Group> {
     return transaction {
-        val coursesList = generateCourses(path, groupNames.size, maxCheckPointsCount, maxCheckPointsCount)
+        val coursesList = generateRoutes(path, groupNames.size, maxCheckPointsCount, maxCheckPointsCount)
         val resultTypes = List(groupNames.size) {
             if (random.nextBoolean())
                 ResultType.TIME
@@ -40,13 +42,13 @@ fun Generator.generateGroups(
         val groups = groupNames.mapIndexed { index, name ->
             Group.create(name, resultTypes[index], coursesList[index].name)
         }
-        val classesFile = path.resolve("classes.csv").toFile()
-        val classesWriter = Writer(classesFile, FileType.CSV)
-        classesWriter.add(listOf("Название группы", "Дистанция", "Результат"))
-        classesWriter.addAll(groups.mapIndexed { index, group ->
+        val groupsFile = path.resolve("groups.csv").toFile()
+        val groupsWriter = Writer(groupsFile, FileType.CSV)
+        groupsWriter.add(listOf("Название группы", "Дистанция", "Результат"))
+        groupsWriter.addAll(groups.mapIndexed { index, group ->
             listOf(group.name, group.route.name, resultTypes[index].russian)
         })
-        classesWriter.write()
+        groupsWriter.write()
         groups
     }
 }
@@ -58,7 +60,7 @@ fun <T> generate(path: Path, gen: Generator.() -> T): T {
     if (path.notExists())
         path.createDirectory()
 
-    Database.connect("jdbc:h2:./${path}/testDB", driver = "org.h2.Driver")
+    Database.connect("$DB_HEADER:./${path}/testDB", driver = DB_DRIVER)
 
     transaction {
         DB_TABLES.forEach {

@@ -1,4 +1,4 @@
-//
+// TODO: переписать с использованием генераторов
 //import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 //import org.junit.jupiter.api.Test
 //import ru.emkn.kotlin.sms.FileType
@@ -159,4 +159,3 @@
 //        assertEquals(correct, csvData)
 //    }
 //}
-//
