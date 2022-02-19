@@ -2,7 +2,7 @@ package ru.emkn.kotlin.sms.view.tables
 
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.emkn.kotlin.sms.ObjectFields
-import ru.emkn.kotlin.sms.controller.CompetitionController
+import ru.emkn.kotlin.sms.controller.Controller
 import ru.emkn.kotlin.sms.controller.Deleter
 import ru.emkn.kotlin.sms.controller.Editor
 import ru.emkn.kotlin.sms.model.Team
@@ -58,7 +58,7 @@ class TeamTable : Table<Team>() {
         val selectedFile = PathChooser("Choose application folder or single file", "", "Application folder").choose(
             JFileChooser.FILES_AND_DIRECTORIES
         )
-        CompetitionController.loadTeams(selectedFile?.toPath())
+        Controller.loadTeams(selectedFile?.toPath())
         state = State.Outdated
     }
 }

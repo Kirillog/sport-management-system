@@ -1,7 +1,7 @@
 package ru.emkn.kotlin.sms.view
 
 import ru.emkn.kotlin.sms.ObjectFields
-import ru.emkn.kotlin.sms.controller.CompetitionController
+import ru.emkn.kotlin.sms.controller.Controller
 
 object StateSwitcher {
 
@@ -41,28 +41,28 @@ object StateSwitcher {
     }
 
     fun doToss(gui: GUI, bottomBar: BottomAppBar) {
-        CompetitionController.toss()
+        Controller.toss()
         setTossed(gui)
         bottomBar.setMessage("Tossed completed")
         gui.pushState(GUI.State.EditRuntimeDump)
     }
 
     fun undoToss(gui: GUI, bottomBar: BottomAppBar) {
-        CompetitionController.undoToss()
+        Controller.undoToss()
         setUnTossed(gui)
         bottomBar.setMessage("Rollback")
         gui.popState()
     }
 
     fun doResulted(gui: GUI, bottomBar: BottomAppBar) {
-        CompetitionController.result()
+        Controller.result()
         setResulted(gui)
         bottomBar.setMessage("Results calculated")
         gui.pushState(GUI.State.ShowResults)
     }
 
     fun undoResulted(gui: GUI, bottomBar: BottomAppBar) {
-        CompetitionController.undoResult()
+        Controller.undoResult()
         setUnResulted(gui)
         bottomBar.setMessage("Rollback")
         gui.popState()

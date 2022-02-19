@@ -2,7 +2,7 @@ package ru.emkn.kotlin.sms.view.tables
 
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.emkn.kotlin.sms.ObjectFields
-import ru.emkn.kotlin.sms.controller.CompetitionController
+import ru.emkn.kotlin.sms.controller.Controller
 import ru.emkn.kotlin.sms.controller.Deleter
 import ru.emkn.kotlin.sms.controller.Editor
 import ru.emkn.kotlin.sms.model.Timestamp
@@ -63,7 +63,7 @@ class TimestampTable : Table<Timestamp>() {
         val timestamps = PathChooser("Choose folder with timestamps or single file", "", "Timestamps").choose(
             JFileChooser.FILES_AND_DIRECTORIES
         )
-        CompetitionController.loadTimestamps(timestamps?.toPath())
+        Controller.loadTimestamps(timestamps?.toPath())
         state = State.Outdated
     }
 }

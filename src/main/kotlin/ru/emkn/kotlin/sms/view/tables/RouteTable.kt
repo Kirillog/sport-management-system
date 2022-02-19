@@ -2,7 +2,7 @@ package ru.emkn.kotlin.sms.view.tables
 
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.emkn.kotlin.sms.ObjectFields
-import ru.emkn.kotlin.sms.controller.CompetitionController
+import ru.emkn.kotlin.sms.controller.Controller
 import ru.emkn.kotlin.sms.controller.Deleter
 import ru.emkn.kotlin.sms.controller.Editor
 import ru.emkn.kotlin.sms.model.Route
@@ -73,7 +73,7 @@ class RouteTable : Table<Route>() {
 
     override val loadAction = {
         val routesFile = PathChooser("Choose routes", ".csv", "Routes").choose()
-        CompetitionController.loadRoutes(routesFile?.toPath())
+        Controller.loadRoutes(routesFile?.toPath())
         state = State.Outdated
     }
 }

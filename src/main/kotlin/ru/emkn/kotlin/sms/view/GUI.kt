@@ -5,8 +5,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import com.sun.nio.sctp.IllegalReceiveException
-import ru.emkn.kotlin.sms.controller.CompetitionController
-import ru.emkn.kotlin.sms.controller.State
+import ru.emkn.kotlin.sms.controller.Controller
 import ru.emkn.kotlin.sms.view.MenuState.*
 import ru.emkn.kotlin.sms.view.creators.*
 import ru.emkn.kotlin.sms.view.tables.*
@@ -64,7 +63,7 @@ class GUI {
     }
 
     fun pushDataBaseState() {
-        when (CompetitionController.getControllerState()) {
+        when (Controller.getControllerState()) {
             ru.emkn.kotlin.sms.controller.State.EMPTY -> State.InitialWindow
             ru.emkn.kotlin.sms.controller.State.CREATED -> pushState(State.EditAnnounceData)
             ru.emkn.kotlin.sms.controller.State.TOSSED -> pushStates(

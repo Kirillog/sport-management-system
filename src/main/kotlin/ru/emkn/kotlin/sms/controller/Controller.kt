@@ -1,5 +1,6 @@
 package ru.emkn.kotlin.sms.controller
 
+import mu.KotlinLogging
 import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -13,6 +14,8 @@ import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.extension
 
+private val logger = KotlinLogging.logger {}
+
 enum class State {
     EMPTY,
     CREATED,
@@ -24,7 +27,7 @@ object StateTable : IntIdTable("state") {
     val state = enumerationByName("state", MAX_TEXT_FIELD_SIZE, State::class)
 }
 
-object CompetitionController {
+object Controller {
 
     var state: State = State.EMPTY
         set(state) {
@@ -57,12 +60,14 @@ object CompetitionController {
 
     fun loadTimestamps(path: Path?) = load(path, State.TOSSED) { loadTimestamps() }
 
-    fun toss() {
-        require(state == State.CREATED)
-        transaction {
-            Competition.toss()
+    //TODO: сделать приватными undoToss и undoResult
+
+    fun undo() {
+        when (state) {
+            State.TOSSED -> undoToss()
+            State.FINISHED -> undoResult()
+            else -> throw IllegalStateException("State must be TOSSED or FINISHED")
         }
-        state = State.TOSSED
     }
 
     fun undoToss() {
@@ -72,14 +77,7 @@ object CompetitionController {
             Competition.toss = Toss()
         }
         state = State.CREATED
-    }
-
-    fun result() {
-        require(state == State.TOSSED)
-        transaction {
-            Competition.calculateResult()
-        }
-        state = State.FINISHED
+        logger.info { "Toss was canceled "}
     }
 
     fun undoResult() {
@@ -89,6 +87,25 @@ object CompetitionController {
             TeamResultTable.deleteAll()
         }
         state = State.TOSSED
+        logger.info { "Result was canceled "}
+    }
+
+    fun toss() {
+        require(state == State.CREATED)
+        transaction {
+            Competition.toss()
+        }
+        state = State.TOSSED
+        logger.info { "Competition tossed" }
+    }
+
+    fun result() {
+        require(state == State.TOSSED)
+        transaction {
+            Competition.calculateResult()
+        }
+        state = State.FINISHED
+        logger.info { "Competition finished" }
     }
 
     fun getLoader(path: Path): Loader {
@@ -106,6 +123,7 @@ object CompetitionController {
         }
     }
 
+    //TODO: разобраться как нам сохранять через getSaver
     fun saveResultsToPath(results: Path) = transaction {
         getSaver(results).saveResults()
     }
@@ -124,6 +142,7 @@ object CompetitionController {
         if (file == null) throw IllegalArgumentException("File was not chosen")
         if (file.exists()) throw IllegalArgumentException("File already exists")
         file.createNewFile()
+        logger.info { "Database created" }
         connectDB(file)
     }
 
@@ -148,5 +167,6 @@ object CompetitionController {
             val query = StateTable.selectAll()
             state = if (query.empty()) State.CREATED else query.first()[StateTable.state]
         }
+        logger.info { "Database connected" }
     }
 }

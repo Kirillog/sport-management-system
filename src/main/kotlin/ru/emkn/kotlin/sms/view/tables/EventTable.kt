@@ -2,7 +2,7 @@ package ru.emkn.kotlin.sms.view.tables
 
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.emkn.kotlin.sms.ObjectFields
-import ru.emkn.kotlin.sms.controller.CompetitionController
+import ru.emkn.kotlin.sms.controller.Controller
 import ru.emkn.kotlin.sms.controller.Editor
 import ru.emkn.kotlin.sms.model.Event
 import ru.emkn.kotlin.sms.view.GUI
@@ -63,7 +63,7 @@ class EventTable : Table<Event>() {
 
     override val loadAction = {
         val eventFile = PathChooser("Choose event", ".csv", "Event").choose()
-        CompetitionController.loadEvent(eventFile?.toPath())
+        Controller.loadEvent(eventFile?.toPath())
         state = State.Outdated
     }
 }

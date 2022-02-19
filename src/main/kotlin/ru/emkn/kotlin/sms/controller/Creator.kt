@@ -107,7 +107,7 @@ object Creator {
                     throw IllegalArgumentException("Cannot find group $groupName")
                 if (!Team.checkByName(teamName))
                     throw IllegalArgumentException("Cannot find team $teamName")
-                if (CompetitionController.state == State.TOSSED) {
+                if (Controller.state == State.TOSSED) {
                     val startTime = convert<LocalTime>(values[ObjectFields.StartTime])
                     Participant.create(name, surname, birthdayYear, groupName, teamName, startTime, grade)
                 } else {

@@ -25,7 +25,7 @@ object Editor {
                     throw IllegalArgumentException("Cannot find group $groupName")
                 if (!Team.checkByName(teamName))
                     throw IllegalArgumentException("Cannot find team $teamName")
-                if (CompetitionController.state >= State.TOSSED) {
+                if (Controller.state >= State.TOSSED) {
                     val startTime = convert<LocalTime>(values[ObjectFields.StartTime])
                     participant.startTime = startTime
                 }

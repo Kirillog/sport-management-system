@@ -2,7 +2,7 @@ package ru.emkn.kotlin.sms.view.tables
 
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.emkn.kotlin.sms.ObjectFields
-import ru.emkn.kotlin.sms.controller.CompetitionController
+import ru.emkn.kotlin.sms.controller.Controller
 import ru.emkn.kotlin.sms.controller.Deleter
 import ru.emkn.kotlin.sms.controller.Editor
 import ru.emkn.kotlin.sms.model.Checkpoint
@@ -52,7 +52,7 @@ class CheckpointTable : Table<Checkpoint>() {
     override val creatingState = GUI.State.CreateCheckpoint
     override val loadAction = {
         val checkpointsFile = PathChooser("Choose checkpoints", ".csv", "Checkpoints").choose()
-        CompetitionController.loadCheckpoints(checkpointsFile?.toPath())
+        Controller.loadCheckpoints(checkpointsFile?.toPath())
         state = State.Outdated
     }
 

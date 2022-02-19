@@ -4,7 +4,7 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.*
 import ru.emkn.kotlin.sms.DB_TABLES
 import ru.emkn.kotlin.sms.FileType
-import ru.emkn.kotlin.sms.controller.CompetitionController
+import ru.emkn.kotlin.sms.controller.Controller
 import ru.emkn.kotlin.sms.controller.State
 import ru.emkn.kotlin.sms.io.FileLoader
 import java.io.File
@@ -140,16 +140,16 @@ internal class FileLoaderTest {
         Generator.generateGroups(initPath)
         Generator.generateApplications(applicationPath)
         disconnect()
-        CompetitionController.createDB(File("./${path}/testDB.mv.db"))
-        CompetitionController.loadEvent(initPath.resolve("event.csv"))
-        CompetitionController.loadCheckpoints(initPath.resolve("checkpoints.csv"))
-        CompetitionController.loadRoutes(initPath.resolve("courses.csv"))
-        CompetitionController.loadGroups(initPath.resolve("classes.csv"))
-        CompetitionController.toss()
-        CompetitionController.saveTossToPath(protocolPath.resolve("toss.csv"))
-        CompetitionController.state = State.EMPTY
+        Controller.createDB(File("./${path}/testDB.mv.db"))
+        Controller.loadEvent(initPath.resolve("event.csv"))
+        Controller.loadCheckpoints(initPath.resolve("checkpoints.csv"))
+        Controller.loadRoutes(initPath.resolve("courses.csv"))
+        Controller.loadGroups(initPath.resolve("classes.csv"))
+        Controller.toss()
+        Controller.saveTossToPath(protocolPath.resolve("toss.csv"))
+        Controller.state = State.EMPTY
         disconnect()
-        CompetitionController.createDB(File("./${path}/testDB.mv.db"))
+        Controller.createDB(File("./${path}/testDB.mv.db"))
         val checkPointsProtocols =
             Generator.generateCheckPointProtocols(competitionPath, checkPointPath).flatMap { it.protocol }
         val checkPoints = loadTransaction(checkPointPath) { loadTimestamps() }

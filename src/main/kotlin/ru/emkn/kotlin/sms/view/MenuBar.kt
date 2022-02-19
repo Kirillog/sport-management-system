@@ -6,7 +6,7 @@ import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyShortcut
 import androidx.compose.ui.window.FrameWindowScope
 import androidx.compose.ui.window.MenuBar
-import ru.emkn.kotlin.sms.controller.CompetitionController
+import ru.emkn.kotlin.sms.controller.Controller
 
 enum class MenuState(val text: String = "") {
     Hided,
@@ -27,11 +27,11 @@ fun drawMenuBar(gui: GUI, frame: FrameWindowScope, bottomBar: BottomAppBar) {
         loadTitle = "select database file",
         createTitle = "choose path for new database",
         loadAction = {
-            CompetitionController.connectDB(it)
+            Controller.connectDB(it)
             gui.pushDataBaseState()
         },
         createAction = {
-            CompetitionController.createDB(it)
+            Controller.createDB(it)
             gui.pushState(GUI.State.EditAnnounceData)
         },
         fileExtension = ".mv.db",
