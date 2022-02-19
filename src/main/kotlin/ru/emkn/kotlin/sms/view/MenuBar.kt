@@ -78,10 +78,8 @@ fun drawMenuBar(gui: GUI, frame: FrameWindowScope, bottomBar: BottomAppBar) {
                 "Rollback",
                 onClick = {
                     when (text) {
-                        "Result" ->
-                            StateSwitcher.undoToss(gui, bottomBar)
-                        "Finished" ->
-                            StateSwitcher.undoResulted(gui, bottomBar)
+                        "Result", "Finished" ->
+                            StateSwitcher.undo(gui, bottomBar)
                         else ->
                             throw IllegalStateException("Wrong menu state")
                     }

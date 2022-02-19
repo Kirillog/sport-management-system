@@ -47,13 +47,6 @@ object StateSwitcher {
         gui.pushState(GUI.State.EditRuntimeDump)
     }
 
-    fun undoToss(gui: GUI, bottomBar: BottomAppBar) {
-        Controller.undoToss()
-        setUnTossed(gui)
-        bottomBar.setMessage("Rollback")
-        gui.popState()
-    }
-
     fun doResulted(gui: GUI, bottomBar: BottomAppBar) {
         Controller.result()
         setResulted(gui)
@@ -61,8 +54,8 @@ object StateSwitcher {
         gui.pushState(GUI.State.ShowResults)
     }
 
-    fun undoResulted(gui: GUI, bottomBar: BottomAppBar) {
-        Controller.undoResult()
+    fun undo(gui: GUI, bottomBar: BottomAppBar) {
+        Controller.undo()
         setUnResulted(gui)
         bottomBar.setMessage("Rollback")
         gui.popState()

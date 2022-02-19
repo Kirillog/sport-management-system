@@ -60,8 +60,6 @@ object Controller {
 
     fun loadTimestamps(path: Path?) = load(path, State.TOSSED) { loadTimestamps() }
 
-    //TODO: сделать приватными undoToss и undoResult
-
     fun undo() {
         when (state) {
             State.TOSSED -> undoToss()
@@ -70,7 +68,7 @@ object Controller {
         }
     }
 
-    fun undoToss() {
+    private fun undoToss() {
         require(state == State.TOSSED)
         transaction {
             TossTable.deleteAll()
@@ -80,7 +78,7 @@ object Controller {
         logger.info { "Toss was canceled "}
     }
 
-    fun undoResult() {
+    private fun undoResult() {
         require(state == State.FINISHED)
         transaction {
             PersonalResultTable.deleteAll()
