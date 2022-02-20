@@ -3,6 +3,7 @@ package ru.emkn.kotlin.sms.controller
 import mu.KotlinLogging
 import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.transactions.TransactionManager
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.emkn.kotlin.sms.*
 import ru.emkn.kotlin.sms.io.FileLoader
@@ -29,13 +30,17 @@ object StateTable : IntIdTable("state") {
 
 object Controller {
 
+    private var database : Database? = null
+
     var state: State = State.EMPTY
         set(state) {
             field = state
-            transaction {
-                StateTable.deleteAll()
-                StateTable.insert {
-                    it[this.state] = state
+            if (state != State.EMPTY) {
+                transaction {
+                    StateTable.deleteAll()
+                    StateTable.insert {
+                        it[this.state] = state
+                    }
                 }
             }
         }
@@ -156,7 +161,7 @@ object Controller {
         } else {
             throw IllegalArgumentException("File should has extension .mv.db")
         }
-        Database.connect("$DB_HEADER:$fileName", driver = DB_DRIVER)
+        database = Database.connect("$DB_HEADER:$fileName", driver = DB_DRIVER)
 
         transaction {
             DB_TABLES.forEach {
@@ -166,5 +171,12 @@ object Controller {
             state = if (query.empty()) State.CREATED else query.first()[StateTable.state]
         }
         logger.info { "Database connected" }
+    }
+
+    fun disconnectDB() {
+        state = State.EMPTY
+        database?.let {
+            TransactionManager.closeAndUnregister(it)
+        }
     }
 }
