@@ -5,7 +5,7 @@ import ru.emkn.kotlin.sms.controller.Controller
 import ru.emkn.kotlin.sms.controller.Deleter
 import ru.emkn.kotlin.sms.controller.Editor
 import ru.emkn.kotlin.sms.model.Timestamp
-import ru.emkn.kotlin.sms.view.GUI
+import ru.emkn.kotlin.sms.view.View
 import ru.emkn.kotlin.sms.view.PathChooser
 import java.time.format.DateTimeFormatter
 import javax.swing.JFileChooser
@@ -37,7 +37,7 @@ class TimestampTable : Table<Timestamp>() {
             comparator = TableComparing.compareByString(ObjectFields.ID),
             getterGenerator = { { it.participant.id.toString() } }
         )
-    ), deleteButton = true)
+    ), iconsBar = true)
 
     inner class TimestampTableRow(private val timestamp: Timestamp) : TableRow() {
 
@@ -57,7 +57,7 @@ class TimestampTable : Table<Timestamp>() {
     override val rows: List<TableRow>
         get() = timestamps.map { TimestampTableRow(it) }
 
-    override val creatingState = GUI.State.CreateTimestamp
+    override val creatingState = View.State.CreateTimestamp
     override val loadAction = {
         val timestamps = PathChooser("Choose folder with timestamps or single file", "", "Timestamps").choose(
             JFileChooser.FILES_AND_DIRECTORIES

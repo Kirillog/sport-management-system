@@ -20,21 +20,20 @@ object CompetitionDataPresenter {
 
 
 @Composable
-fun drawTables(gui: GUI, bottomAppBar: BottomAppBar) {
+fun drawTables(view: View) {
 
-    val eventTable = remember { gui.eventTable }
-    val checkpointTable = remember { gui.checkpointTable }
-    val routeTable = remember { gui.routeTable }
-    val teamTable = remember { gui.teamTable }
-    val groupTable = remember { gui.groupTable }
-    val participantTable = remember { gui.participantsTable }
-    val timestampTable = remember { gui.timestampTable }
+    val eventTable = remember { view.eventTable }
+    val checkpointTable = remember { view.checkpointTable }
+    val routeTable = remember { view.routeTable }
+    val teamTable = remember { view.teamTable }
+    val groupTable = remember { view.groupTable }
+    val participantTable = remember { view.participantsTable }
+    val timestampTable = remember { view.timestampTable }
 
     Column {
         drawAppTopBar()
-        bottomAppBar.setMessage("You should load events -> checkpoints -> routes -> groups -> teams")
         draw(
-                gui, bottomAppBar,
+                view,
                 when (CompetitionDataPresenter.state) {
                     CompetitionDataPresenter.Table.Event -> eventTable
                     CompetitionDataPresenter.Table.Checkpoints -> checkpointTable

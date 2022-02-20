@@ -12,7 +12,7 @@ import ru.emkn.kotlin.sms.view.tables.*
 import java.io.File
 
 
-class GUI {
+class View {
 
     // tables representing displayed data
     val participantsTable = ParticipantsTable()
@@ -67,17 +67,17 @@ class GUI {
             ru.emkn.kotlin.sms.controller.State.EMPTY -> State.InitialWindow
             ru.emkn.kotlin.sms.controller.State.CREATED -> pushState(State.EditAnnounceData)
             ru.emkn.kotlin.sms.controller.State.TOSSED -> pushStates(
-                    listOf(
-                            State.EditAnnounceData,
-                            State.EditRuntimeDump
-                    )
+                listOf(
+                    State.EditAnnounceData,
+                    State.EditRuntimeDump
+                )
             )
             ru.emkn.kotlin.sms.controller.State.FINISHED -> pushStates(
-                    listOf(
-                            State.EditAnnounceData,
-                            State.EditRuntimeDump,
-                            State.ShowResults
-                    )
+                listOf(
+                    State.EditAnnounceData,
+                    State.EditRuntimeDump,
+                    State.ShowResults
+                )
             )
         }
     }
@@ -86,52 +86,53 @@ class GUI {
 fun mainContent() {
     application {
         Window(onCloseRequest = ::exitApplication, title = "Sport Management System") {
-            val gui = remember { GUI() }
-            val bottomBar = remember { BottomAppBar() }
-            drawMenuBar(gui, this, bottomBar)
-            when (gui.state.value) {
-                GUI.State.InitialWindow -> drawInvitationMessage(bottomBar)
-                GUI.State.EditAnnounceData -> {
-                    StateSwitcher.setUnTossed(gui)
-                    drawTables(gui, bottomBar)
+            val view = remember { View() }
+            drawMenuBar(view, this)
+            when (view.state.value) {
+                View.State.InitialWindow -> drawInvitationMessage()
+                View.State.EditAnnounceData -> {
+                    StateSwitcher.setUnTossed(view)
+                    drawTables(view)
+                    BottomAppBar.setMessage("You should load events -> checkpoints -> routes -> groups -> teams, then Navigate -> Toss")
                 }
-                GUI.State.ShowResults -> {
-                    StateSwitcher.setResulted(gui)
-                    drawTables(gui, bottomBar)
+                View.State.ShowResults -> {
+                    StateSwitcher.setResulted(view)
+                    drawTables(view)
+                    BottomAppBar.setMessage("All done!")
                 }
-                GUI.State.CreateParticipant -> draw(gui, bottomBar, ParticipantCreator())
-                GUI.State.CreateCheckpoint -> draw(gui, bottomBar, CheckpointCreator())
-                GUI.State.CreateRoute -> draw(gui, bottomBar, RoutesCreator())
-                GUI.State.CreateEvent -> draw(gui, bottomBar, EventCreator())
-                GUI.State.CreateTimestamp -> draw(gui, bottomBar, TimestampCreator())
-                GUI.State.CreateTeam -> draw(gui, bottomBar, TeamCreator())
-                GUI.State.EditRuntimeDump -> {
-                    StateSwitcher.setTossed(gui)
-                    StateSwitcher.setUnResulted(gui)
-                    drawTables(gui, bottomBar)
+                View.State.CreateParticipant -> draw(view, ParticipantCreator())
+                View.State.CreateCheckpoint -> draw(view, CheckpointCreator())
+                View.State.CreateRoute -> draw(view, RoutesCreator())
+                View.State.CreateEvent -> draw(view, EventCreator())
+                View.State.CreateTimestamp -> draw(view, TimestampCreator())
+                View.State.CreateTeam -> draw(view, TeamCreator())
+                View.State.EditRuntimeDump -> {
+                    StateSwitcher.setTossed(view)
+                    StateSwitcher.setUnResulted(view)
+                    drawTables(view)
+                    BottomAppBar.setMessage("You should load timestamps, then Navigate -> Result")
                 }
                 else -> throw IllegalReceiveException("Forbidden state of GUI")
             }
-            draw(bottomBar)
+            drawBottomAppBar()
         }
     }
 }
 
 fun chooseFileAndProcess(
-        bottomAppBar: BottomAppBar,
-        chooserTitle: String,
-        chooserFileExtension: String,
-        chooserFileDescription: String,
-        action: (File?) -> Unit
+    chooserTitle: String,
+    chooserFileExtension: String,
+    chooserFileDescription: String,
+    action: (File?) -> Unit
 ) {
     val file = PathChooser(chooserTitle, chooserFileExtension, chooserFileDescription).choose()
     try {
         action(file)
     } catch (e: Exception) {
-        bottomAppBar.setMessage(e.message ?: "Undefined error")
+        BottomAppBar.setMessage(e.message ?: "Undefined error")
     }
 }
 
-private fun drawInvitationMessage(bottomAppBar: BottomAppBar) {
-    bottomAppBar.setMessage("You should to load or create database to see something")
+private fun drawInvitationMessage() {
+    BottomAppBar.setMessage("You should to load or create database to see something")
 }

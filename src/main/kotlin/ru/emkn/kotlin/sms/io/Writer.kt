@@ -56,7 +56,7 @@ class Writer(private val file: File, val filetype: FileType) {
         this.add(table.header.visibleColumns.map {it.title})
         table.sortedFilteredRows.forEach { row ->
             table.header.visibleColumns.map { visibleColumn ->
-                row.cells[visibleColumn.field]?.getText?.let { it() } ?: throw IllegalStateException("Broken table")
+                row.cells[visibleColumn.field]?.getText ?: throw IllegalStateException("Broken table")
             }.also { data ->
                 this.add(data)
             }

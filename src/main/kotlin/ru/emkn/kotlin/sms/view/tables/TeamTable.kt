@@ -5,7 +5,7 @@ import ru.emkn.kotlin.sms.controller.Controller
 import ru.emkn.kotlin.sms.controller.Deleter
 import ru.emkn.kotlin.sms.controller.Editor
 import ru.emkn.kotlin.sms.model.Team
-import ru.emkn.kotlin.sms.view.GUI
+import ru.emkn.kotlin.sms.view.View
 import ru.emkn.kotlin.sms.view.PathChooser
 import javax.swing.JFileChooser
 
@@ -29,7 +29,7 @@ class TeamTable : Table<Team>() {
                             getterGenerator = { { it.score.toString() } }
                     )
             ),
-            deleteButton = true
+            iconsBar = true
     )
 
     inner class TeamTableRow(private val team: Team) : TableRow() {
@@ -46,7 +46,7 @@ class TeamTable : Table<Team>() {
         }
     }
 
-    override val creatingState = GUI.State.CreateTeam
+    override val creatingState = View.State.CreateTeam
 
     override val rows: List<TableRow>
         get() = team.map { TeamTableRow(it) }

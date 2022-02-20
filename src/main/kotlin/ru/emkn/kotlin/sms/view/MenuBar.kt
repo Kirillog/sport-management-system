@@ -19,13 +19,12 @@ enum class MenuState(val text: String = "") {
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun drawMenuBar(gui: GUI, frame: FrameWindowScope, bottomBar: BottomAppBar) {
+fun drawMenuBar(gui: View, frame: FrameWindowScope) {
     val menuState = gui.state.value.menuState
     frame.MenuBar {
         Menu("Database", mnemonic = 'D') {
             Item("Load", onClick = {
                 chooseFileAndProcess(
-                        bottomBar,
                         "select database file",
                         ".mv.db",
                         "Database"
@@ -36,13 +35,12 @@ fun drawMenuBar(gui: GUI, frame: FrameWindowScope, bottomBar: BottomAppBar) {
             }, shortcut = KeyShortcut(Key.L, ctrl = true))
             Item("Create", onClick = {
                 chooseFileAndProcess(
-                        bottomBar,
                         "choose path for new database",
                         ".mv.db",
                         "Database"
                 ) {
                     Controller.createDB(it)
-                    gui.pushState(GUI.State.EditAnnounceData)
+                    gui.pushState(View.State.EditAnnounceData)
                 }
             }, shortcut = KeyShortcut(Key.N, ctrl = true))
         }
@@ -52,9 +50,9 @@ fun drawMenuBar(gui: GUI, frame: FrameWindowScope, bottomBar: BottomAppBar) {
                     menuState.text, onClick = {
                 when (menuState) {
                     MenuState.Preparing ->
-                        StateSwitcher.doToss(gui, bottomBar)
+                        StateSwitcher.doToss(gui)
                     MenuState.Tossed ->
-                        StateSwitcher.doResulted(gui, bottomBar)
+                        StateSwitcher.doResulted(gui)
                     else ->
                         throw IllegalStateException("Wrong menu state")
                 }
@@ -66,7 +64,7 @@ fun drawMenuBar(gui: GUI, frame: FrameWindowScope, bottomBar: BottomAppBar) {
                     onClick = {
                         when (menuState) {
                             MenuState.Tossed, MenuState.Result ->
-                                StateSwitcher.undo(gui, bottomBar)
+                                StateSwitcher.undo(gui)
                             else ->
                                 throw IllegalStateException("Wrong menu state")
                         }

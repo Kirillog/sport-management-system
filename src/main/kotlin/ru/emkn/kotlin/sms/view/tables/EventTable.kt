@@ -4,7 +4,7 @@ import ru.emkn.kotlin.sms.ObjectFields
 import ru.emkn.kotlin.sms.controller.Controller
 import ru.emkn.kotlin.sms.controller.Editor
 import ru.emkn.kotlin.sms.model.Event
-import ru.emkn.kotlin.sms.view.GUI
+import ru.emkn.kotlin.sms.view.View
 import ru.emkn.kotlin.sms.view.PathChooser
 import java.time.format.DateTimeFormatter
 
@@ -36,7 +36,7 @@ class EventTable : Table<Event>() {
                 }
             )
         ),
-        deleteButton = false,
+        iconsBar = false,
         filtering = false
     )
 
@@ -50,10 +50,10 @@ class EventTable : Table<Event>() {
         }
     }
 
-    override val addButton: Boolean
+    override var addButton: Boolean = true
         get() = sortedFilteredRows.isEmpty()
 
-    override val creatingState: GUI.State = GUI.State.CreateEvent
+    override val creatingState: View.State = View.State.CreateEvent
 
     override val rows: List<TableRow>
         get() = event.map { EventTableRow(it) }

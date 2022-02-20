@@ -5,7 +5,7 @@ import ru.emkn.kotlin.sms.controller.Controller
 import ru.emkn.kotlin.sms.controller.Deleter
 import ru.emkn.kotlin.sms.controller.Editor
 import ru.emkn.kotlin.sms.model.Group
-import ru.emkn.kotlin.sms.view.GUI
+import ru.emkn.kotlin.sms.view.View
 import ru.emkn.kotlin.sms.view.PathChooser
 
 class GroupTable : Table<Group>() {
@@ -36,7 +36,7 @@ class GroupTable : Table<Group>() {
                             getterGenerator = { { it.route.name } }
                     )
             ),
-            deleteButton = true
+            iconsBar = true
     )
 
     inner class GroupTableRow(private val group: Group) : TableRow() {
@@ -53,7 +53,7 @@ class GroupTable : Table<Group>() {
         }
     }
 
-    override val creatingState = GUI.State.CreateGroup
+    override val creatingState = View.State.CreateGroup
 
     override val rows: List<TableRow>
         get() = group.map { GroupTableRow(it) }

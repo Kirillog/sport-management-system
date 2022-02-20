@@ -5,7 +5,7 @@ import ru.emkn.kotlin.sms.controller.Controller
 import ru.emkn.kotlin.sms.controller.Deleter
 import ru.emkn.kotlin.sms.controller.Editor
 import ru.emkn.kotlin.sms.model.Route
-import ru.emkn.kotlin.sms.view.GUI
+import ru.emkn.kotlin.sms.view.View
 import ru.emkn.kotlin.sms.view.PathChooser
 
 class RouteTable : Table<Route>() {
@@ -46,7 +46,7 @@ class RouteTable : Table<Route>() {
                 }
             }
         )
-    ), deleteButton = true)
+    ), iconsBar = true)
 
     inner class RouteTableRow(private val route: Route) : TableRow() {
         override val cells = header.makeTableCells(route, ::saveChanges)
@@ -68,7 +68,7 @@ class RouteTable : Table<Route>() {
     override val rows: List<TableRow>
         get() = routes.map { RouteTableRow(it) }
 
-    override val creatingState = GUI.State.CreateRoute
+    override val creatingState = View.State.CreateRoute
 
     override val loadAction = {
         val routesFile = PathChooser("Choose routes", ".csv", "Routes").choose()

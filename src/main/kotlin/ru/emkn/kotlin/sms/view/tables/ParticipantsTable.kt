@@ -7,7 +7,7 @@ import ru.emkn.kotlin.sms.controller.Editor
 import ru.emkn.kotlin.sms.model.*
 import ru.emkn.kotlin.sms.model.GroupTable
 import ru.emkn.kotlin.sms.model.TeamTable
-import ru.emkn.kotlin.sms.view.GUI
+import ru.emkn.kotlin.sms.view.View
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
@@ -149,7 +149,7 @@ class ParticipantsTable : Table<ParticipantPrint>() {
                     comparator = TableComparing.compareByInt(ObjectFields.DeltaFromLeader),
                     getterGenerator = { { it.deltaFromLeader.toString() } }
             )
-    ), deleteButton = true)
+    ), iconsBar = true)
 
     inner class ParticipantTableRow(private val participant: ParticipantPrint) : TableRow() {
 
@@ -170,6 +170,9 @@ class ParticipantsTable : Table<ParticipantPrint>() {
     override val rows
         get() = participants.map { ParticipantTableRow(it) }
 
-    override val creatingState = GUI.State.CreateParticipant
+    override val creatingState = View.State.CreateParticipant
     override var loadButton = false
+        get() {
+            return false
+        }
 }

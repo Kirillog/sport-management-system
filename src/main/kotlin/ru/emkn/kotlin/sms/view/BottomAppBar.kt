@@ -9,11 +9,12 @@ import androidx.compose.material.Text
 import androidx.compose.material.primarySurface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
-class BottomAppBar {
+object BottomAppBar {
 
 
     var message = mutableStateOf("")
@@ -22,20 +23,19 @@ class BottomAppBar {
         message.value = newMessage
     }
 
-    companion object {
-        val height = 50.dp
-    }
+    val height = 50.dp
 
 }
 
 @Composable
-fun draw(bottomBar: BottomAppBar) {
+fun drawBottomAppBar() {
+    val message = remember { BottomAppBar.message }
     Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.fillMaxHeight()) {
         BottomAppBar(
                 modifier = Modifier.height(BottomAppBar.height),
                 backgroundColor = MaterialTheme.colors.primarySurface
         ) {
-            Text(bottomBar.message.value)
+            Text(message.value)
         }
     }
 }

@@ -5,60 +5,70 @@ import ru.emkn.kotlin.sms.controller.Controller
 
 object StateSwitcher {
 
-    fun setTossed(gui: GUI) {
-        gui.tables.forEach {
+    fun setTossed(view: View) {
+        view.tables.forEach {
             it.header.setReadOnly(true)
+            it.loadButton = false
+            it.addButton = false
         }
-        gui.participantsTable.header.setVisibility(ObjectFields.StartTime, true)
+        view.timestampTable.loadButton = true
+        view.timestampTable.addButton = true
+        view.participantsTable.header.setVisibility(ObjectFields.StartTime, true)
         AppTopBar.buttons.first { it.text == "Timestamps" }.visible = true
     }
 
-    fun setResulted(gui: GUI) {
-        gui.tables.forEach {
+    fun setResulted(view: View) {
+        view.tables.forEach {
+            it.loadButton = false
+            it.addButton = false
             it.header.setVisibility(true)
         }
-        gui.timestampTable.header.setReadOnly(true)
+        view.timestampTable.header.setReadOnly(true)
     }
 
-    fun setUnResulted(gui: GUI) {
-        gui.teamTable.header.setVisibility(ObjectFields.ResultType, false)
-        gui.participantsTable.header.setVisibility(ObjectFields.FinishTime, false)
-        gui.participantsTable.header.setVisibility(ObjectFields.Penalty, false)
-        gui.participantsTable.header.setVisibility(ObjectFields.PlaceInGroup, false)
-        gui.participantsTable.header.setVisibility(ObjectFields.DeltaFromLeader, false)
-        gui.timestampTable.header.setReadOnly(false)
+    fun setUnResulted(view: View) {
+        view.teamTable.header.setVisibility(ObjectFields.ResultType, false)
+        view.participantsTable.header.setVisibility(ObjectFields.FinishTime, false)
+        view.participantsTable.header.setVisibility(ObjectFields.Penalty, false)
+        view.participantsTable.header.setVisibility(ObjectFields.PlaceInGroup, false)
+        view.participantsTable.header.setVisibility(ObjectFields.DeltaFromLeader, false)
+        view.timestampTable.header.setReadOnly(false)
+        view.timestampTable.loadButton = true
+        view.timestampTable.addButton = true
     }
 
-    fun setUnTossed(gui: GUI) {
+    fun setUnTossed(view: View) {
         if (CompetitionDataPresenter.state == CompetitionDataPresenter.Table.Timestamps)
             CompetitionDataPresenter.state = CompetitionDataPresenter.Table.Event
-        gui.tables.forEach {
+        view.tables.forEach {
             it.header.setReadOnly(false)
+            it.loadButton = true
+            it.addButton = true
         }
-        gui.participantsTable.header.setVisibility(ObjectFields.StartTime, false)
+        view.participantsTable.header.setVisibility(ObjectFields.StartTime, false)
         AppTopBar.buttons.first { it.text == "Timestamps" }.visible = false
 
     }
 
-    fun doToss(gui: GUI, bottomBar: BottomAppBar) {
+    fun doToss(view: View) {
         Controller.toss()
-        setTossed(gui)
-        bottomBar.setMessage("Tossed completed")
-        gui.pushState(GUI.State.EditRuntimeDump)
+        setTossed(view)
+        BottomAppBar.setMessage("Tossed completed")
+        view.pushState(View.State.EditRuntimeDump)
     }
 
-    fun doResulted(gui: GUI, bottomBar: BottomAppBar) {
+    fun doResulted(view: View) {
         Controller.result()
-        setResulted(gui)
-        bottomBar.setMessage("Results calculated")
-        gui.pushState(GUI.State.ShowResults)
+        setResulted(view)
+        BottomAppBar.setMessage("Results calculated")
+        view.pushState(View.State.ShowResults)
     }
 
-    fun undo(gui: GUI, bottomBar: BottomAppBar) {
+    fun undo(view: View) {
         Controller.undo()
-        setUnResulted(gui)
-        bottomBar.setMessage("Rollback")
-        gui.popState()
+        setUnResulted(view)
+        BottomAppBar.setMessage("Rollback")
+        view.popState()
     }
 
 }

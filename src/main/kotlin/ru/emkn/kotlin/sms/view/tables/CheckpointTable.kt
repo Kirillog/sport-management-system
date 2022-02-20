@@ -5,7 +5,7 @@ import ru.emkn.kotlin.sms.controller.Controller
 import ru.emkn.kotlin.sms.controller.Deleter
 import ru.emkn.kotlin.sms.controller.Editor
 import ru.emkn.kotlin.sms.model.Checkpoint
-import ru.emkn.kotlin.sms.view.GUI
+import ru.emkn.kotlin.sms.view.View
 import ru.emkn.kotlin.sms.view.PathChooser
 
 class CheckpointTable : Table<Checkpoint>() {
@@ -28,7 +28,7 @@ class CheckpointTable : Table<Checkpoint>() {
                     comparator = TableComparing.compareByInt(ObjectFields.Weight),
                     getterGenerator = { { it.weight.toString() } }
             )
-    ), deleteButton = true)
+    ), iconsBar = true)
 
     inner class CheckpointTableRow(private val checkpoint: Checkpoint) : TableRow() {
 
@@ -46,7 +46,7 @@ class CheckpointTable : Table<Checkpoint>() {
         }
     }
 
-    override val creatingState = GUI.State.CreateCheckpoint
+    override val creatingState = View.State.CreateCheckpoint
     override val loadAction = {
         val checkpointsFile = PathChooser("Choose checkpoints", ".csv", "Checkpoints").choose()
         Controller.loadCheckpoints(checkpointsFile?.toPath())
