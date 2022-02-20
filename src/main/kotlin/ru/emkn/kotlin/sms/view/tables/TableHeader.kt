@@ -14,6 +14,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineScope
@@ -34,7 +35,7 @@ data class TableColumn<T>(
     var filterString = mutableStateOf("")
 }
 
-class TableHeader<T>(val columns: List<TableColumn<T>>, val iconsBar: Boolean, val filtering: Boolean = true) {
+class TableHeader<T>(private val columns: List<TableColumn<T>>, val iconsBar: Boolean, val filtering: Boolean = true) {
 
     var iconsBarSize = mutableStateOf(IntSize(0, 0))
 
@@ -85,7 +86,7 @@ class TableHeader<T>(val columns: List<TableColumn<T>>, val iconsBar: Boolean, v
 }
 
 @Composable
-fun <T> draw(tableHeader: TableHeader<T>, lazyListState: LazyListState, coroutineScope: CoroutineScope) {
+fun <T> TableHeader(tableHeader: TableHeader<T>, lazyListState: LazyListState, coroutineScope: CoroutineScope) {
     var rowSize by remember { mutableStateOf(IntSize.Zero) }
     Row(
         modifier = Modifier
@@ -95,77 +96,85 @@ fun <T> draw(tableHeader: TableHeader<T>, lazyListState: LazyListState, coroutin
             },
         horizontalArrangement = Arrangement.Start
     ) {
-        // header and filters
         val columnsCount = tableHeader.visibleColumns.size
         val columnWidth = ((rowSize.width - tableHeader.iconsBarSize.value.width) / columnsCount).dp
 
         tableHeader.visibleColumns.forEachIndexed { index, column ->
-            Column(
-                modifier = Modifier
-                    .width(columnWidth)
-            ) {
-                // header
-                TextButton(
-                    onClick = {
-                        if (tableHeader.orderByColumn.value == index)
-                            tableHeader.reversedOrder.value = !tableHeader.reversedOrder.value
-                        tableHeader.orderByColumn.value = index
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .border(BorderStroke(1.dp, Color.Black))
-                        .background(Color.LightGray)
-                ) {
-                    Text(column.title)
-                }
-                // filter fields
-                if (tableHeader.filtering) {
-                    OutlinedTextField(
-                        value = column.filterString.value,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .border(BorderStroke(1.dp, Color.Black)),
-                        onValueChange = {
-                            column.filterString.value = it.replace("\n", "").take(MAX_TEXT_FIELD_SIZE)
-                        },
-                        placeholder = {
-                            Icon(
-                                imageVector = Icons.Filled.Search,
-                                contentDescription = "Search",
-                                tint = Color.Black
-                            )
-                        },
-                    )
-                }
-            }
+            ColumnTitleWithFilter(tableHeader, column, columnWidth, index)
         }
-        if (tableHeader.iconsBar)
-            Column(modifier = Modifier.width(tableHeader.iconsBarSize.value.width.dp)) {
-                IconButton(onClick = {
-                    coroutineScope.launch {
-                        lazyListState.animateScrollToItem(
-                            lazyListState.firstVisibleItemIndex - 1,
-                            0
-                        )
-                    }
-                }, enabled = lazyListState.firstVisibleItemIndex > 0) {
-                    Icon(imageVector = Icons.Filled.KeyboardArrowUp, contentDescription = "Up", tint = Color.Black)
-                }
-                IconButton(
-                    onClick = {
-                        coroutineScope.launch {
-                            lazyListState.animateScrollToItem(
-                                lazyListState.firstVisibleItemIndex + 1,
-                                0
-                            )
-                        }
-                    },
-                    enabled = lazyListState.firstVisibleItemIndex < lazyListState.layoutInfo.totalItemsCount - lazyListState.layoutInfo.visibleItemsInfo.size
-                ) {
-                    Icon(imageVector = Icons.Filled.KeyboardArrowDown, contentDescription = "Down", tint = Color.Black)
-                }
-            }
 
+        if (tableHeader.iconsBar)
+            ScrollButtons(tableHeader, lazyListState, coroutineScope)
     }
 }
 
+@Composable
+fun<T> ColumnTitleWithFilter(tableHeader: TableHeader<T>, column : TableColumn<T>, columnWidth : Dp, columnIndex : Int) {
+    Column(
+        modifier = Modifier
+            .width(columnWidth)
+    ) {
+        // title
+        TextButton(
+            onClick = {
+                if (tableHeader.orderByColumn.value == columnIndex)
+                    tableHeader.reversedOrder.value = !tableHeader.reversedOrder.value
+                tableHeader.orderByColumn.value = columnIndex
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .border(BorderStroke(1.dp, Color.Black))
+                .background(Color.LightGray)
+        ) {
+            Text(column.title)
+        }
+        // filter field
+        if (tableHeader.filtering) {
+            OutlinedTextField(
+                value = column.filterString.value,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .border(BorderStroke(1.dp, Color.Black)),
+                onValueChange = {
+                    column.filterString.value = it.replace("\n", "").take(MAX_TEXT_FIELD_SIZE)
+                },
+                placeholder = {
+                    Icon(
+                        imageVector = Icons.Filled.Search,
+                        contentDescription = "Search",
+                        tint = Color.Black
+                    )
+                },
+            )
+        }
+    }
+}
+
+@Composable
+fun <T> ScrollButtons(tableHeader : TableHeader<T>, lazyListState : LazyListState, coroutineScope: CoroutineScope) {
+    Column(modifier = Modifier.width(tableHeader.iconsBarSize.value.width.dp)) {
+        IconButton(onClick = {
+            coroutineScope.launch {
+                lazyListState.animateScrollToItem(
+                    lazyListState.firstVisibleItemIndex - 1,
+                    0
+                )
+            }
+        }, enabled = lazyListState.firstVisibleItemIndex > 0) {
+            Icon(imageVector = Icons.Filled.KeyboardArrowUp, contentDescription = "Up", tint = Color.Black)
+        }
+        IconButton(
+            onClick = {
+                coroutineScope.launch {
+                    lazyListState.animateScrollToItem(
+                        lazyListState.firstVisibleItemIndex + 1,
+                        0
+                    )
+                }
+            },
+            enabled = lazyListState.firstVisibleItemIndex < lazyListState.layoutInfo.totalItemsCount - lazyListState.layoutInfo.visibleItemsInfo.size
+        ) {
+            Icon(imageVector = Icons.Filled.KeyboardArrowDown, contentDescription = "Down", tint = Color.Black)
+        }
+    }
+}

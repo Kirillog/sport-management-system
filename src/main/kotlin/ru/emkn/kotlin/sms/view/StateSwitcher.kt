@@ -38,8 +38,8 @@ object StateSwitcher {
     }
 
     fun setUnTossed(view: View) {
-        if (CompetitionDataPresenter.state == CompetitionDataPresenter.Table.Timestamps)
-            CompetitionDataPresenter.state = CompetitionDataPresenter.Table.Event
+        if (TableChooser.state == TableChooser.Table.Timestamps)
+            TableChooser.state = TableChooser.Table.Event
         view.tables.forEach {
             it.header.setReadOnly(false)
             it.loadButton = true
@@ -53,21 +53,21 @@ object StateSwitcher {
     fun doToss(view: View) {
         Controller.toss()
         setTossed(view)
-        BottomAppBar.setMessage("Tossed completed")
+        BottomAppBar += "Tossed completed"
         view.pushState(View.State.EditRuntimeDump)
     }
 
     fun doResulted(view: View) {
         Controller.result()
         setResulted(view)
-        BottomAppBar.setMessage("Results calculated")
+        BottomAppBar += "Results calculated"
         view.pushState(View.State.ShowResults)
     }
 
     fun undo(view: View) {
         Controller.undo()
         setUnResulted(view)
-        BottomAppBar.setMessage("Rollback")
+        BottomAppBar += "Rollback"
         view.popState()
     }
 

@@ -4,7 +4,7 @@ import java.io.File
 import javax.swing.JFileChooser
 import javax.swing.filechooser.FileFilter
 
-class PathChooser(private val title: String, val extension: String, val description: String) {
+class PathChooser(private val title: String, private val extension: String, private val description: String) {
     fun choose(mode: Int = JFileChooser.FILES_ONLY): File? {
         val fileChooser = JFileChooser(File("."))
         fileChooser.isAcceptAllFileFilterUsed = false
@@ -12,7 +12,7 @@ class PathChooser(private val title: String, val extension: String, val descript
         fileChooser.fileSelectionMode = mode
         fileChooser.dialogTitle = title
 
-        val fileFilter = MyFileFilter(extension, "$description (*$extension)")
+        val fileFilter = FileFilter(extension, "$description (*$extension)")
         fileChooser.addChoosableFileFilter(fileFilter)
 
         val result = fileChooser.showOpenDialog(null)
@@ -25,10 +25,23 @@ class PathChooser(private val title: String, val extension: String, val descript
         return null
     }
 
-    fun chooseAndProcess(action: (File?) -> Unit) = action(choose())
 }
 
-class MyFileFilter(var extension: String, private var description: String) : FileFilter() {
+fun chooseFileAndProcess(
+    chooserTitle: String,
+    chooserFileExtension: String,
+    chooserFileDescription: String,
+    action: (File?) -> Unit
+) {
+    val file = PathChooser(chooserTitle, chooserFileExtension, chooserFileDescription).choose()
+    try {
+        action(file)
+    } catch (e: Exception) {
+        BottomAppBar += e.message ?: "Undefined error"
+    }
+}
+
+class FileFilter(var extension: String, private var description: String) : FileFilter() {
 
     override fun accept(file: File?): Boolean {
         if (file != null) {
@@ -40,7 +53,7 @@ class MyFileFilter(var extension: String, private var description: String) : Fil
         return false
     }
 
-    override fun getDescription(): String? {
+    override fun getDescription(): String {
         return description
     }
 }

@@ -2,9 +2,9 @@ package ru.emkn.kotlin.sms.view
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.*
-import ru.emkn.kotlin.sms.view.tables.draw
+import ru.emkn.kotlin.sms.view.tables.Table
 
-object CompetitionDataPresenter {
+object TableChooser {
     enum class Table {
         Event,
         Checkpoints,
@@ -32,17 +32,17 @@ fun drawTables(view: View) {
 
     Column {
         drawAppTopBar()
-        draw(
-                view,
-                when (CompetitionDataPresenter.state) {
-                    CompetitionDataPresenter.Table.Event -> eventTable
-                    CompetitionDataPresenter.Table.Checkpoints -> checkpointTable
-                    CompetitionDataPresenter.Table.Routes -> routeTable
-                    CompetitionDataPresenter.Table.Participants -> participantTable
-                    CompetitionDataPresenter.Table.Teams -> teamTable
-                    CompetitionDataPresenter.Table.Groups -> groupTable
-                    CompetitionDataPresenter.Table.Timestamps -> timestampTable
-                }
+        Table(
+            view,
+            when (TableChooser.state) {
+                TableChooser.Table.Event -> eventTable
+                TableChooser.Table.Checkpoints -> checkpointTable
+                TableChooser.Table.Routes -> routeTable
+                TableChooser.Table.Participants -> participantTable
+                TableChooser.Table.Teams -> teamTable
+                TableChooser.Table.Groups -> groupTable
+                TableChooser.Table.Timestamps -> timestampTable
+            }
         )
     }
 }

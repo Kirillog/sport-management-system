@@ -19,7 +19,6 @@ import ru.emkn.kotlin.sms.maxTextLength
 import ru.emkn.kotlin.sms.view.ActionButton
 import ru.emkn.kotlin.sms.view.BottomAppBar
 import ru.emkn.kotlin.sms.view.View
-import ru.emkn.kotlin.sms.view.draw
 
 data class ItemCreatorInputField(
     val title: String,
@@ -51,7 +50,7 @@ abstract class ItemCreator<T> {
             createAction(input)
             gui.popState()
         } catch (e: Exception) {
-            BottomAppBar.setMessage(e.message ?: "Undefined error")
+            BottomAppBar += e.message ?: "Undefined error"
         }
     }
 
@@ -77,7 +76,7 @@ fun <T> draw(view: View, creator: ItemCreator<T>) {
         for (field in creator.fields) {
             draw(field, columnSize.width.dp)
         }
-        draw(ActionButton("Create") { creator.create(view) })
-        draw(ActionButton("Cancel") { creator.cancel(view) })
+        ActionButton(ActionButton("Create") { creator.create(view) })
+        ActionButton(ActionButton("Cancel") { creator.cancel(view) })
     }
 }

@@ -9,7 +9,6 @@ import ru.emkn.kotlin.sms.controller.Controller
 import ru.emkn.kotlin.sms.view.MenuState.*
 import ru.emkn.kotlin.sms.view.creators.*
 import ru.emkn.kotlin.sms.view.tables.*
-import java.io.File
 
 
 class View {
@@ -89,16 +88,18 @@ fun mainContent() {
             val view = remember { View() }
             drawMenuBar(view, this)
             when (view.state.value) {
-                View.State.InitialWindow -> drawInvitationMessage()
+                View.State.InitialWindow -> {
+                    BottomAppBar += "You should to load or create database to see something"
+                }
                 View.State.EditAnnounceData -> {
                     StateSwitcher.setUnTossed(view)
                     drawTables(view)
-                    BottomAppBar.setMessage("You should load events -> checkpoints -> routes -> groups -> teams, then Navigate -> Toss")
+                    BottomAppBar += "You should load events -> checkpoints -> routes -> groups -> teams, then Navigate -> Toss"
                 }
                 View.State.ShowResults -> {
                     StateSwitcher.setResulted(view)
                     drawTables(view)
-                    BottomAppBar.setMessage("All done!")
+                    BottomAppBar += "All done!"
                 }
                 View.State.CreateParticipant -> draw(view, ParticipantCreator())
                 View.State.CreateCheckpoint -> draw(view, CheckpointCreator())
@@ -110,29 +111,11 @@ fun mainContent() {
                     StateSwitcher.setTossed(view)
                     StateSwitcher.setUnResulted(view)
                     drawTables(view)
-                    BottomAppBar.setMessage("You should load timestamps, then Navigate -> Result")
+                    BottomAppBar += "You should load timestamps, then Navigate -> Result"
                 }
                 else -> throw IllegalReceiveException("Forbidden state of GUI")
             }
             drawBottomAppBar()
         }
     }
-}
-
-fun chooseFileAndProcess(
-    chooserTitle: String,
-    chooserFileExtension: String,
-    chooserFileDescription: String,
-    action: (File?) -> Unit
-) {
-    val file = PathChooser(chooserTitle, chooserFileExtension, chooserFileDescription).choose()
-    try {
-        action(file)
-    } catch (e: Exception) {
-        BottomAppBar.setMessage(e.message ?: "Undefined error")
-    }
-}
-
-private fun drawInvitationMessage() {
-    BottomAppBar.setMessage("You should to load or create database to see something")
 }

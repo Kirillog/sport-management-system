@@ -9,38 +9,38 @@ import androidx.compose.ui.Modifier
 
 object AppTopBar {
     val buttons = listOf(
-            ActionButton("Events") {
-                CompetitionDataPresenter.state = CompetitionDataPresenter.Table.Event
-            },
-            ActionButton("Checkpoints") {
-                CompetitionDataPresenter.state = CompetitionDataPresenter.Table.Checkpoints
-            },
-            ActionButton("Routes") {
-                CompetitionDataPresenter.state = CompetitionDataPresenter.Table.Routes
-            },
-            ActionButton("Participants") {
-                CompetitionDataPresenter.state = CompetitionDataPresenter.Table.Participants
-            },
-            ActionButton("Teams") {
-                CompetitionDataPresenter.state = CompetitionDataPresenter.Table.Teams
-            },
-            ActionButton("Groups") {
-                CompetitionDataPresenter.state = CompetitionDataPresenter.Table.Groups
-            },
-            ActionButton("Timestamps", visible = false) {
-                CompetitionDataPresenter.state = CompetitionDataPresenter.Table.Timestamps
-            }
+        ActionButton("Events") {
+            TableChooser.state = TableChooser.Table.Event
+        },
+        ActionButton("Checkpoints") {
+            TableChooser.state = TableChooser.Table.Checkpoints
+        },
+        ActionButton("Routes") {
+            TableChooser.state = TableChooser.Table.Routes
+        },
+        ActionButton("Participants") {
+            TableChooser.state = TableChooser.Table.Participants
+        },
+        ActionButton("Teams") {
+            TableChooser.state = TableChooser.Table.Teams
+        },
+        ActionButton("Groups") {
+            TableChooser.state = TableChooser.Table.Groups
+        },
+        ActionButton("Timestamps", visible = false) {
+            TableChooser.state = TableChooser.Table.Timestamps
+        }
     )
 }
 
 @Composable
 fun drawAppTopBar() {
     TopAppBar(
-            modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth(),
     ) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
             AppTopBar.buttons.forEach {
-                draw(it)
+                ActionButton(it)
             }
         }
     }

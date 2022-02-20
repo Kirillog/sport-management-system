@@ -16,15 +16,13 @@ import androidx.compose.ui.unit.dp
 
 object BottomAppBar {
 
-
     var message = mutableStateOf("")
-
-    fun setMessage(newMessage: String) {
-        message.value = newMessage
-    }
 
     val height = 50.dp
 
+    operator fun plusAssign(string : String) {
+        message.value = string
+    }
 }
 
 @Composable
@@ -32,8 +30,8 @@ fun drawBottomAppBar() {
     val message = remember { BottomAppBar.message }
     Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.fillMaxHeight()) {
         BottomAppBar(
-                modifier = Modifier.height(BottomAppBar.height),
-                backgroundColor = MaterialTheme.colors.primarySurface
+            modifier = Modifier.height(BottomAppBar.height),
+            backgroundColor = MaterialTheme.colors.primarySurface
         ) {
             Text(message.value)
         }
