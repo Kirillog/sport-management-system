@@ -86,13 +86,13 @@ abstract class Table<T> {
         try {
             loadAction()
         } catch (e: Exception) {
-            BottomAppBar.setMessage(e.message ?: "undefined error")
+            BottomAppBar += e.message ?: "undefined error"
         }
     }
 }
 
 @Composable
-fun <T> draw(tableRow: Table<T>.TableRow, index: Int) {
+fun <T> TableRow(tableRow: Table<T>.TableRow, index: Int) {
     var rowSize by remember { mutableStateOf(IntSize.Zero) }
     val interactionSource = remember { MutableInteractionSource() }
     val isHovered by interactionSource.collectIsHoveredAsState()
@@ -107,16 +107,14 @@ fun <T> draw(tableRow: Table<T>.TableRow, index: Int) {
         horizontalArrangement = Arrangement.Start,
         verticalAlignment = Alignment.CenterVertically
     ) {
-
         val elementsInRow = tableRow.header.visibleColumns.size
-
         val cellWidth = if (tableRow.header.iconsBar)
             ((rowSize.width - tableRow.header.iconsBarSize.value.width) / elementsInRow).dp
         else
             (rowSize.width / elementsInRow).dp
 
         for (columnHeader in tableRow.header.visibleColumns) {
-            draw(
+            TableCell(
                 tableRow.cells[columnHeader.field]
                     ?: throw IllegalStateException("Cell of ${columnHeader.field} not exists"),
                 cellWidth,
@@ -134,9 +132,7 @@ fun <T> draw(tableRow: Table<T>.TableRow, index: Int) {
 }
 
 @Composable
-fun <F> draw(view: View, table: Table<F>) {
-    if (table.state == Table.State.Outdated)
-        table.state = Table.State.Updated
+fun<T> ButtonsBar(view : View, table : Table<T>) {
     Box(modifier = Modifier.border(BorderStroke(1.dp, Color.Black))) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -144,39 +140,50 @@ fun <F> draw(view: View, table: Table<F>) {
         ) {
             val createState = table.creatingState
             if (table.loadButton) {
-                draw(
+                ActionButton(
                     ActionButton("Load") {
                         table.load()
                     }
                 )
             }
             if (createState != null && table.addButton) {
-                draw(
+                ActionButton(
                     ActionButton("Add") {
                         view.pushState(createState)
                     }
                 )
             }
-            draw(
+            ActionButton(
                 ActionButton("Export to csv") {
-                    PathChooser("Save to csv table...", ".csv", "Csv table").choose()?.let { file ->
+                    val file = PathChooser("Save to csv table...", ".csv", "Csv table").choose()
+                    BottomAppBar += if (file != null) {
                         val writer = Writer(file, FileType.CSV)
                         transaction {
                             writer.add(table)
                         }
                         writer.write()
-                        BottomAppBar.setMessage("File was successfully saved to $file")
-                    } ?: BottomAppBar.setMessage("File not selected")
+                        "File was successfully saved to $file"
+                    } else {
+                        "File not selected"
+                    }
                 }
             )
         }
     }
+}
+
+@Composable
+fun <F> Table(view: View, table: Table<F>) {
+    if (table.state == Table.State.Outdated)
+        table.state = Table.State.Updated
     val lazyListState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
-    draw(table.header, lazyListState, coroutineScope)
+
+    ButtonsBar(view, table)
+    TableHeader(table.header, lazyListState, coroutineScope)
     LazyColumn(state = lazyListState) {
         itemsIndexed(table.sortedFilteredRows) { index, model ->
-            draw(model, index)
+            TableRow(model, index)
         }
         item {
             Box(Modifier.height(BottomAppBar.height))

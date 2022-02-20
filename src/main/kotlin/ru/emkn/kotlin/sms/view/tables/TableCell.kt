@@ -19,13 +19,12 @@ import ru.emkn.kotlin.sms.view.BottomAppBar
 
 
 data class TableCell(val getText: String, val saveText: () -> Unit = {}) {
-
     var shownText: MutableState<String> = mutableStateOf(getText)
 }
 
 @Composable
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class)
-fun draw(tableCell: TableCell, width: Dp, readOnly: Boolean) {
+fun TableCell(tableCell: TableCell, width: Dp, readOnly: Boolean) {
     OutlinedTextField(
         tableCell.shownText.value,
         modifier = Modifier
@@ -33,11 +32,11 @@ fun draw(tableCell: TableCell, width: Dp, readOnly: Boolean) {
             .width(width)
             .onPreviewKeyEvent {
                 if (it.type == KeyEventType.KeyDown && it.key == Key.Enter) {
-                    try {
+                    BottomAppBar += try {
                         tableCell.saveText()
-                        BottomAppBar.setMessage("Saved")
+                        "Saved"
                     } catch (e: Exception) {
-                        BottomAppBar.setMessage(e.message ?: "Undefined error")
+                        e.message ?: "Undefined error"
                     }
                 }
                 false
