@@ -4,32 +4,39 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material.Text
-import androidx.compose.material.TextButton
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.emkn.kotlin.sms.MAX_TEXT_FIELD_SIZE
 import ru.emkn.kotlin.sms.ObjectFields
 
 
 data class TableColumn<T>(
-        val title: String,
-        val field: ObjectFields,
-        var visible: Boolean,
-        var readOnly: Boolean,
-        val comparator: Comparator<Table<T>.TableRow>,
-        val getterGenerator: (T) -> (() -> String)
+    val title: String,
+    val field: ObjectFields,
+    var visible: Boolean,
+    var readOnly: Boolean,
+    val comparator: Comparator<Table<T>.TableRow>,
+    val getterGenerator: (T) -> (() -> String)
 ) {
     var filterString = mutableStateOf("")
 }
 
-class TableHeader<T>(val columns: List<TableColumn<T>>, val deleteButton: Boolean, val filtering: Boolean = true) {
+class TableHeader<T>(val columns: List<TableColumn<T>>, val iconsBar: Boolean, val filtering: Boolean = true) {
+
+    var iconsBarSize = mutableStateOf(IntSize(0, 0))
 
     var orderByColumn = mutableStateOf(run {
         val index = columns.indexOfFirst { it.visible }
@@ -44,13 +51,13 @@ class TableHeader<T>(val columns: List<TableColumn<T>>, val deleteButton: Boolea
 
     fun makeTableCells(item: T, saveFunction: () -> Unit): Map<ObjectFields, TableCell> {
         return transaction {
-            columns.filter { it.visible }.associate { it.field to TableCell(it.getterGenerator(item), saveFunction) }
+            columns.filter { it.visible }.associate { it.field to TableCell(it.getterGenerator(item)(), saveFunction) }
         }
     }
 
     fun setVisibility(columnType: ObjectFields, visible: Boolean) {
         val column = columns.firstOrNull { it.field == columnType }
-                ?: throw IllegalStateException("column $columnType doesn't exists")
+            ?: throw IllegalStateException("column $columnType doesn't exists")
         column.visible = visible
     }
 
@@ -61,7 +68,7 @@ class TableHeader<T>(val columns: List<TableColumn<T>>, val deleteButton: Boolea
 
     fun setReadOnly(columnType: ObjectFields, readOnly: Boolean) {
         val column = columns.firstOrNull { it.field == columnType }
-                ?: throw IllegalStateException("column $columnType doesn't exists")
+            ?: throw IllegalStateException("column $columnType doesn't exists")
         column.readOnly = readOnly
     }
 
@@ -78,66 +85,87 @@ class TableHeader<T>(val columns: List<TableColumn<T>>, val deleteButton: Boolea
 }
 
 @Composable
-fun <T> draw(tableHeader: TableHeader<T>) {
+fun <T> draw(tableHeader: TableHeader<T>, lazyListState: LazyListState, coroutineScope: CoroutineScope) {
     var rowSize by remember { mutableStateOf(IntSize.Zero) }
     Row(
-//        modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Start
+        modifier = Modifier
+            .fillMaxWidth()
+            .onSizeChanged {
+                rowSize = it
+            },
+        horizontalArrangement = Arrangement.Start
     ) {
-        // space for delete button
-        if (tableHeader.deleteButton)
-            Box(modifier = Modifier.width(tableDeleteButtonWidth.dp))
         // header and filters
-        Column {
-            val columnsCount = tableHeader.visibleColumns.size
-            val columnWidth = (rowSize.width / columnsCount).dp
-            // filter fields
-            if (tableHeader.filtering) {
-                Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Start
-                ) {
-                    tableHeader.visibleColumns.forEach { column ->
-                        BasicTextField(
-                                value = column.filterString.value,
-                                modifier = Modifier
-                                        .border(BorderStroke(1.dp, Color.Black))
-                                        .width(columnWidth),
-                                onValueChange = {
-                                    column.filterString.value = it.replace("\n", "").take(MAX_TEXT_FIELD_SIZE)
-                                })
-                    }
-                }
-            }
-            // header
-            Row(
-                    modifier = Modifier
-                            .fillMaxWidth()
-                            .onSizeChanged {
-                                rowSize = it
-                            },
-                    horizontalArrangement = Arrangement.Start
+        val columnsCount = tableHeader.visibleColumns.size
+        val columnWidth = ((rowSize.width - tableHeader.iconsBarSize.value.width) / columnsCount).dp
+
+        tableHeader.visibleColumns.forEachIndexed { index, column ->
+            Column(
+                modifier = Modifier
+                    .width(columnWidth)
             ) {
-                tableHeader.columns.forEachIndexed { index, column ->
-                    if (!column.visible)
-                        return@forEachIndexed
-                    TextButton(
-                            onClick = {
-                                if (tableHeader.orderByColumn.value == index)
-                                    tableHeader.reversedOrder.value = !tableHeader.reversedOrder.value
-                                tableHeader.orderByColumn.value = index
-                            },
-                            modifier = Modifier
-                                    .border(BorderStroke(1.dp, Color.Black))
-                                    .width(columnWidth)
-                                    .background(Color.LightGray)
-                    ) {
-                        Text(column.title)
-                    }
+                // header
+                TextButton(
+                    onClick = {
+                        if (tableHeader.orderByColumn.value == index)
+                            tableHeader.reversedOrder.value = !tableHeader.reversedOrder.value
+                        tableHeader.orderByColumn.value = index
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(BorderStroke(1.dp, Color.Black))
+                        .background(Color.LightGray)
+                ) {
+                    Text(column.title)
+                }
+                // filter fields
+                if (tableHeader.filtering) {
+                    OutlinedTextField(
+                        value = column.filterString.value,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .border(BorderStroke(1.dp, Color.Black)),
+                        onValueChange = {
+                            column.filterString.value = it.replace("\n", "").take(MAX_TEXT_FIELD_SIZE)
+                        },
+                        placeholder = {
+                            Icon(
+                                imageVector = Icons.Filled.Search,
+                                contentDescription = "Search",
+                                tint = Color.Black
+                            )
+                        },
+                    )
                 }
             }
         }
+        if (tableHeader.iconsBar)
+            Column(modifier = Modifier.width(tableHeader.iconsBarSize.value.width.dp)) {
+                IconButton(onClick = {
+                    coroutineScope.launch {
+                        lazyListState.animateScrollToItem(
+                            lazyListState.firstVisibleItemIndex - 1,
+                            0
+                        )
+                    }
+                }, enabled = lazyListState.firstVisibleItemIndex > 0) {
+                    Icon(imageVector = Icons.Filled.KeyboardArrowUp, contentDescription = "Up", tint = Color.Black)
+                }
+                IconButton(
+                    onClick = {
+                        coroutineScope.launch {
+                            lazyListState.animateScrollToItem(
+                                lazyListState.firstVisibleItemIndex + 1,
+                                0
+                            )
+                        }
+                    },
+                    enabled = lazyListState.firstVisibleItemIndex < lazyListState.layoutInfo.totalItemsCount - lazyListState.layoutInfo.visibleItemsInfo.size
+                ) {
+                    Icon(imageVector = Icons.Filled.KeyboardArrowDown, contentDescription = "Down", tint = Color.Black)
+                }
+            }
+
     }
-
-
 }
+
