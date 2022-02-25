@@ -72,7 +72,7 @@ internal class FileLoaderTest {
     fun formCoursesListTest() {
         val currentPath = init()
         val generatedCourses = Generator.generateCourses(currentPath)
-        val courses = loadTransaction(currentPath.resolve("courses.csv")) { loadRoutes() }
+        val courses = loadTransaction(currentPath.resolve("routes.csv")) { loadRoutes() }
         transaction {
             assertEquals(generatedCourses.toSet(), courses)
         }
@@ -83,7 +83,7 @@ internal class FileLoaderTest {
     fun formEmptyGroupsTest() {
         val currentPath = init()
         val generatedGroups = Generator.generateGroups(currentPath)
-        val groups = loadTransaction(currentPath.resolve("classes.csv")) { loadGroups() }
+        val groups = loadTransaction(currentPath.resolve("groups.csv")) { loadGroups() }
         transaction {
             assertEquals(generatedGroups.toSet(), groups)
         }
@@ -96,8 +96,8 @@ internal class FileLoaderTest {
         val currentPath = init("test/input")
         val applicationPath = init("test/applications")
         val generatedGroups = Generator.generateGroups(currentPath)
-        val generatedTeams = Generator.generateApplications(applicationPath, 10, 15)
-        val groups = loadTransaction(currentPath.resolve("classes.csv")) { loadGroups() }
+        Generator.generateApplications(applicationPath, 10, 15)
+        val groups = loadTransaction(currentPath.resolve("groups.csv")) { loadGroups() }
         transaction {
             assertEquals(generatedGroups.toSet(), groups)
         }
@@ -109,7 +109,7 @@ internal class FileLoaderTest {
         val dir = init("test/")
         val currentPath = init("test/applications")
         val groupsPath = init("test/input")
-        val generatedGroups = Generator.generateGroups(groupsPath)
+        Generator.generateGroups(groupsPath)
         val generatedTeams = Generator.generateApplications(currentPath, 10, 15)
         val teams = loadTransaction(currentPath) { loadTeams() }
         transaction {
@@ -143,8 +143,9 @@ internal class FileLoaderTest {
         Controller.createDB(File("./${path}/testDB.mv.db"))
         Controller.loadEvent(initPath.resolve("event.csv"))
         Controller.loadCheckpoints(initPath.resolve("checkpoints.csv"))
-        Controller.loadRoutes(initPath.resolve("courses.csv"))
-        Controller.loadGroups(initPath.resolve("classes.csv"))
+        Controller.loadRoutes(initPath.resolve("routes.csv"))
+        Controller.loadGroups(initPath.resolve("groups.csv"))
+        Controller.loadTeams(applicationPath)
         Controller.toss()
         Controller.saveTossToPath(protocolPath.resolve("toss.csv"))
         Controller.state = State.EMPTY
