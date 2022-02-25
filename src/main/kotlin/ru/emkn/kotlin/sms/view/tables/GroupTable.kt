@@ -5,8 +5,8 @@ import ru.emkn.kotlin.sms.controller.Controller
 import ru.emkn.kotlin.sms.controller.Deleter
 import ru.emkn.kotlin.sms.controller.Editor
 import ru.emkn.kotlin.sms.model.Group
-import ru.emkn.kotlin.sms.view.View
 import ru.emkn.kotlin.sms.view.PathChooser
+import ru.emkn.kotlin.sms.view.View
 
 class GroupTable : Table<Group>() {
 
@@ -16,27 +16,27 @@ class GroupTable : Table<Group>() {
         }
 
     override val header = TableHeader<Group>(
-            listOf(
-                    TableColumn(
-                            "Name",
-                            ObjectFields.Name, visible = true, readOnly = false,
-                            comparator = TableComparing.compareByString(ObjectFields.Name),
-                            getterGenerator = { { it.name } }
-                    ),
-                    TableColumn(
-                            "Result type",
-                            ObjectFields.ResultType, visible = true, readOnly = false,
-                            comparator = TableComparing.compareByString(ObjectFields.ResultType),
-                            getterGenerator = { { it.personalResult.toString() } }
-                    ),
-                    TableColumn(
-                            "Route name",
-                            ObjectFields.RouteName, visible = true, readOnly = false,
-                            comparator = TableComparing.compareByString(ObjectFields.RouteName),
-                            getterGenerator = { { it.route.name } }
-                    )
+        listOf(
+            TableColumn(
+                "Name",
+                ObjectFields.Name, visible = true, readOnly = false,
+                comparator = TableComparing.compareByString(ObjectFields.Name),
+                getterGenerator = { { it.name } }
             ),
-            iconsBar = true
+            TableColumn(
+                "Result type",
+                ObjectFields.ResultType, visible = true, readOnly = false,
+                comparator = TableComparing.compareByString(ObjectFields.ResultType),
+                getterGenerator = { { it.personalResult.toString() } }
+            ),
+            TableColumn(
+                "Route name",
+                ObjectFields.RouteName, visible = true, readOnly = false,
+                comparator = TableComparing.compareByString(ObjectFields.RouteName),
+                getterGenerator = { { it.route.name } }
+            )
+        ),
+        iconsBar = true
     )
 
     inner class GroupTableRow(private val group: Group) : TableRow() {

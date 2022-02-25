@@ -14,7 +14,7 @@ object StateSwitcher {
         view.timestampTable.loadButton = true
         view.timestampTable.addButton = true
         view.participantsTable.header.setVisibility(ObjectFields.StartTime, true)
-        AppTopBar.buttons.first { it.text == "Timestamps" }.visible = true
+        TopAppBar.buttons.first { it.text == "Timestamps" }.visible = true
     }
 
     fun setResulted(view: View) {
@@ -46,7 +46,7 @@ object StateSwitcher {
             it.addButton = true
         }
         view.participantsTable.header.setVisibility(ObjectFields.StartTime, false)
-        AppTopBar.buttons.first { it.text == "Timestamps" }.visible = false
+        TopAppBar.buttons.first { it.text == "Timestamps" }.visible = false
 
     }
 

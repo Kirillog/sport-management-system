@@ -4,7 +4,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
-import com.sun.nio.sctp.IllegalReceiveException
 import ru.emkn.kotlin.sms.controller.Controller
 import ru.emkn.kotlin.sms.view.MenuState.*
 import ru.emkn.kotlin.sms.view.creators.*
@@ -107,13 +106,13 @@ fun mainContent() {
                 View.State.CreateEvent -> draw(view, EventCreator())
                 View.State.CreateTimestamp -> draw(view, TimestampCreator())
                 View.State.CreateTeam -> draw(view, TeamCreator())
+                View.State.CreateGroup -> draw(view, GroupCreator())
                 View.State.EditRuntimeDump -> {
                     StateSwitcher.setTossed(view)
                     StateSwitcher.setUnResulted(view)
                     drawTables(view)
                     BottomAppBar += "You should load timestamps, then Navigate -> Result"
                 }
-                else -> throw IllegalReceiveException("Forbidden state of GUI")
             }
             drawBottomAppBar()
         }

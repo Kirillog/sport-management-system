@@ -7,7 +7,7 @@ import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 
-object AppTopBar {
+object TopAppBar {
     val buttons = listOf(
         ActionButton("Events") {
             TableChooser.state = TableChooser.Table.Event
@@ -34,13 +34,13 @@ object AppTopBar {
 }
 
 @Composable
-fun drawAppTopBar() {
+fun drawTopAppBar() {
     TopAppBar(
         modifier = Modifier.fillMaxWidth(),
     ) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
-            AppTopBar.buttons.forEach {
-                ActionButton(it)
+            TopAppBar.buttons.forEach {
+                drawActionButton(it)
             }
         }
     }

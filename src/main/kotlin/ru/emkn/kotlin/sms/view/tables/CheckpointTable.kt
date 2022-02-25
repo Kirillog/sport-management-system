@@ -5,30 +5,31 @@ import ru.emkn.kotlin.sms.controller.Controller
 import ru.emkn.kotlin.sms.controller.Deleter
 import ru.emkn.kotlin.sms.controller.Editor
 import ru.emkn.kotlin.sms.model.Checkpoint
-import ru.emkn.kotlin.sms.view.View
 import ru.emkn.kotlin.sms.view.PathChooser
+import ru.emkn.kotlin.sms.view.View
 
 class CheckpointTable : Table<Checkpoint>() {
 
     private val checkpoints: List<Checkpoint>
         get() = Checkpoint.all().toList()
 
-    override val header = TableHeader(listOf(
+    override val header = TableHeader(
+        listOf(
             TableColumn<Checkpoint>(
-                    "Name",
-                    ObjectFields.Name,
-                    visible = true, readOnly = false,
-                    comparator = TableComparing.compareByString(ObjectFields.Name),
-                    getterGenerator = { { it.name } }
+                "Name",
+                ObjectFields.Name,
+                visible = true, readOnly = false,
+                comparator = TableComparing.compareByString(ObjectFields.Name),
+                getterGenerator = { { it.name } }
             ),
             TableColumn(
-                    "Weight",
-                    ObjectFields.Weight,
-                    visible = true, readOnly = false,
-                    comparator = TableComparing.compareByInt(ObjectFields.Weight),
-                    getterGenerator = { { it.weight.toString() } }
+                "Weight",
+                ObjectFields.Weight,
+                visible = true, readOnly = false,
+                comparator = TableComparing.compareByInt(ObjectFields.Weight),
+                getterGenerator = { { it.weight.toString() } }
             )
-    ), iconsBar = true)
+        ), iconsBar = true)
 
     inner class CheckpointTableRow(private val checkpoint: Checkpoint) : TableRow() {
 

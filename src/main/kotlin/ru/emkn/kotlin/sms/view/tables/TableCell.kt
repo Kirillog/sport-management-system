@@ -18,13 +18,13 @@ import ru.emkn.kotlin.sms.maxTextLength
 import ru.emkn.kotlin.sms.view.BottomAppBar
 
 
-data class TableCell(val getText: String, val saveText: () -> Unit = {}) {
-    var shownText: MutableState<String> = mutableStateOf(getText)
+data class TableCell(val text: String, val saveText: () -> Unit = {}) {
+    var shownText: MutableState<String> = mutableStateOf(text)
 }
 
 @Composable
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class)
-fun TableCell(tableCell: TableCell, width: Dp, readOnly: Boolean) {
+fun drawTableCell(tableCell: TableCell, width: Dp, readOnly: Boolean) {
     OutlinedTextField(
         tableCell.shownText.value,
         modifier = Modifier

@@ -5,8 +5,8 @@ import ru.emkn.kotlin.sms.controller.Controller
 import ru.emkn.kotlin.sms.controller.Deleter
 import ru.emkn.kotlin.sms.controller.Editor
 import ru.emkn.kotlin.sms.model.Team
-import ru.emkn.kotlin.sms.view.View
 import ru.emkn.kotlin.sms.view.PathChooser
+import ru.emkn.kotlin.sms.view.View
 import javax.swing.JFileChooser
 
 class TeamTable : Table<Team>() {
@@ -15,21 +15,21 @@ class TeamTable : Table<Team>() {
         get() = Team.all().toList()
 
     override val header = TableHeader<Team>(
-            listOf(
-                    TableColumn<Team>(
-                            "Name",
-                            ObjectFields.Name, visible = true, readOnly = false,
-                            comparator = TableComparing.compareByString(ObjectFields.Name),
-                            getterGenerator = { { it.name } }
-                    ),
-                    TableColumn<Team>(
-                            "Score",
-                            ObjectFields.ResultType, visible = false, readOnly = true,
-                            comparator = TableComparing.compareByLong(ObjectFields.ResultType),
-                            getterGenerator = { { it.score.toString() } }
-                    )
+        listOf(
+            TableColumn(
+                "Name",
+                ObjectFields.Name, visible = true, readOnly = false,
+                comparator = TableComparing.compareByString(ObjectFields.Name),
+                getterGenerator = { { it.name } }
             ),
-            iconsBar = true
+            TableColumn(
+                "Score",
+                ObjectFields.ResultType, visible = false, readOnly = true,
+                comparator = TableComparing.compareByLong(ObjectFields.ResultType),
+                getterGenerator = { { it.score.toString() } }
+            )
+        ),
+        iconsBar = true
     )
 
     inner class TeamTableRow(private val team: Team) : TableRow() {
@@ -53,7 +53,7 @@ class TeamTable : Table<Team>() {
 
     override val loadAction = {
         val selectedFile = PathChooser("Choose application folder or single file", "", "Application folder").choose(
-                JFileChooser.FILES_AND_DIRECTORIES
+            JFileChooser.FILES_AND_DIRECTORIES
         )
         Controller.loadTeams(selectedFile?.toPath())
         state = State.Outdated

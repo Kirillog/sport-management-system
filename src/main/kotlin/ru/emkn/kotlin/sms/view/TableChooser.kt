@@ -2,7 +2,7 @@ package ru.emkn.kotlin.sms.view
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.*
-import ru.emkn.kotlin.sms.view.tables.Table
+import ru.emkn.kotlin.sms.view.tables.drawTable
 
 object TableChooser {
     enum class Table {
@@ -31,8 +31,8 @@ fun drawTables(view: View) {
     val timestampTable = remember { view.timestampTable }
 
     Column {
-        drawAppTopBar()
-        Table(
+        drawTopAppBar()
+        drawTable(
             view,
             when (TableChooser.state) {
                 TableChooser.Table.Event -> eventTable
@@ -46,4 +46,3 @@ fun drawTables(view: View) {
         )
     }
 }
-

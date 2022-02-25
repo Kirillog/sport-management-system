@@ -86,7 +86,7 @@ class TableHeader<T>(private val columns: List<TableColumn<T>>, val iconsBar: Bo
 }
 
 @Composable
-fun <T> TableHeader(tableHeader: TableHeader<T>, lazyListState: LazyListState, coroutineScope: CoroutineScope) {
+fun <T> drawTableHeader(tableHeader: TableHeader<T>, lazyListState: LazyListState, coroutineScope: CoroutineScope) {
     var rowSize by remember { mutableStateOf(IntSize.Zero) }
     Row(
         modifier = Modifier
@@ -100,16 +100,21 @@ fun <T> TableHeader(tableHeader: TableHeader<T>, lazyListState: LazyListState, c
         val columnWidth = ((rowSize.width - tableHeader.iconsBarSize.value.width) / columnsCount).dp
 
         tableHeader.visibleColumns.forEachIndexed { index, column ->
-            ColumnTitleWithFilter(tableHeader, column, columnWidth, index)
+            drawColumnTitleWithFilter(tableHeader, column, columnWidth, index)
         }
 
         if (tableHeader.iconsBar)
-            ScrollButtons(tableHeader, lazyListState, coroutineScope)
+            drawScrollButtons(tableHeader, lazyListState, coroutineScope)
     }
 }
 
 @Composable
-fun<T> ColumnTitleWithFilter(tableHeader: TableHeader<T>, column : TableColumn<T>, columnWidth : Dp, columnIndex : Int) {
+fun <T> drawColumnTitleWithFilter(
+    tableHeader: TableHeader<T>,
+    column: TableColumn<T>,
+    columnWidth: Dp,
+    columnIndex: Int
+) {
     Column(
         modifier = Modifier
             .width(columnWidth)
@@ -151,7 +156,7 @@ fun<T> ColumnTitleWithFilter(tableHeader: TableHeader<T>, column : TableColumn<T
 }
 
 @Composable
-fun <T> ScrollButtons(tableHeader : TableHeader<T>, lazyListState : LazyListState, coroutineScope: CoroutineScope) {
+fun <T> drawScrollButtons(tableHeader: TableHeader<T>, lazyListState: LazyListState, coroutineScope: CoroutineScope) {
     Column(modifier = Modifier.width(tableHeader.iconsBarSize.value.width.dp)) {
         IconButton(onClick = {
             coroutineScope.launch {

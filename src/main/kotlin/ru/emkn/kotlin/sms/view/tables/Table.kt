@@ -1,10 +1,15 @@
 package ru.emkn.kotlin.sms.view.tables
 
-import androidx.compose.foundation.*
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.icons.Icons
@@ -53,7 +58,7 @@ abstract class Table<T> {
 
         fun getData(field: ObjectFields): String {
             val cell = cells[field] ?: throw NoSuchElementException("No field $field in cell")
-            return cell.getText
+            return cell.text
         }
 
         fun checkFilter(): Boolean {
@@ -92,7 +97,7 @@ abstract class Table<T> {
 }
 
 @Composable
-fun <T> TableRow(tableRow: Table<T>.TableRow, index: Int) {
+fun <T> drawTableRow(tableRow: Table<T>.TableRow, index: Int) {
     var rowSize by remember { mutableStateOf(IntSize.Zero) }
     val interactionSource = remember { MutableInteractionSource() }
     val isHovered by interactionSource.collectIsHoveredAsState()
@@ -114,7 +119,7 @@ fun <T> TableRow(tableRow: Table<T>.TableRow, index: Int) {
             (rowSize.width / elementsInRow).dp
 
         for (columnHeader in tableRow.header.visibleColumns) {
-            TableCell(
+            drawTableCell(
                 tableRow.cells[columnHeader.field]
                     ?: throw IllegalStateException("Cell of ${columnHeader.field} not exists"),
                 cellWidth,
@@ -132,7 +137,7 @@ fun <T> TableRow(tableRow: Table<T>.TableRow, index: Int) {
 }
 
 @Composable
-fun<T> ButtonsBar(view : View, table : Table<T>) {
+fun <T> drawButtonsBar(view: View, table: Table<T>) {
     Box(modifier = Modifier.border(BorderStroke(1.dp, Color.Black))) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -140,20 +145,20 @@ fun<T> ButtonsBar(view : View, table : Table<T>) {
         ) {
             val createState = table.creatingState
             if (table.loadButton) {
-                ActionButton(
+                drawActionButton(
                     ActionButton("Load") {
                         table.load()
                     }
                 )
             }
             if (createState != null && table.addButton) {
-                ActionButton(
+                drawActionButton(
                     ActionButton("Add") {
                         view.pushState(createState)
                     }
                 )
             }
-            ActionButton(
+            drawActionButton(
                 ActionButton("Export to csv") {
                     val file = PathChooser("Save to csv table...", ".csv", "Csv table").choose()
                     BottomAppBar += if (file != null) {
@@ -173,17 +178,17 @@ fun<T> ButtonsBar(view : View, table : Table<T>) {
 }
 
 @Composable
-fun <F> Table(view: View, table: Table<F>) {
+fun <F> drawTable(view: View, table: Table<F>) {
     if (table.state == Table.State.Outdated)
         table.state = Table.State.Updated
     val lazyListState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
 
-    ButtonsBar(view, table)
-    TableHeader(table.header, lazyListState, coroutineScope)
+    drawButtonsBar(view, table)
+    drawTableHeader(table.header, lazyListState, coroutineScope)
     LazyColumn(state = lazyListState) {
         itemsIndexed(table.sortedFilteredRows) { index, model ->
-            TableRow(model, index)
+            drawTableRow(model, index)
         }
         item {
             Box(Modifier.height(BottomAppBar.height))

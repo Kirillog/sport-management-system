@@ -20,7 +20,10 @@ object BottomAppBar {
 
     val height = 50.dp
 
-    operator fun plusAssign(string : String) {
+    /**
+     * Set [message] to [string]
+     */
+    operator fun plusAssign(string: String) {
         message.value = string
     }
 }

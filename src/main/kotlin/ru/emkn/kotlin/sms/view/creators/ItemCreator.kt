@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import ru.emkn.kotlin.sms.ObjectFields
 import ru.emkn.kotlin.sms.maxTextLength
 import ru.emkn.kotlin.sms.view.ActionButton
+import ru.emkn.kotlin.sms.view.drawActionButton
 import ru.emkn.kotlin.sms.view.BottomAppBar
 import ru.emkn.kotlin.sms.view.View
 
@@ -76,7 +77,7 @@ fun <T> draw(view: View, creator: ItemCreator<T>) {
         for (field in creator.fields) {
             draw(field, columnSize.width.dp)
         }
-        ActionButton(ActionButton("Create") { creator.create(view) })
-        ActionButton(ActionButton("Cancel") { creator.cancel(view) })
+        drawActionButton(ActionButton("Create") { creator.create(view) })
+        drawActionButton(ActionButton("Cancel") { creator.cancel(view) })
     }
 }

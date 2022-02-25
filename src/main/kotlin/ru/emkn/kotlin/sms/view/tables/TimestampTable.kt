@@ -5,8 +5,8 @@ import ru.emkn.kotlin.sms.controller.Controller
 import ru.emkn.kotlin.sms.controller.Deleter
 import ru.emkn.kotlin.sms.controller.Editor
 import ru.emkn.kotlin.sms.model.Timestamp
-import ru.emkn.kotlin.sms.view.View
 import ru.emkn.kotlin.sms.view.PathChooser
+import ru.emkn.kotlin.sms.view.View
 import java.time.format.DateTimeFormatter
 import javax.swing.JFileChooser
 
@@ -15,29 +15,30 @@ class TimestampTable : Table<Timestamp>() {
     private val timestamps
         get() = Timestamp.all()
 
-    override val header = TableHeader(listOf(
-        TableColumn<Timestamp>(
-            "Time",
-            ObjectFields.Time,
-            visible = true, readOnly = false,
-            comparator = TableComparing.compareByLocalTime(ObjectFields.Time),
-            getterGenerator = { { it.time.format(DateTimeFormatter.ISO_LOCAL_TIME) } }
-        ),
-        TableColumn(
-            "Checkpoint",
-            ObjectFields.Name,
-            visible = true, readOnly = false,
-            comparator = TableComparing.compareByString(ObjectFields.Name),
-            getterGenerator = { { it.checkpoint.name } }
-        ),
-        TableColumn(
-            "Participant",
-            ObjectFields.ID,
-            visible = true, readOnly = false,
-            comparator = TableComparing.compareByString(ObjectFields.ID),
-            getterGenerator = { { it.participant.id.toString() } }
-        )
-    ), iconsBar = true)
+    override val header = TableHeader<Timestamp>(
+        listOf(
+            TableColumn(
+                "Time",
+                ObjectFields.Time,
+                visible = true, readOnly = false,
+                comparator = TableComparing.compareByLocalTime(ObjectFields.Time),
+                getterGenerator = { { it.time.format(DateTimeFormatter.ISO_LOCAL_TIME) } }
+            ),
+            TableColumn(
+                "Checkpoint",
+                ObjectFields.Name,
+                visible = true, readOnly = false,
+                comparator = TableComparing.compareByString(ObjectFields.Name),
+                getterGenerator = { { it.checkpoint.name } }
+            ),
+            TableColumn(
+                "Participant",
+                ObjectFields.ID,
+                visible = true, readOnly = false,
+                comparator = TableComparing.compareByString(ObjectFields.ID),
+                getterGenerator = { { it.participant.id.toString() } }
+            )
+        ), iconsBar = true)
 
     inner class TimestampTableRow(private val timestamp: Timestamp) : TableRow() {
 

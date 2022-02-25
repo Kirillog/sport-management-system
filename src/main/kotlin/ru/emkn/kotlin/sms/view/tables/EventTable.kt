@@ -4,8 +4,8 @@ import ru.emkn.kotlin.sms.ObjectFields
 import ru.emkn.kotlin.sms.controller.Controller
 import ru.emkn.kotlin.sms.controller.Editor
 import ru.emkn.kotlin.sms.model.Event
-import ru.emkn.kotlin.sms.view.View
 import ru.emkn.kotlin.sms.view.PathChooser
+import ru.emkn.kotlin.sms.view.View
 import java.time.format.DateTimeFormatter
 
 class EventTable : Table<Event>() {
@@ -14,15 +14,15 @@ class EventTable : Table<Event>() {
         get() =
             Event.all().toList()
 
-    override val header = TableHeader(
+    override val header = TableHeader<Event>(
         listOf(
-            TableColumn<Event>(
+            TableColumn(
                 "Name",
                 ObjectFields.Name, visible = true, readOnly = false,
                 comparator = TableComparing.compareByString(ObjectFields.Name),
                 getterGenerator = { { it.name } }
             ),
-            TableColumn<Event>(
+            TableColumn(
                 "Date",
                 ObjectFields.Date,
                 visible = true, readOnly = false,
