@@ -1,4 +1,9 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import org.panteleyev.jpackage.ImageType
+import org.apache.tools.ant.taskdefs.condition.Os
+import kotlin.io.path.ExperimentalPathApi
+import java.io.*
+import kotlin.io.path.createSymbolicLinkPointingTo
 
 val kotlinVersion = "1.5.31"
 
@@ -18,7 +23,8 @@ repositories {
 }
 
 val module = "ru.emkn.kotlin.sms"
-version = "1.0.0"
+val mainClassName = "$module.MainKt"
+version = "1.0"
 
 
 dependencies {
@@ -43,11 +49,9 @@ dependencies {
     implementation(compose.desktop.currentOs)
 }
 
-tasks.withType<ShadowJar> {
-    manifest {
-        attributes["Main-Class"] = "$module.MainKt"
-    }
-}
+val installerDirName = "$buildDir/installers"
+val appDirName = "$buildDir/app-dir"
+val jarsDir = "$buildDir/jars"
 
 tasks {
 
@@ -56,11 +60,11 @@ tasks {
     }
 
     compileKotlin {
-        kotlinOptions.jvmTarget = "11"
+        kotlinOptions.jvmTarget = "16"
     }
 
     compileTestKotlin {
-        kotlinOptions.jvmTarget = "11"
+        kotlinOptions.jvmTarget = "16"
     }
 
     application {
@@ -73,40 +77,116 @@ tasks {
         }
     }
 
+    withType<ShadowJar> {
+        manifest {
+            attributes("Main-Class" to "$module.MainKt")
+        }
+        val destinationDir = File("fat-jar")
+        if (!destinationDir.exists())
+            destinationDir.mkdir()
+        destinationDirectory.set(destinationDir)
+    }
+
     artifacts {
         add("archives", jar)
     }
 
-    task("copyDependencies", Copy::class) {
-        from(configurations.runtimeClasspath).into("$buildDir/jars")
+    register("copyDependencies", Copy::class) {
+        from(configurations.runtimeClasspath).into(jarsDir)
     }
 
-    task("copyJar", Copy::class) {
-        from(jar).into("$buildDir/jars")
+    register("copyJar", Copy::class) {
+        from(jar).into(jarsDir)
     }
 
-    jpackage {
-        dependsOn("build", "jar", "copyDependencies", "copyJar")
+    register<org.panteleyev.jpackage.JPackageTask>("winJPackage") {
+        dependsOn(build, jar, "copyDependencies", "copyJar")
 
-        input = "$buildDir/jars"
-        destination = "$buildDir/dist"
-
+        input = jarsDir
         appName = project.name
         vendor = "SeKirA"
-        
-        mainJar = jar.get().archiveFileName.get()
-        mainClass = "ru.emkn.kotlin.sms.MainKt"
 
+        mainJar = jar.get().archiveFileName.get()
+        mainClass = mainClassName
+
+        destination = installerDirName
         javaOptions = listOf("-Dfile.encoding=UTF-8")
 
         icon = "src/main/resources/sekira.ico"
+        type = ImageType.EXE
+        winDirChooser = true
+        winConsole = false
+        winMenu = true
+        winPerUserInstall = true
+        winShortcut = true
+    }
 
-        windows {
-            winDirChooser = true
-            winConsole = false
-            winMenu = true
-            winPerUserInstall = true
-            winShortcut = true
+    register<org.panteleyev.jpackage.JPackageTask>("linuxJPackage") {
+        dependsOn(build, jar, "copyDependencies", "copyJar")
+
+        input = jarsDir
+        appName = project.name
+        vendor = "SeKirA"
+
+        mainJar = jar.get().archiveFileName.get()
+        mainClass = mainClassName
+        javaOptions = listOf("-Dfile.encoding=UTF-8")
+
+        destination = appDirName
+        if (File(destination).exists())
+            File(destination).deleteRecursively()
+        icon = "src/main/resources/sekira.png"
+        type = ImageType.APP_IMAGE
+    }
+
+    register("appImage") {
+        dependsOn("linuxJPackage")
+        doFirst {
+            if (!File(installerDirName).exists())
+                File(installerDirName).mkdir()
         }
+        doLast {
+            val appName = project.name
+            val appDir = File("$appDirName/$appName")
+
+            val symLink = appDir.resolve("AppRun")
+            @OptIn(ExperimentalPathApi::class)
+            symLink.toPath().createSymbolicLinkPointingTo(appDir.resolve("bin/$appName").toPath())
+
+            appDir.resolve("lib/$appName.png").let { sourceFile ->
+                sourceFile.copyTo(appDir.resolve("$appName.png"))
+                sourceFile.delete()
+            }
+
+            val desktopFile = appDir.resolve("$appName.desktop")
+            OutputStreamWriter(FileOutputStream(desktopFile), "UTF-8").use {
+                it.write(
+                    """
+                [Desktop Entry]
+                Type=Application
+                Version=$version
+                Name=$appName
+                Comment=System helping to provide competitions
+                Path=/bin/$appName
+                Exec=$appName
+                Icon=$appName
+                Terminal=false
+                Categories=Education;Languages;Java;
+            """.trimIndent()
+                )
+            }
+            exec {
+                commandLine("appimagetool.AppImage", "$buildDir/app-dir/$appName", "$installerDirName/$appName.AppImage")
+            }
+        }
+    }
+
+    register("installer") {
+        if (Os.isFamily(Os.FAMILY_WINDOWS))
+            dependsOn("winJPackage")
+        else if (Os.isFamily(Os.FAMILY_UNIX))
+            dependsOn("appImage")
+        else
+            println("Unsupported OS")
     }
 }
