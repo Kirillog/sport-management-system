@@ -1,15 +1,15 @@
 package ru.emkn.kotlin.sms.view.tables
 
 import org.jetbrains.exposed.sql.selectAll
-import org.jetbrains.exposed.sql.transactions.transaction
 import ru.emkn.kotlin.sms.ObjectFields
 import ru.emkn.kotlin.sms.controller.Deleter
 import ru.emkn.kotlin.sms.controller.Editor
 import ru.emkn.kotlin.sms.model.*
 import ru.emkn.kotlin.sms.model.GroupTable
 import ru.emkn.kotlin.sms.model.TeamTable
-import ru.emkn.kotlin.sms.view.GUI
+import ru.emkn.kotlin.sms.view.View
 import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 
 fun Participant.Companion.getPrint(): List<ParticipantPrint> {
     val teamById = TeamTable.selectAll().associate { it[TeamTable.id] to it[TeamTable.name] }
@@ -52,97 +52,105 @@ data class ParticipantPrint(
     val entry: Participant
 )
 
+fun correctTime(time: LocalTime?): String =
+    if (time == null)
+        "No time"
+    else
+        time.format(DateTimeFormatter.ISO_TIME)
+
 class ParticipantsTable : Table<ParticipantPrint>() {
 
     private val participants
-        get() = transaction { Participant.getPrint() }
+        get() =
+            Participant.getPrint()
 
-    override val header = TableHeader(listOf(
-        TableColumn<ParticipantPrint>(
-            "ID",
-            ObjectFields.ID,
-            visible = true, readOnly = true,
-            comparator = TableComparing.compareByInt(ObjectFields.ID),
-            getterGenerator = { { it.id.toString() } }
-        ),
-        TableColumn(
-            "Name",
-            ObjectFields.Name,
-            visible = true, readOnly = false,
-            comparator = TableComparing.compareByString(ObjectFields.Name),
-            getterGenerator = { { it.name } }
-        ),
-        TableColumn(
-            "Surname",
-            ObjectFields.Surname,
-            visible = true, readOnly = false,
-            comparator = TableComparing.compareByString(ObjectFields.Surname),
-            getterGenerator = { { it.surname } }
-        ),
-        TableColumn(
-            "Group",
-            ObjectFields.Group,
-            visible = true, readOnly = false,
-            comparator = TableComparing.compareByString(ObjectFields.Group),
-            getterGenerator = { { it.groupName } }
-        ),
-        TableColumn(
-            "Birthday Year",
-            ObjectFields.BirthdayYear,
-            visible = true, readOnly = false,
-            comparator = TableComparing.compareByInt(ObjectFields.BirthdayYear),
-            getterGenerator = { { it.birthdayYear.toString() } }
-        ),
-        TableColumn(
-            "Grade",
-            ObjectFields.Grade,
-            visible = true, readOnly = false,
-            comparator = TableComparing.compareByString(ObjectFields.Grade),
-            getterGenerator = { { it.grade ?: "" } }
-        ),
-        TableColumn(
-            "Team",
-            ObjectFields.Team,
-            visible = true, readOnly = false,
-            comparator = TableComparing.compareByString(ObjectFields.Team),
-            getterGenerator = { { it.teamName } }
-        ),
-        TableColumn(
-            "Start time",
-            ObjectFields.StartTime,
-            visible = false, readOnly = false,
-            comparator = TableComparing.compareByLocalTime(ObjectFields.StartTime),
-            getterGenerator = { { it.startTime.toString() } }
-        ),
-        TableColumn(
-            "Finish time",
-            ObjectFields.FinishTime,
-            visible = false, readOnly = false,
-            comparator = TableComparing.compareByLocalTime(ObjectFields.FinishTime),
-            getterGenerator = { { it.finishTime.toString() } }
-        ),
-        TableColumn(
-            "Penalty",
-            ObjectFields.Penalty,
-            visible = false, readOnly = true,
-            comparator = TableComparing.compareByInt(ObjectFields.Penalty),
-            getterGenerator = { { it.penalty.toString() } }
-        ),
-        TableColumn(
-            "Place in group",
-            ObjectFields.PlaceInGroup,
-            visible = false, readOnly = true,
-            comparator = TableComparing.compareByInt(ObjectFields.PlaceInGroup),
-            getterGenerator = { { it.placeInGroup.toString() } }
-        ),
-        TableColumn(
-            "Delta from group leader",
-            ObjectFields.DeltaFromLeader,
-            visible = false, readOnly = true,
-            comparator = TableComparing.compareByInt(ObjectFields.DeltaFromLeader),
-            getterGenerator = { { it.deltaFromLeader.toString() } }
-        )
-    ), deleteButton = true)
+    override val header = TableHeader(
+        listOf(
+            TableColumn<ParticipantPrint>(
+                "ID",
+                ObjectFields.ID,
+                visible = true, readOnly = true,
+                comparator = TableComparing.compareByInt(ObjectFields.ID),
+                getterGenerator = { { it.id.toString() } }
+            ),
+            TableColumn(
+                "Name",
+                ObjectFields.Name,
+                visible = true, readOnly = false,
+                comparator = TableComparing.compareByString(ObjectFields.Name),
+                getterGenerator = { { it.name } }
+            ),
+            TableColumn(
+                "Surname",
+                ObjectFields.Surname,
+                visible = true, readOnly = false,
+                comparator = TableComparing.compareByString(ObjectFields.Surname),
+                getterGenerator = { { it.surname } }
+            ),
+            TableColumn(
+                "Group",
+                ObjectFields.Group,
+                visible = true, readOnly = false,
+                comparator = TableComparing.compareByString(ObjectFields.Group),
+                getterGenerator = { { it.groupName } }
+            ),
+            TableColumn(
+                "Birthday Year",
+                ObjectFields.BirthdayYear,
+                visible = true, readOnly = false,
+                comparator = TableComparing.compareByInt(ObjectFields.BirthdayYear),
+                getterGenerator = { { it.birthdayYear.toString() } }
+            ),
+            TableColumn(
+                "Grade",
+                ObjectFields.Grade,
+                visible = true, readOnly = false,
+                comparator = TableComparing.compareByString(ObjectFields.Grade),
+                getterGenerator = { { it.grade ?: "" } }
+            ),
+            TableColumn(
+                "Team",
+                ObjectFields.Team,
+                visible = true, readOnly = false,
+                comparator = TableComparing.compareByString(ObjectFields.Team),
+                getterGenerator = { { it.teamName } }
+            ),
+            TableColumn(
+                "Start time",
+                ObjectFields.StartTime,
+                visible = false, readOnly = false,
+                comparator = TableComparing.compareByLocalTime(ObjectFields.StartTime),
+                getterGenerator = { { correctTime(it.startTime) } }
+            ),
+            TableColumn(
+                "Finish time",
+                ObjectFields.FinishTime,
+                visible = false, readOnly = false,
+                comparator = TableComparing.compareByLocalTime(ObjectFields.FinishTime),
+                getterGenerator = { { correctTime(it.finishTime) } }
+            ),
+            TableColumn(
+                "Penalty",
+                ObjectFields.Penalty,
+                visible = false, readOnly = true,
+                comparator = TableComparing.compareByInt(ObjectFields.Penalty),
+                getterGenerator = { { it.penalty.toString() } }
+            ),
+            TableColumn(
+                "Place in group",
+                ObjectFields.PlaceInGroup,
+                visible = false, readOnly = true,
+                comparator = TableComparing.compareByInt(ObjectFields.PlaceInGroup),
+                getterGenerator = { { it.placeInGroup.toString() } }
+            ),
+            TableColumn(
+                "Delta from group leader",
+                ObjectFields.DeltaFromLeader,
+                visible = false, readOnly = true,
+                comparator = TableComparing.compareByInt(ObjectFields.DeltaFromLeader),
+                getterGenerator = { { it.deltaFromLeader.toString() } }
+            )
+        ), iconsBar = true)
 
     inner class ParticipantTableRow(private val participant: ParticipantPrint) : TableRow() {
 
@@ -163,6 +171,9 @@ class ParticipantsTable : Table<ParticipantPrint>() {
     override val rows
         get() = participants.map { ParticipantTableRow(it) }
 
-    override val creatingState = GUI.State.CreateParticipant
+    override val creatingState = View.State.CreateParticipant
     override var loadButton = false
+        get() {
+            return false
+        }
 }

@@ -4,6 +4,8 @@ import ru.emkn.kotlin.sms.FileType
 import ru.emkn.kotlin.sms.model.Competition
 import ru.emkn.kotlin.sms.model.Group
 import ru.emkn.kotlin.sms.model.Participant
+import ru.emkn.kotlin.sms.model.Team
+import ru.emkn.kotlin.sms.view.tables.correctTime
 import java.io.File
 
 class FileSaver(file: File) : Saver {
@@ -11,11 +13,20 @@ class FileSaver(file: File) : Saver {
     override fun saveResults() {
         writer.add(
             listOf(
-                "Место", "Номер", "Имя", "Фамилия", "Г.р.", "Разр.", "Время старта", "Время финиша", "Штраф", "Отставание"
+                "Место",
+                "Номер",
+                "Имя",
+                "Фамилия",
+                "Г.р.",
+                "Разр.",
+                "Время старта",
+                "Время финиша",
+                "Штраф",
+                "Отставание"
             )
         )
 
-        Competition.groups.forEach { group ->
+        Group.all().forEach { group ->
             writer.add(group.name)
             val sortedGroup = group.personalResult.sort()
             sortedGroup.forEach { participant ->
@@ -27,14 +38,16 @@ class FileSaver(file: File) : Saver {
 
 
     override fun saveToss() {
-        writer.add(listOf("Номер", "Имя", "Фамилия", "Г.р.", "Команда", "Разр.", "Время старта"))
-        writer.addAll(Group.all().toList())
+        writer.add(listOf("ID", "Name", "Surname", "Birthday Year", "Team", "Grade", "Start time", "Group"))
+        writer.addAll(Participant.all().toList().map {
+            listOf(it.id, it.name, it.surname, it.birthdayYear, it.team, it.grade, correctTime(it.startTime), it.group)
+        })
         writer.write()
     }
 
     override fun saveTeamResults() {
         writer.add(listOf("Номер", "Название", "Очки"))
-        val sortedTeams = Competition.teamResult.sortTeams(Competition.teams)
+        val sortedTeams = Competition.teamResult.sortTeams(Team.all().toSet())
         sortedTeams.forEachIndexed { index, team ->
             writer.add<SingleLineWritable>(team) { listOf(index + 1) + it.toLine() }
         }

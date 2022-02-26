@@ -18,25 +18,25 @@ enum class Target {
 }
 
 val DB_TABLES = listOf(
-    EventTable,
-    RouteCheckpointsTable,
-    TossTable,
-    PersonalResultTable,
-    TeamResultTable,
-    TimestampTable,
-    CheckpointTable,
-    ParticipantTable,
-    GroupTable,
-    RouteTable,
-    TeamTable,
-    StateTable
+        EventTable,
+        RouteCheckpointsTable,
+        TossTable,
+        PersonalResultTable,
+        TeamResultTable,
+        TimestampTable,
+        CheckpointTable,
+        ParticipantTable,
+        GroupTable,
+        RouteTable,
+        TeamTable,
+        StateTable
 )
 
 val english = mapOf(
-    "Полный" to "Full",
-    "Стоимость" to "Weight",
-    "Время" to "Time",
-    "Выборочный" to "Selective"
+        "Полный" to "Full",
+        "Стоимость" to "Weight",
+        "Время" to "Time",
+        "Выборочный" to "Selective"
 )
 
 /**
@@ -47,10 +47,10 @@ class ArgumentsFormat(parser: ArgParser) {
         name of competition directory
     """.trimIndent())
 
-    val target by parser.mapping( mapOf(
-        "--toss" to Target.TOSS,
-        "--personal" to Target.PERSONAL_RESULT,
-        "--team" to Target.TEAM_RESULT
+    val target by parser.mapping(mapOf(
+            "--toss" to Target.TOSS,
+            "--personal" to Target.PERSONAL_RESULT,
+            "--team" to Target.TEAM_RESULT
     ), """
         sets the goal to be completed in the following format:
         --toss
@@ -63,7 +63,7 @@ class ArgumentsFormat(parser: ArgParser) {
     )
 
     val competitionsRoot by parser.positional(
-        "DIR", """
+            "DIR", """
         sets path for directory, which storing all competitions
     """.trimIndent()
     ).default<String>("competitions")

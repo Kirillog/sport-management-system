@@ -60,7 +60,7 @@ fun Generator.generateCourses(
             val courseLength = random.nextInt(2, maxCourseLength)
             generateCourse(it, checkPointList, courseLength, random)
         }
-        val file = path.resolve("courses.csv").toFile()
+        val file = path.resolve("routes.csv").toFile()
         val writer = Writer(file, FileType.CSV)
         val maxLength = coursesList.maxOf { it.checkpoints.count() }.toInt()
         writer.add(listOf("Название", "Тип", "Количество К/П") + List(maxLength) { "${it + 1}" })

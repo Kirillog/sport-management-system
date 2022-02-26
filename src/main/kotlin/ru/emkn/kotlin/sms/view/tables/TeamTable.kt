@@ -1,38 +1,35 @@
 package ru.emkn.kotlin.sms.view.tables
 
-import org.jetbrains.exposed.sql.transactions.transaction
 import ru.emkn.kotlin.sms.ObjectFields
-import ru.emkn.kotlin.sms.controller.CompetitionController
+import ru.emkn.kotlin.sms.controller.Controller
 import ru.emkn.kotlin.sms.controller.Deleter
 import ru.emkn.kotlin.sms.controller.Editor
 import ru.emkn.kotlin.sms.model.Team
-import ru.emkn.kotlin.sms.view.GUI
 import ru.emkn.kotlin.sms.view.PathChooser
+import ru.emkn.kotlin.sms.view.View
 import javax.swing.JFileChooser
 
 class TeamTable : Table<Team>() {
 
     private val team: List<Team>
-        get() {
-            return transaction { Team.all().toList() }
-        }
+        get() = Team.all().toList()
 
     override val header = TableHeader<Team>(
         listOf(
-            TableColumn<Team>(
+            TableColumn(
                 "Name",
                 ObjectFields.Name, visible = true, readOnly = false,
                 comparator = TableComparing.compareByString(ObjectFields.Name),
                 getterGenerator = { { it.name } }
             ),
-            TableColumn<Team>(
+            TableColumn(
                 "Score",
                 ObjectFields.ResultType, visible = false, readOnly = true,
                 comparator = TableComparing.compareByLong(ObjectFields.ResultType),
                 getterGenerator = { { it.score.toString() } }
             )
         ),
-        deleteButton = true
+        iconsBar = true
     )
 
     inner class TeamTableRow(private val team: Team) : TableRow() {
@@ -49,7 +46,7 @@ class TeamTable : Table<Team>() {
         }
     }
 
-    override val creatingState = GUI.State.CreateTeam
+    override val creatingState = View.State.CreateTeam
 
     override val rows: List<TableRow>
         get() = team.map { TeamTableRow(it) }
@@ -58,7 +55,7 @@ class TeamTable : Table<Team>() {
         val selectedFile = PathChooser("Choose application folder or single file", "", "Application folder").choose(
             JFileChooser.FILES_AND_DIRECTORIES
         )
-        CompetitionController.loadTeams(selectedFile?.toPath())
+        Controller.loadTeams(selectedFile?.toPath())
         state = State.Outdated
     }
 }

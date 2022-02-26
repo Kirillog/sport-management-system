@@ -1,24 +1,23 @@
 package ru.emkn.kotlin.sms.view.tables
 
-import org.jetbrains.exposed.sql.transactions.transaction
 import ru.emkn.kotlin.sms.ObjectFields
-import ru.emkn.kotlin.sms.controller.CompetitionController
+import ru.emkn.kotlin.sms.controller.Controller
 import ru.emkn.kotlin.sms.controller.Deleter
 import ru.emkn.kotlin.sms.controller.Editor
 import ru.emkn.kotlin.sms.model.Group
-import ru.emkn.kotlin.sms.view.GUI
 import ru.emkn.kotlin.sms.view.PathChooser
+import ru.emkn.kotlin.sms.view.View
 
 class GroupTable : Table<Group>() {
 
     private val group: List<Group>
         get() {
-            return transaction { Group.all().toList() }
+            return Group.all().toList()
         }
 
     override val header = TableHeader<Group>(
         listOf(
-            TableColumn<Group>(
+            TableColumn(
                 "Name",
                 ObjectFields.Name, visible = true, readOnly = false,
                 comparator = TableComparing.compareByString(ObjectFields.Name),
@@ -37,7 +36,7 @@ class GroupTable : Table<Group>() {
                 getterGenerator = { { it.route.name } }
             )
         ),
-        deleteButton = true
+        iconsBar = true
     )
 
     inner class GroupTableRow(private val group: Group) : TableRow() {
@@ -54,14 +53,14 @@ class GroupTable : Table<Group>() {
         }
     }
 
-    override val creatingState = GUI.State.CreateGroup
+    override val creatingState = View.State.CreateGroup
 
     override val rows: List<TableRow>
         get() = group.map { GroupTableRow(it) }
 
     override val loadAction = {
         val selectedFile = PathChooser("Choose groups", ".csv", "Group").choose()
-        CompetitionController.loadGroups(selectedFile?.toPath())
+        Controller.loadGroups(selectedFile?.toPath())
         state = State.Outdated
     }
 }

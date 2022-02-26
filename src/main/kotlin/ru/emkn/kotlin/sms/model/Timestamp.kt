@@ -4,10 +4,7 @@ import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.javatime.time
-import org.jetbrains.exposed.sql.select
 import java.time.LocalTime
 
 object TimestampTable : IntIdTable("timestamps") {
@@ -23,11 +20,11 @@ class Timestamp(id: EntityID<Int>) : IntEntity(id) {
 
     companion object : IntEntityClass<Timestamp>(TimestampTable) {
 
-        fun create(time: LocalTime, checkpointID: EntityID<Int>, participantID: EntityID<Int>): Timestamp {
+        fun create(time: LocalTime, checkpoint: Checkpoint, participant: Participant): Timestamp {
             return Timestamp.new {
                 this.time = time
-                this.checkpointID = checkpointID
-                this.participantID = participantID
+                this.checkpoint = checkpoint
+                this.participant = participant
             }
         }
 
@@ -35,7 +32,7 @@ class Timestamp(id: EntityID<Int>) : IntEntity(id) {
             val checkpoint = Checkpoint.findByName(checkpointName)
             val participant = Participant.findById(participantID)
             requireNotNull(participant)
-            return create(time, checkpoint.id, participant.id)
+            return create(time, checkpoint, participant)
         }
     }
 
@@ -46,21 +43,19 @@ class Timestamp(id: EntityID<Int>) : IntEntity(id) {
     var checkpoint: Checkpoint
         get() = Checkpoint[checkpointID]
         set(checkpoint) {
-            checkpointID = CheckpointTable.select { CheckpointTable.id eq checkpoint.id }.first()[CheckpointTable.id]
+            checkpointID = checkpoint.id
         }
 
     var participant: Participant
         get() = Participant[participantID]
         set(participant) {
-            participantID =
-                ParticipantTable.select { ParticipantTable.id eq participant.id }.first()[ParticipantTable.id]
+            participantID = participant.id
         }
 
     fun change(time: LocalTime, participantID: Int, checkpointName: String) {
         this.time = time
         this.participantID = EntityID(participantID, ParticipantTable)
         this.checkpointID = Checkpoint.findByName(checkpointName).id
-
     }
 
     override fun equals(other: Any?): Boolean {

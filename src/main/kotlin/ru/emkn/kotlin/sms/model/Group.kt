@@ -68,7 +68,7 @@ class Group(id: EntityID<Int>) : IntEntity(id), MultilineWritable {
     var route: Route
         get() = Route[routeID]
         set(route) {
-            routeID = RouteTable.select { RouteTable.id eq route.id }.first()[RouteTable.id]
+            routeID = route.id
         }
 
     fun change(name: String, resultType: ResultType, route: Route) {

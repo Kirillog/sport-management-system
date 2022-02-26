@@ -1,30 +1,28 @@
 package ru.emkn.kotlin.sms.view.tables
 
-import org.jetbrains.exposed.sql.transactions.transaction
 import ru.emkn.kotlin.sms.ObjectFields
-import ru.emkn.kotlin.sms.controller.CompetitionController
+import ru.emkn.kotlin.sms.controller.Controller
 import ru.emkn.kotlin.sms.controller.Editor
 import ru.emkn.kotlin.sms.model.Event
-import ru.emkn.kotlin.sms.view.GUI
 import ru.emkn.kotlin.sms.view.PathChooser
+import ru.emkn.kotlin.sms.view.View
 import java.time.format.DateTimeFormatter
 
 class EventTable : Table<Event>() {
 
     private val event: List<Event>
-        get() {
-            return transaction { Event.all().toList() }
-        }
+        get() =
+            Event.all().toList()
 
-    override val header = TableHeader(
+    override val header = TableHeader<Event>(
         listOf(
-            TableColumn<Event>(
+            TableColumn(
                 "Name",
                 ObjectFields.Name, visible = true, readOnly = false,
                 comparator = TableComparing.compareByString(ObjectFields.Name),
                 getterGenerator = { { it.name } }
             ),
-            TableColumn<Event>(
+            TableColumn(
                 "Date",
                 ObjectFields.Date,
                 visible = true, readOnly = false,
@@ -38,7 +36,7 @@ class EventTable : Table<Event>() {
                 }
             )
         ),
-        deleteButton = false,
+        iconsBar = false,
         filtering = false
     )
 
@@ -52,18 +50,17 @@ class EventTable : Table<Event>() {
         }
     }
 
-    override var addButton: Boolean
-        get() = rows.isEmpty()
-        set(value) {}
+    override var addButton: Boolean = true
+        get() = sortedFilteredRows.isEmpty()
 
-    override val creatingState: GUI.State = GUI.State.CreateEvent
+    override val creatingState: View.State = View.State.CreateEvent
 
     override val rows: List<TableRow>
         get() = event.map { EventTableRow(it) }
 
     override val loadAction = {
         val eventFile = PathChooser("Choose event", ".csv", "Event").choose()
-        CompetitionController.loadEvent(eventFile?.toPath())
+        Controller.loadEvent(eventFile?.toPath())
         state = State.Outdated
     }
 }

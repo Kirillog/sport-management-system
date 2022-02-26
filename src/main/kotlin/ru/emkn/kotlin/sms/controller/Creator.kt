@@ -8,7 +8,6 @@ import ru.emkn.kotlin.sms.english
 import ru.emkn.kotlin.sms.model.*
 import java.time.LocalDate
 import java.time.LocalTime
-import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlin.reflect.KType
 import kotlin.reflect.jvm.jvmErasure
@@ -63,18 +62,6 @@ object Creator {
             }
         }
 
-    fun createEventIfEmpty(name: String, date: LocalDate): Event {
-        return transaction {
-            if (!Event.all().empty()) Event.all().first()
-            else null
-        } ?: createEventFrom(
-            mapOf(
-                ObjectFields.Name to name,
-                ObjectFields.Date to date.format(DateTimeFormatter.ISO_DATE)
-            )
-        )
-    }
-
     fun createEventFrom(values: Map<ObjectFields, String>): Event {
         try {
             val event = transaction {
@@ -82,7 +69,6 @@ object Creator {
                 val data = convert<LocalDate>(values[ObjectFields.Date])
                 Event.create(eventName, data)
             }
-            Competition.event = event
             logger.info { "Event was successfully created" }
             return event
         } catch (err: IllegalArgumentException) {
@@ -100,7 +86,6 @@ object Creator {
                 val checkPoints = convert<List<Checkpoint>>(values[ObjectFields.CheckPoints])
                 Route.create(routeName, checkPoints, routeType, amountOfCheckpoint ?: checkPoints.size)
             }
-            Competition.add(route)
             logger.debug { "Route was successfully created" }
             return route
         } catch (err: IllegalArgumentException) {
@@ -122,14 +107,13 @@ object Creator {
                     throw IllegalArgumentException("Cannot find group $groupName")
                 if (!Team.checkByName(teamName))
                     throw IllegalArgumentException("Cannot find team $teamName")
-                if (CompetitionController.state == State.TOSSED) {
+                if (Controller.state == State.TOSSED) {
                     val startTime = convert<LocalTime>(values[ObjectFields.StartTime])
                     Participant.create(name, surname, birthdayYear, groupName, teamName, startTime, grade)
                 } else {
                     Participant.create(name, surname, birthdayYear, groupName, teamName, grade)
                 }
             }
-            Competition.add(participant)
             logger.debug { "Participant was successfully created" }
             return participant
         } catch (err: IllegalArgumentException) {
@@ -148,7 +132,6 @@ object Creator {
                     throw IllegalArgumentException("Cannot find route $routeName")
                 Group.create(name, resultType, routeName)
             }
-            Competition.add(group)
             logger.debug { "Group was successfully created" }
             return group
         } catch (err: IllegalArgumentException) {
@@ -163,7 +146,6 @@ object Creator {
                 val teamName = convert<String>(values[ObjectFields.Name])
                 Team.create(teamName)
             }
-            Competition.add(team)
             logger.debug { "Team was successfully created" }
             return team
         } catch (err: IllegalArgumentException) {
@@ -179,7 +161,6 @@ object Creator {
                 val weight = convert<Int>(values[ObjectFields.Weight])
                 Checkpoint.create(name, weight)
             }
-            Competition.add(checkpoint)
             logger.debug { "Checkpoint was successfully created" }
             return checkpoint
         } catch (err: IllegalArgumentException) {
@@ -196,7 +177,6 @@ object Creator {
                 val checkpointName = convert<String>(values[ObjectFields.Name])
                 Timestamp.create(time, checkpointName, participantId)
             }
-            Competition.add(timestamp)
             logger.debug { "Timestamp was successfully created" }
             return timestamp
         } catch (err: IllegalArgumentException) {

@@ -4,16 +4,21 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material.Text
-import androidx.compose.material.TextButton
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import mu.KotlinLogging
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.emkn.kotlin.sms.MAX_TEXT_FIELD_SIZE
 import ru.emkn.kotlin.sms.ObjectFields
@@ -30,15 +35,9 @@ data class TableColumn<T>(
     var filterString = mutableStateOf("")
 }
 
-private val logger = KotlinLogging.logger {}
+class TableHeader<T>(private val columns: List<TableColumn<T>>, val iconsBar: Boolean, val filtering: Boolean = true) {
 
-class TableHeader<T>(val columns: List<TableColumn<T>>, val deleteButton: Boolean, val filtering: Boolean = true) {
-
-    enum class State {
-        Updated, Outdated
-    }
-
-    var state by mutableStateOf(State.Updated)
+    var iconsBarSize = mutableStateOf(IntSize(0, 0))
 
     var orderByColumn = mutableStateOf(run {
         val index = columns.indexOfFirst { it.visible }
@@ -53,7 +52,7 @@ class TableHeader<T>(val columns: List<TableColumn<T>>, val deleteButton: Boolea
 
     fun makeTableCells(item: T, saveFunction: () -> Unit): Map<ObjectFields, TableCell> {
         return transaction {
-            columns.filter { it.visible }.associate { it.field to TableCell(it.getterGenerator(item), saveFunction) }
+            columns.filter { it.visible }.associate { it.field to TableCell(it.getterGenerator(item)(), saveFunction) }
         }
     }
 
@@ -87,68 +86,100 @@ class TableHeader<T>(val columns: List<TableColumn<T>>, val deleteButton: Boolea
 }
 
 @Composable
-fun <T> draw(tableHeader: TableHeader<T>) {
-    if (tableHeader.state == TableHeader.State.Outdated)
-        tableHeader.state = TableHeader.State.Updated
+fun <T> drawTableHeader(tableHeader: TableHeader<T>, lazyListState: LazyListState, coroutineScope: CoroutineScope) {
     var rowSize by remember { mutableStateOf(IntSize.Zero) }
     Row(
-//        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .onSizeChanged {
+                rowSize = it
+            },
         horizontalArrangement = Arrangement.Start
     ) {
-        // space for delete button
-        if (tableHeader.deleteButton)
-            Box(modifier = Modifier.width(tableDeleteButtonWidth.dp))
-        // header and filters
-        Column {
-            val columnsCount = tableHeader.visibleColumns.size
-            val columnWidth = (rowSize.width / columnsCount).dp
-            // filter fields
-            if (tableHeader.filtering) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Start
-                ) {
-                    tableHeader.visibleColumns.forEach { column ->
-                        BasicTextField(
-                            value = column.filterString.value,
-                            modifier = Modifier
-                                .border(BorderStroke(1.dp, Color.Black))
-                                .width(columnWidth),
-                            onValueChange = {
-                                column.filterString.value = it.replace("\n", "").take(MAX_TEXT_FIELD_SIZE)
-                            })
-                    }
-                }
-            }
-            // header
-            Row(
+        val columnsCount = tableHeader.visibleColumns.size
+        val columnWidth = ((rowSize.width - tableHeader.iconsBarSize.value.width) / columnsCount).dp
+
+        tableHeader.visibleColumns.forEachIndexed { index, column ->
+            drawColumnTitleWithFilter(tableHeader, column, columnWidth, index)
+        }
+
+        if (tableHeader.iconsBar)
+            drawScrollButtons(tableHeader, lazyListState, coroutineScope)
+    }
+}
+
+@Composable
+fun <T> drawColumnTitleWithFilter(
+    tableHeader: TableHeader<T>,
+    column: TableColumn<T>,
+    columnWidth: Dp,
+    columnIndex: Int
+) {
+    Column(
+        modifier = Modifier
+            .width(columnWidth)
+    ) {
+        // title
+        TextButton(
+            onClick = {
+                if (tableHeader.orderByColumn.value == columnIndex)
+                    tableHeader.reversedOrder.value = !tableHeader.reversedOrder.value
+                tableHeader.orderByColumn.value = columnIndex
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .border(BorderStroke(1.dp, Color.Black))
+                .background(Color.LightGray)
+        ) {
+            Text(column.title)
+        }
+        // filter field
+        if (tableHeader.filtering) {
+            OutlinedTextField(
+                value = column.filterString.value,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .onSizeChanged {
-                        rowSize = it
-                    },
-                horizontalArrangement = Arrangement.Start
-            ) {
-                tableHeader.columns.forEachIndexed { index, column ->
-                    if (!column.visible)
-                        return@forEachIndexed
-                    TextButton(
-                        onClick = {
-                            if (tableHeader.orderByColumn.value == index)
-                                tableHeader.reversedOrder.value = !tableHeader.reversedOrder.value
-                            tableHeader.orderByColumn.value = index
-                        },
-                        modifier = Modifier
-                            .border(BorderStroke(1.dp, Color.Black))
-                            .width(columnWidth)
-                            .background(Color.LightGray)
-                    ) {
-                        Text(column.title)
-                    }
-                }
-            }
+                    .border(BorderStroke(1.dp, Color.Black)),
+                onValueChange = {
+                    column.filterString.value = it.replace("\n", "").take(MAX_TEXT_FIELD_SIZE)
+                },
+                placeholder = {
+                    Icon(
+                        imageVector = Icons.Filled.Search,
+                        contentDescription = "Search",
+                        tint = Color.Black
+                    )
+                },
+            )
         }
     }
+}
 
-
+@Composable
+fun <T> drawScrollButtons(tableHeader: TableHeader<T>, lazyListState: LazyListState, coroutineScope: CoroutineScope) {
+    Column(modifier = Modifier.width(tableHeader.iconsBarSize.value.width.dp)) {
+        IconButton(onClick = {
+            coroutineScope.launch {
+                lazyListState.animateScrollToItem(
+                    lazyListState.firstVisibleItemIndex - 1,
+                    0
+                )
+            }
+        }, enabled = lazyListState.firstVisibleItemIndex > 0) {
+            Icon(imageVector = Icons.Filled.KeyboardArrowUp, contentDescription = "Up", tint = Color.Black)
+        }
+        IconButton(
+            onClick = {
+                coroutineScope.launch {
+                    lazyListState.animateScrollToItem(
+                        lazyListState.firstVisibleItemIndex + 1,
+                        0
+                    )
+                }
+            },
+            enabled = lazyListState.firstVisibleItemIndex < lazyListState.layoutInfo.totalItemsCount - lazyListState.layoutInfo.visibleItemsInfo.size
+        ) {
+            Icon(imageVector = Icons.Filled.KeyboardArrowDown, contentDescription = "Down", tint = Color.Black)
+        }
+    }
 }

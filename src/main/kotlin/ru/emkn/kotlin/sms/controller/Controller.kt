@@ -1,20 +1,21 @@
 package ru.emkn.kotlin.sms.controller
 
+import mu.KotlinLogging
 import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.transactions.TransactionManager
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.emkn.kotlin.sms.*
 import ru.emkn.kotlin.sms.io.FileLoader
 import ru.emkn.kotlin.sms.io.FileSaver
 import ru.emkn.kotlin.sms.io.Loader
 import ru.emkn.kotlin.sms.io.Saver
-import ru.emkn.kotlin.sms.model.Competition
-import ru.emkn.kotlin.sms.model.PersonalResultTable
-import ru.emkn.kotlin.sms.model.TeamResultTable
-import ru.emkn.kotlin.sms.model.TossTable
+import ru.emkn.kotlin.sms.model.*
 import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.extension
+
+private val logger = KotlinLogging.logger {}
 
 enum class State {
     EMPTY,
@@ -27,38 +28,70 @@ object StateTable : IntIdTable("state") {
     val state = enumerationByName("state", MAX_TEXT_FIELD_SIZE, State::class)
 }
 
-object CompetitionController {
+object Controller {
+
+    private var database : Database? = null
 
     var state: State = State.EMPTY
         set(state) {
             field = state
-            transaction {
-                StateTable.deleteAll()
-                StateTable.insert {
-                    it[this.state] = state
+            if (state != State.EMPTY) {
+                transaction {
+                    StateTable.deleteAll()
+                    StateTable.insert {
+                        it[this.state] = state
+                    }
                 }
             }
         }
 
-    private fun load(path: Path?, trueState: State, loadFunc: Competition.(Loader) -> Unit) {
+    private fun load(path: Path?, trueState: State, loadFunc: Loader.() -> Unit) {
         path ?: throw IllegalArgumentException("path is not chosen")
         if (state != trueState) throw IllegalStateException("For this load state must be $trueState")
         transaction {
-            Competition.loadFunc(getLoader(path))
+            getLoader(path).loadFunc()
         }
     }
 
-    fun loadEvent(path: Path?) = load(path, State.CREATED) { loadEvent(it) }
+    fun loadEvent(path: Path?) = load(path, State.CREATED) { loadEvent() }
 
-    fun loadCheckpoints(path: Path?) = load(path, State.CREATED) { loadCheckpoints(it) }
+    fun loadCheckpoints(path: Path?) = load(path, State.CREATED) { loadCheckpoints() }
 
-    fun loadRoutes(path: Path?) = load(path, State.CREATED) { loadRoutes(it) }
+    fun loadRoutes(path: Path?) = load(path, State.CREATED) { loadRoutes() }
 
-    fun loadGroups(path: Path?) = load(path, State.CREATED) { loadGroups(it) }
+    fun loadGroups(path: Path?) = load(path, State.CREATED) { loadGroups() }
 
-    fun loadTeams(path: Path?) = load(path, State.CREATED) { loadTeams(it) }
+    fun loadTeams(path: Path?) = load(path, State.CREATED) { loadTeams() }
 
-    fun loadTimestamps(path: Path?) = load(path, State.TOSSED) { loadTimestamps(it) }
+    fun loadTimestamps(path: Path?) = load(path, State.TOSSED) { loadTimestamps() }
+
+    fun undo() {
+        when (state) {
+            State.TOSSED -> undoToss()
+            State.FINISHED -> undoResult()
+            else -> throw IllegalStateException("State must be TOSSED or FINISHED")
+        }
+    }
+
+    private fun undoToss() {
+        require(state == State.TOSSED)
+        transaction {
+            TossTable.deleteAll()
+            Competition.toss = Toss()
+        }
+        state = State.CREATED
+        logger.info { "Toss was canceled "}
+    }
+
+    private fun undoResult() {
+        require(state == State.FINISHED)
+        transaction {
+            PersonalResultTable.deleteAll()
+            TeamResultTable.deleteAll()
+        }
+        state = State.TOSSED
+        logger.info { "Result was canceled "}
+    }
 
     fun toss() {
         require(state == State.CREATED)
@@ -66,14 +99,7 @@ object CompetitionController {
             Competition.toss()
         }
         state = State.TOSSED
-    }
-
-    fun undoToss() {
-        require(state == State.TOSSED)
-        transaction {
-            TossTable.deleteAll()
-        }
-        state = State.CREATED
+        logger.info { "Competition tossed" }
     }
 
     fun result() {
@@ -82,15 +108,7 @@ object CompetitionController {
             Competition.calculateResult()
         }
         state = State.FINISHED
-    }
-
-    fun undoResult() {
-        require(state == State.FINISHED)
-        transaction {
-            PersonalResultTable.deleteAll()
-            TeamResultTable.deleteAll()
-        }
-        state = State.TOSSED
+        logger.info { "Competition finished" }
     }
 
     fun getLoader(path: Path): Loader {
@@ -108,6 +126,7 @@ object CompetitionController {
         }
     }
 
+    //TODO: разобраться как нам сохранять через getSaver
     fun saveResultsToPath(results: Path) = transaction {
         getSaver(results).saveResults()
     }
@@ -126,6 +145,7 @@ object CompetitionController {
         if (file == null) throw IllegalArgumentException("File was not chosen")
         if (file.exists()) throw IllegalArgumentException("File already exists")
         file.createNewFile()
+        logger.info { "Database created" }
         connectDB(file)
     }
 
@@ -141,7 +161,7 @@ object CompetitionController {
         } else {
             throw IllegalArgumentException("File should has extension .mv.db")
         }
-        Database.connect("$DB_HEADER:$fileName", driver = DB_DRIVER)
+        database = Database.connect("$DB_HEADER:$fileName", driver = DB_DRIVER)
 
         transaction {
             DB_TABLES.forEach {
@@ -149,6 +169,14 @@ object CompetitionController {
             }
             val query = StateTable.selectAll()
             state = if (query.empty()) State.CREATED else query.first()[StateTable.state]
+        }
+        logger.info { "Database connected" }
+    }
+
+    fun disconnectDB() {
+        state = State.EMPTY
+        database?.let {
+            TransactionManager.closeAndUnregister(it)
         }
     }
 }

@@ -25,7 +25,7 @@ object Editor {
                     throw IllegalArgumentException("Cannot find group $groupName")
                 if (!Team.checkByName(teamName))
                     throw IllegalArgumentException("Cannot find team $teamName")
-                if (CompetitionController.state >= State.TOSSED) {
+                if (Controller.state >= State.TOSSED) {
                     val startTime = convert<LocalTime>(values[ObjectFields.StartTime])
                     participant.startTime = startTime
                 }
@@ -118,7 +118,6 @@ object Editor {
             transaction {
                 timestamp.change(time, participantId, checkpointName)
             }
-            Competition.add(timestamp)
             logger.debug { "Timestamp was successfully edited" }
         } catch (err: IllegalArgumentException) {
             logger.debug { "Cannot edit timestamp ${timestamp.id}" }

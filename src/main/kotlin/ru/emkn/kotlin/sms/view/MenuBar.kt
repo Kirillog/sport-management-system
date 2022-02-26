@@ -6,7 +6,7 @@ import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyShortcut
 import androidx.compose.ui.window.FrameWindowScope
 import androidx.compose.ui.window.MenuBar
-import ru.emkn.kotlin.sms.controller.CompetitionController
+import ru.emkn.kotlin.sms.controller.Controller
 
 enum class MenuState(val text: String = "") {
     Hided,
@@ -19,55 +19,44 @@ enum class MenuState(val text: String = "") {
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun drawMenuBar(gui: GUI, frame: FrameWindowScope, bottomBar: BottomAppBar) {
-    val stages = listOf("Toss", "Results", "Finished")
-    val menuState = gui.state.value.menuState
-    val loader = LoadOrCreate(
-        question = "Load database or create new one?",
-        loadTitle = "select database file",
-        createTitle = "choose path for new database",
-        loadAction = {
-            CompetitionController.connectDB(it)
-            gui.pushDataBaseState()
-        },
-        createAction = {
-            CompetitionController.createDB(it)
-            gui.pushState(GUI.State.EditAnnounceData)
-        },
-        fileExtension = ".mv.db",
-        fileExtensionDescription = "Database"
-    )
+fun drawMenuBar(view: View, frame: FrameWindowScope) {
+    val menuState = view.state.value.menuState
+    if (menuState == MenuState.Hided)
+        return
     frame.MenuBar {
         Menu("Database", mnemonic = 'D') {
             Item("Load", onClick = {
                 chooseFileAndProcess(
-                    bottomBar,
-                    loader.loadTitle,
-                    loader.fileExtension,
-                    loader.fileExtensionDescription,
-                    loader.loadAction
-                )
+                    "select database file",
+                    ".mv.db",
+                    "Database"
+                ) {
+                    Controller.disconnectDB()
+                    Controller.connectDB(it)
+                    view.pushDataBaseState()
+                }
             }, shortcut = KeyShortcut(Key.L, ctrl = true))
             Item("Create", onClick = {
                 chooseFileAndProcess(
-                    bottomBar,
-                    loader.createTitle,
-                    loader.fileExtension,
-                    loader.fileExtensionDescription,
-                    loader.createAction
-                )
+                    "choose path for new database",
+                    ".mv.db",
+                    "Database"
+                ) {
+                    Controller.disconnectDB()
+                    Controller.createDB(it)
+                    view.pushState(View.State.EditAnnounceData)
+                }
             }, shortcut = KeyShortcut(Key.N, ctrl = true))
         }
 
         Menu("Navigate", mnemonic = 'T') {
-            val text = menuState.text
             Item(
-                text, onClick = {
-                    when (text) {
-                        "Toss" ->
-                            StateSwitcher.doToss(gui, bottomBar)
-                        "Result" ->
-                            StateSwitcher.doResulted(gui, bottomBar)
+                menuState.text, onClick = {
+                    when (menuState) {
+                        MenuState.Preparing ->
+                            StateSwitcher.doToss(view)
+                        MenuState.Tossed ->
+                            StateSwitcher.doResulted(view)
                         else ->
                             throw IllegalStateException("Wrong menu state")
                     }
@@ -77,11 +66,9 @@ fun drawMenuBar(gui: GUI, frame: FrameWindowScope, bottomBar: BottomAppBar) {
             Item(
                 "Rollback",
                 onClick = {
-                    when (text) {
-                        "Result" ->
-                            StateSwitcher.undoToss(gui, bottomBar)
-                        "Finished" ->
-                            StateSwitcher.undoResulted(gui, bottomBar)
+                    when (menuState) {
+                        MenuState.Tossed, MenuState.Result ->
+                            StateSwitcher.undo(view)
                         else ->
                             throw IllegalStateException("Wrong menu state")
                     }

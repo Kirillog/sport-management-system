@@ -4,7 +4,7 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.*
 import ru.emkn.kotlin.sms.DB_TABLES
 import ru.emkn.kotlin.sms.FileType
-import ru.emkn.kotlin.sms.controller.CompetitionController
+import ru.emkn.kotlin.sms.controller.Controller
 import ru.emkn.kotlin.sms.controller.State
 import ru.emkn.kotlin.sms.io.FileLoader
 import java.io.File
@@ -72,7 +72,7 @@ internal class FileLoaderTest {
     fun formCoursesListTest() {
         val currentPath = init()
         val generatedCourses = Generator.generateCourses(currentPath)
-        val courses = loadTransaction(currentPath.resolve("courses.csv")) { loadRoutes() }
+        val courses = loadTransaction(currentPath.resolve("routes.csv")) { loadRoutes() }
         transaction {
             assertEquals(generatedCourses.toSet(), courses)
         }
@@ -83,7 +83,7 @@ internal class FileLoaderTest {
     fun formEmptyGroupsTest() {
         val currentPath = init()
         val generatedGroups = Generator.generateGroups(currentPath)
-        val groups = loadTransaction(currentPath.resolve("classes.csv")) { loadGroups() }
+        val groups = loadTransaction(currentPath.resolve("groups.csv")) { loadGroups() }
         transaction {
             assertEquals(generatedGroups.toSet(), groups)
         }
@@ -96,8 +96,8 @@ internal class FileLoaderTest {
         val currentPath = init("test/input")
         val applicationPath = init("test/applications")
         val generatedGroups = Generator.generateGroups(currentPath)
-        val generatedTeams = Generator.generateApplications(applicationPath, 10, 15)
-        val groups = loadTransaction(currentPath.resolve("classes.csv")) { loadGroups() }
+        Generator.generateApplications(applicationPath, 10, 15)
+        val groups = loadTransaction(currentPath.resolve("groups.csv")) { loadGroups() }
         transaction {
             assertEquals(generatedGroups.toSet(), groups)
         }
@@ -109,7 +109,7 @@ internal class FileLoaderTest {
         val dir = init("test/")
         val currentPath = init("test/applications")
         val groupsPath = init("test/input")
-        val generatedGroups = Generator.generateGroups(groupsPath)
+        Generator.generateGroups(groupsPath)
         val generatedTeams = Generator.generateApplications(currentPath, 10, 15)
         val teams = loadTransaction(currentPath) { loadTeams() }
         transaction {
@@ -140,16 +140,17 @@ internal class FileLoaderTest {
         Generator.generateGroups(initPath)
         Generator.generateApplications(applicationPath)
         disconnect()
-        CompetitionController.createDB(File("./${path}/testDB.mv.db"))
-        CompetitionController.loadEvent(initPath.resolve("event.csv"))
-        CompetitionController.loadCheckpoints(initPath.resolve("checkpoints.csv"))
-        CompetitionController.loadRoutes(initPath.resolve("courses.csv"))
-        CompetitionController.loadGroups(initPath.resolve("classes.csv"))
-        CompetitionController.toss()
-        CompetitionController.saveTossToPath(protocolPath.resolve("toss.csv"))
-        CompetitionController.state = State.EMPTY
+        Controller.createDB(File("./${path}/testDB.mv.db"))
+        Controller.loadEvent(initPath.resolve("event.csv"))
+        Controller.loadCheckpoints(initPath.resolve("checkpoints.csv"))
+        Controller.loadRoutes(initPath.resolve("routes.csv"))
+        Controller.loadGroups(initPath.resolve("groups.csv"))
+        Controller.loadTeams(applicationPath)
+        Controller.toss()
+        Controller.saveTossToPath(protocolPath.resolve("toss.csv"))
+        Controller.state = State.EMPTY
         disconnect()
-        CompetitionController.createDB(File("./${path}/testDB.mv.db"))
+        Controller.createDB(File("./${path}/testDB.mv.db"))
         val checkPointsProtocols =
             Generator.generateCheckPointProtocols(competitionPath, checkPointPath).flatMap { it.protocol }
         val checkPoints = loadTransaction(checkPointPath) { loadTimestamps() }

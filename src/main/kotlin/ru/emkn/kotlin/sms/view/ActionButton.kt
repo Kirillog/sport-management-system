@@ -18,7 +18,7 @@ class ActionButton(
 }
 
 @Composable
-fun draw(actionButton: ActionButton) {
+fun drawActionButton(actionButton: ActionButton) {
     if (actionButton.visible)
         Button(
             onClick = { actionButton.action() },

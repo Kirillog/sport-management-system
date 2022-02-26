@@ -53,10 +53,10 @@ class Writer(private val file: File, val filetype: FileType) {
     fun addAll(el: List<List<Any?>>) = buffer.addAll(el)
 
     fun <T> add(table: Table<T>) {
-        this.add(table.header.visibleColumns.map {it.title})
+        this.add(table.header.visibleColumns.map { it.title })
         table.sortedFilteredRows.forEach { row ->
             table.header.visibleColumns.map { visibleColumn ->
-                row.cells[visibleColumn.field]?.getText?.let { it() } ?: throw IllegalStateException("Broken table")
+                row.cells[visibleColumn.field]?.text ?: throw IllegalStateException("Broken table")
             }.also { data ->
                 this.add(data)
             }

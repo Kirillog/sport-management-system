@@ -1,4 +1,3 @@
-
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -40,7 +39,7 @@ fun Generator.generateGroups(
         val groups = groupNames.mapIndexed { index, name ->
             Group.create(name, resultTypes[index], coursesList[index].name)
         }
-        val classesFile = path.resolve("classes.csv").toFile()
+        val classesFile = path.resolve("groups.csv").toFile()
         val classesWriter = Writer(classesFile, FileType.CSV)
         classesWriter.add(listOf("Название группы", "Дистанция", "Результат"))
         classesWriter.addAll(groups.mapIndexed { index, group ->

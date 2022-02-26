@@ -122,12 +122,12 @@ class Participant(id: EntityID<Int>) : IntEntity(id), SingleLineWritable {
     var team: Team
         get() = Team[teamID]
         set(team) {
-            teamID = TeamTable.select { TeamTable.id eq team.id }.first()[TeamTable.id]
+            teamID = team.id
         }
     var group: Group
         get() = Group[groupID]
         set(group) {
-            groupID = GroupTable.select { GroupTable.id eq group.id }.first()[GroupTable.id]
+            groupID = group.id
         }
 
     var startTime: LocalTime

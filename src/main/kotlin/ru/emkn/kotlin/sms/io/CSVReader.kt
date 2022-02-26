@@ -158,17 +158,17 @@ class CSVReader(val file: File) : Reader {
 
     override fun toss(): List<Map<ObjectFields, String>>? {
         val header = mapOf(
-            "Группа" to ObjectFields.Group,
-            "Фамилия" to ObjectFields.Surname,
-            "Имя" to ObjectFields.Name,
-            "Г.р." to ObjectFields.BirthdayYear,
-            "Разр." to ObjectFields.Grade,
-            "Команда" to ObjectFields.Team,
-            "Номер" to ObjectFields.ID,
-            "Время старта" to ObjectFields.StartTime,
+            "Group" to ObjectFields.Group,
+            "Surname" to ObjectFields.Surname,
+            "Name" to ObjectFields.Name,
+            "Birthday Year" to ObjectFields.BirthdayYear,
+            "Grade" to ObjectFields.Grade,
+            "Team" to ObjectFields.Team,
+            "ID" to ObjectFields.ID,
+            "Start time" to ObjectFields.StartTime,
         )
         val table = tableWithHeader() ?: return null
-        return toObjectFields(header, preprocess(table))
+        return toObjectFields(header, table)
     }
 
     override fun checkPoints(): List<Map<ObjectFields, String>>? {
