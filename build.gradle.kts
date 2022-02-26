@@ -1,8 +1,9 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import org.panteleyev.jpackage.ImageType
 import org.apache.tools.ant.taskdefs.condition.Os
+import org.panteleyev.jpackage.ImageType
+import java.io.FileOutputStream
+import java.io.OutputStreamWriter
 import kotlin.io.path.ExperimentalPathApi
-import java.io.*
 import kotlin.io.path.createSymbolicLinkPointingTo
 
 val kotlinVersion = "1.5.31"
@@ -24,7 +25,7 @@ repositories {
 
 val module = "ru.emkn.kotlin.sms"
 val mainClassName = "$module.MainKt"
-version = "1.0"
+version = "0.1.0"
 
 
 dependencies {
@@ -149,9 +150,9 @@ tasks {
             val appName = project.name
             val appDir = File("$appDirName/$appName")
 
-            val symLink = appDir.resolve("AppRun")
-            @OptIn(ExperimentalPathApi::class)
-            symLink.toPath().createSymbolicLinkPointingTo(appDir.resolve("bin/$appName").toPath())
+            exec {
+                commandLine("ln", "-s", "bin/$appName", "$appDir/AppRun")
+            }
 
             appDir.resolve("lib/$appName.png").let { sourceFile ->
                 sourceFile.copyTo(appDir.resolve("$appName.png"))
@@ -164,7 +165,6 @@ tasks {
                     """
                 [Desktop Entry]
                 Type=Application
-                Version=$version
                 Name=$appName
                 Comment=System helping to provide competitions
                 Path=/bin/$appName
@@ -176,7 +176,7 @@ tasks {
                 )
             }
             exec {
-                commandLine("appimagetool.AppImage", "$buildDir/app-dir/$appName", "$installerDirName/$appName.AppImage")
+                commandLine("appimagetool.AppImage", "$appDirName/$appName", "$installerDirName/$appName.AppImage")
             }
         }
     }
