@@ -47,7 +47,7 @@ fun loadDB(file: Path) {
     }
 }
 
-fun changeDirectory(path: String) {
+fun changeDirectory(path: Path) {
     workingDirectory = workingDirectory.resolve(path).normalize()
 }
 
@@ -84,7 +84,7 @@ fun main(args: Array<String>) {
                 "add" -> TODO()
                 "delete" -> TODO()
                 "edit" -> TODO()
-                "cd" -> changeDirectory(userInput[1])
+                "cd" -> changeDirectory(Path.of(userInput[1]))
                 "ls" -> viewDirectory()
                 else -> println(skipMsg)
             }
