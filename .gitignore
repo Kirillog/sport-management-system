@@ -75,3 +75,4 @@ outTmp/
 /.idea/**
 /test.csv
 /data/**
+/fat-jar
